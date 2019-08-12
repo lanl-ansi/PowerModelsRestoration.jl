@@ -24,7 +24,7 @@ function clean_solution(solution)
             for (n, net) in solution["solution"]["nw"]
                 for (i,item) in get(net, item_type, Dict())
                     for k in keys(item)
-                        if isnothing(item[k])
+                        if item[k] === nothing
                             item[k] = 0
                         elseif isnan(item[k])
                             item[k] = 0
@@ -35,7 +35,7 @@ function clean_solution(solution)
         else
             for (i,item) in get(solution["solution"], item_type, Dict())
                 for k in keys(item)
-                    if isnothing(item[k])
+                    if item[k] === nothing
                         item[k] = 0
                     elseif isnan(item[k])
                         item[k] = 0
