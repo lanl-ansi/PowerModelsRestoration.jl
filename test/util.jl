@@ -1,5 +1,5 @@
 @testset "Forward Restoration" begin
-    mn_data = build_mn_data(case5_restoration_strg, replicates=3)
+    mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=3)
     rop_result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
     PowerModelsRestoration.clean_solution(rop_result)
 

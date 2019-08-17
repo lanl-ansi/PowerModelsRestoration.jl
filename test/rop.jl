@@ -3,7 +3,7 @@
 
     @testset "test ac rop" begin
         @testset "5-bus case" begin
-            mn_data = build_mn_data(case5_restoration, replicates=2)
+            mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=2)
             result = PowerModelsRestoration.run_rop(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
             @test result["termination_status"] == LOCALLY_SOLVED
@@ -28,7 +28,7 @@
 
         ## Juniper solver cannot find solution to AC unit commitment model
 
-        # mn_data = build_mn_data(case5_restoration_strg, replicates=2)
+        # mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=2)
         # @testset "5-bus case" begin
         #     result = PowerModelsRestoration.run_rop_uc(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
@@ -45,7 +45,7 @@
 
     @testset "test dc rop" begin
         @testset "5-bus case" begin
-            mn_data = build_mn_data(case5_restoration, replicates=3)
+            mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=3)
             result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
 
             @test result["termination_status"] == OPTIMAL
@@ -84,7 +84,7 @@
         end
 
         @testset "5-bus strg case" begin
-            mn_data = build_mn_data(case5_restoration_strg, replicates=3)
+            mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=3)
             result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
 
             @test result["termination_status"] == OPTIMAL
@@ -137,7 +137,7 @@
 
     @testset "test dc rop uc" begin
         @testset "5-bus case" begin
-            mn_data = build_mn_data(case5_restoration, replicates=3)
+            mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=3)
             result = PowerModelsRestoration.run_rop_uc(mn_data, PowerModels.DCPPowerModel, cbc_solver)
 
             @test result["termination_status"] == OPTIMAL
@@ -177,7 +177,7 @@
         end
 
         @testset "5-bus strg case" begin
-            mn_data = build_mn_data(case5_restoration_strg, replicates=3)
+            mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=3)
             result = PowerModelsRestoration.run_rop_uc(mn_data, PowerModels.DCPPowerModel, cbc_solver)
 
             @test result["termination_status"] == OPTIMAL
@@ -201,7 +201,7 @@
     #numerical stabilty issues.  This can be fixed by changing variable_generation_indicator start value to 0.5
     # @testset "test soc rop" begin
     #     @testset "5-bus strg case" begin
-    #         mn_data = build_mn_data(case5_restoration_strg, replicates=3)
+    #         mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=3)
     #         result = PowerModelsRestoration.run_rop(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
 
     #         @test result["termination_status"] == LOCALLY_SOLVED
@@ -218,7 +218,7 @@
         # solution stabilty issues on OS X and Linux
         #=
         @testset "5-bus strg case" begin
-            mn_data = build_mn_data(case5_restoration_strg, replicates=3)
+            mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=3)
             result = PowerModelsRestoration.run_rop(mn_data, PowerModels.QCWRPowerModel, juniper_solver)
 
             @test result["termination_status"] == LOCALLY_SOLVED

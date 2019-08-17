@@ -26,8 +26,8 @@ mpc.gen = [
 ];
 %column_names%  damaged
 mpc.gen_damage = [
-    1;
-    1;
+	1;
+	1;
 	1;
 	0;
 	0;
@@ -56,8 +56,8 @@ mpc.branch = [
 ];
 %column_names%  damaged
 mpc.branch_damage = [
-    1;
-    1;
+	1;
+	1;
 	1;
 	0;
 	0;
