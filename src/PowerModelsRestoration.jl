@@ -16,6 +16,7 @@ include("core/variable.jl")
 include("core/data.jl")
 include("core/constraint_template.jl")
 include("core/constraint.jl")
+include("core/relaxation_scheme.jl")
 include("core/ref.jl")
 
 include("util/common.jl")

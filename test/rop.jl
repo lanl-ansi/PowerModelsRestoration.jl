@@ -26,20 +26,18 @@
 
         end
 
-        ## Juniper solver cannot find solution to AC unit commitment model
+        @testset "5-bus storage case" begin
+            mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=2)
+            result = PowerModelsRestoration.run_rop_uc(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
-        # mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=2)
-        # @testset "5-bus case" begin
-        #     result = PowerModelsRestoration.run_rop_uc(mn_data, PowerModels.ACPPowerModel, juniper_solver)
+            @test result["termination_status"] == LOCALLY_SOLVED
+            @test isapprox(result["objective"], 4327.0; atol = 1e-2)
 
-        #     @test result["termination_status"] == LOCALLY_SOLVED
-        #     @test isapprox(result["objective"], 2329.500; atol = 1e-2)
-
-        #     @test isapprox(result["solution"]["nw"]["1"]["gen"]["1"]["gen_status"], 0; atol = 1e-1)
-        #     @test isapprox(result["solution"]["nw"]["1"]["gen"]["4"]["gen_status"], 1; atol = 1e-1)
-        #     @test isapprox(result["solution"]["nw"]["2"]["gen"]["1"]["gen_status"], 1; atol = 1e-1)
-        #     @test isapprox(result["solution"]["nw"]["2"]["gen"]["4"]["gen_status"], 1; atol = 1e-1)
-        # end
+            @test isapprox(result["solution"]["nw"]["1"]["gen"]["1"]["gen_status"], 0; atol = 1e-1)
+            @test isapprox(result["solution"]["nw"]["1"]["gen"]["4"]["gen_status"], 1; atol = 1e-1)
+            @test isapprox(result["solution"]["nw"]["2"]["gen"]["1"]["gen_status"], 1; atol = 1e-1)
+            @test isapprox(result["solution"]["nw"]["2"]["gen"]["4"]["gen_status"], 1; atol = 1e-1)
+        end
     end
 
 
@@ -197,20 +195,20 @@
     end
 
     #numerical stabilty issues.  This can be fixed by changing variable_generation_indicator start value to 0.5
-    # @testset "test soc rop" begin
-    #     @testset "5-bus strg case" begin
-    #         mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=3)
-    #         result = PowerModelsRestoration.run_rop(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
+    @testset "test soc rop" begin
+        @testset "5-bus strg case" begin
+            mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=3)
+            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
 
-    #         @test result["termination_status"] == LOCALLY_SOLVED
-    #         @test isapprox(result["objective"], 6701.3818; atol = 1e-2)
+            @test result["termination_status"] == LOCALLY_SOLVED
+            @test isapprox(result["objective"], 6577.54; atol = 1e-2)
 
-    #         @test isapprox(storage_status(result, "1", "1"), 0.000000; atol=1e-6)
-    #         @test isapprox(storage_status(result, "1", "2"), 1.000000; atol=1e-6)
-    #         @test isapprox(storage_status(result, "2", "1"), 1.000000; atol=1e-6)
-    #         @test isapprox(storage_status(result, "2", "2"), 1.000000; atol=1e-6)
-    #     end
-    # end
+            @test isapprox(storage_status(result, "1", "1"), 0.000000; atol=1e-4)
+            @test isapprox(storage_status(result, "1", "2"), 1.000000; atol=1e-4)
+            @test isapprox(storage_status(result, "2", "1"), 1.000000; atol=1e-4)
+            @test isapprox(storage_status(result, "2", "2"), 1.000000; atol=1e-4)
+        end
+    end
 
     @testset "test qc rop" begin
         # solution stabilty issues on OS X and Linux
