@@ -1,11 +1,11 @@
 "Limit the number of items restored in each time-step"
-function constraint_restoration_cardinality(pm::_PMs.GenericPowerModel, cumulative_repairs::Int; nw::Int=pm.cnw)
+function constraint_restoration_cardinality(pm::_PMs.AbstractPowerModel, cumulative_repairs::Int; nw::Int=pm.cnw)
     constraint_restoration_cardinality(pm, nw, cumulative_repairs)
 end
 
 
 ""
-function constraint_generation_damage(pm::_PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_generation_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     if haskey(_PMs.ref(pm, nw, :gen_damaged), i)
         gen = _PMs.ref(pm, nw, :gen, i)
         _PMs.constraint_generation_on_off(pm, nw, cnd, i, gen["pmin"][cnd], gen["pmax"][cnd], gen["qmin"][cnd], gen["qmax"][cnd])
@@ -14,7 +14,7 @@ end
 
 
 ""
-function constraint_ohms_yt_from_damage(pm::_PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_ohms_yt_from_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = _PMs.ref(pm, nw, :branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
@@ -43,7 +43,7 @@ end
 
 
 ""
-function constraint_ohms_yt_to_damage(pm::_PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_ohms_yt_to_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = _PMs.ref(pm, nw, :branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
@@ -74,7 +74,7 @@ end
 
 
 ""
-function constraint_voltage_angle_difference_damage(pm::_PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_voltage_angle_difference_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = _PMs.ref(pm, nw, :branch, i)
     f_idx = (i, branch["f_bus"], branch["t_bus"])
 
@@ -98,12 +98,12 @@ end
 
 """
 
-    constraint_thermal_limit_from(pm::GenericPowerModel, n::Int, i::Int)
+    constraint_thermal_limit_from(pm::AbstractPowerModel, n::Int, i::Int)
 
 Adds the (upper and lower) thermal limit constraints for the desired branch to the PowerModel.
 
 """
-function constraint_thermal_limit_from_damage(pm::_PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_thermal_limit_from_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = _PMs.ref(pm, nw, :branch, i)
 
     f_bus = branch["f_bus"]
@@ -122,7 +122,7 @@ end
 
 
 ""
-function constraint_thermal_limit_to_damage(pm::_PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_thermal_limit_to_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     branch = _PMs.ref(pm, nw, :branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
@@ -140,7 +140,7 @@ end
 
 
 ""
-function constraint_storage_damage(pm::_PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_storage_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     if haskey(_PMs.ref(pm, nw, :storage_damaged), i)
         storage = _PMs.ref(pm, nw, :storage, i)
         charge_ub = storage["charge_rating"]

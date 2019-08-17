@@ -24,6 +24,10 @@ juniper_solver = with_optimizer(Juniper.Optimizer, nl_solver=PowerModels.with_op
 
 include("common.jl")
 
+# parse test cases
+case5_restoration = PowerModels.parse_file("../test/data/case5_restoration.m")
+case5_restoration_strg = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
+
 @testset "PowerModelsRestoration" begin
 
 include("rop.jl")

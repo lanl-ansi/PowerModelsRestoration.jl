@@ -7,7 +7,7 @@ end
 
 
 ""
-function _post_rop(pm::_PMs.GenericPowerModel)
+function _post_rop(pm::_PMs.AbstractPowerModel)
     for (n, network) in _PMs.nws(pm)
         _MLD.variable_bus_voltage_indicator(pm, nw=n, relax=true)
         _PMs.variable_voltage_on_off(pm, nw=n)
@@ -34,7 +34,7 @@ function _post_rop(pm::_PMs.GenericPowerModel)
         end
 
         for i in _PMs.ids(pm, :bus, nw=n)
-            _MLD.constraint_power_balance_shunt_storage_shed(pm, i, nw=n)
+            _MLD.constraint_power_balance_shed(pm, i, nw=n)
         end
 
         for i in _PMs.ids(pm, :gen_damaged, nw=n)
@@ -101,7 +101,7 @@ end
 
 
 ""
-function _post_rop_uc(pm::_PMs.GenericPowerModel)
+function _post_rop_uc(pm::_PMs.AbstractPowerModel)
     for (n, network) in _PMs.nws(pm)
         _MLD.variable_bus_voltage_indicator(pm, nw=n, relax=false)
         _PMs.variable_voltage_on_off(pm, nw=n)
@@ -128,7 +128,7 @@ function _post_rop_uc(pm::_PMs.GenericPowerModel)
         end
 
         for i in _PMs.ids(pm, :bus, nw=n)
-            _MLD.constraint_power_balance_shunt_storage_shed(pm, i, nw=n)
+            _MLD.constraint_power_balance_shed(pm, i, nw=n)
         end
 
         for i in _PMs.ids(pm, :gen_damaged, nw=n)
@@ -187,7 +187,7 @@ end
 
 
 "report restoration solution"
-function solution_rop(pm::_PMs.GenericPowerModel, sol::Dict{String,Any})
+function solution_rop(pm::_PMs.AbstractPowerModel, sol::Dict{String,Any})
     _PMs.add_setpoint_bus_voltage!(sol, pm)
     _PMs.add_setpoint_generator_power!(sol, pm)
     _PMs.add_setpoint_generator_status!(sol, pm)
@@ -203,7 +203,7 @@ end
 
 
 ""
-function ref_add_damaged_items!(pm::_PMs.GenericPowerModel)
+function ref_add_damaged_items!(pm::_PMs.AbstractPowerModel)
     ref_add_damaged_gens!(pm)
     ref_add_damaged_branches!(pm)
     ref_add_damaged_storage!(pm)
@@ -211,7 +211,7 @@ end
 
 
 ""
-function ref_add_damaged_gens!(pm::_PMs.GenericPowerModel)
+function ref_add_damaged_gens!(pm::_PMs.AbstractPowerModel)
     for (nw, nw_ref) in pm.ref[:nw]
         nw_ref[:gen_damaged] = Dict(x for x in nw_ref[:gen] if haskey(x.second, "damaged") && x.second["damaged"] == 1 in keys(nw_ref[:gen]))
     end
@@ -219,7 +219,7 @@ end
 
 
 ""
-function ref_add_damaged_branches!(pm::_PMs.GenericPowerModel)
+function ref_add_damaged_branches!(pm::_PMs.AbstractPowerModel)
     for (nw, nw_ref) in pm.ref[:nw]
         nw_ref[:branch_damaged] = Dict(x for x in nw_ref[:branch] if haskey(x.second, "damaged") && x.second["damaged"] == 1 in keys(nw_ref[:branch]))
     end
@@ -227,7 +227,7 @@ end
 
 
 ""
-function ref_add_damaged_storage!(pm::_PMs.GenericPowerModel)
+function ref_add_damaged_storage!(pm::_PMs.AbstractPowerModel)
     for (nw, nw_ref) in pm.ref[:nw]
         nw_ref[:storage_damaged] = Dict(x for x in nw_ref[:storage] if haskey(x.second, "damaged") && x.second["damaged"] == 1 in keys(nw_ref[:storage]))
     end

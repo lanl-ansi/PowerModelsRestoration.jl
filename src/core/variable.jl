@@ -3,7 +3,7 @@ function JuMP.value(x::Real) return x end
 
 
 "variable: `0 <= damage_gen[l] <= 1` for `l` in `gen`es"
-function variable_generation_damage_indicator(pm::_PMs.GenericPowerModel; nw::Int=pm.cnw, relax=false)
+function variable_generation_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, relax=false)
 
     if relax == false
         z_gen_vars = JuMP.@variable(pm.model,
@@ -28,14 +28,14 @@ end
 
 
 "generates variables for both `active` and `reactive` generation"
-function variable_generation_damage(pm::_PMs.GenericPowerModel; kwargs...)
+function variable_generation_damage(pm::_PMs.AbstractPowerModel; kwargs...)
     variable_active_generation_damage(pm; kwargs...)
     variable_reactive_generation_damage(pm; kwargs...)
 end
 
 
 "variable: `pg[j]` for `j` in `gen`"
-function variable_active_generation_damage(pm::_PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+function variable_active_generation_damage(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
     for i in _PMs.ids(pm, nw, :gen)
         if bounded
             _PMs.var(pm, nw, cnd)[:pg] = JuMP.@variable(pm.model,
@@ -61,17 +61,17 @@ end
 
 
 "variable: `qq[j]` for `j` in `gen`"
-function variable_reactive_generation_damage(pm::_PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+function variable_reactive_generation_damage(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
     if bounded
         _PMs.var(pm, nw, cnd)[:qg] = JuMP.@variable(pm.model,
-            [i in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_$(cnd)_qg",
+            [i in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_$(cnd)_qg_dmg",
             lower_bound = _PMs.ref(pm, nw, :gen, i, "qmin", cnd),
             upper_bound = _PMs.ref(pm, nw, :gen, i, "qmax", cnd),
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :gen, i), "qg_start", cnd)
         )
     else
         _PMs.var(pm, nw, cnd)[:qg] = JuMP.@variable(pm.model,
-        [i in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_$(cnd)_qg",
+        [i in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_$(cnd)_qg_dmg",
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :gen, i), "qg_start", cnd)
     )
     end
@@ -86,7 +86,7 @@ end
 
 
 "variable: `0 <= damage_branch[l] <= 1` for `l` in `branch`es"
-function variable_branch_damage_indicator(pm::_PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, relax=false)
+function variable_branch_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, relax=false)
 
     if relax == false
         z_branch_vars = JuMP.@variable(pm.model,
@@ -106,14 +106,12 @@ function variable_branch_damage_indicator(pm::_PMs.GenericPowerModel; nw::Int=pm
     end
 
     z_branch = Dict(i => haskey(branch, "damaged") && branch["damaged"] == 1 ? z_branch_vars[i] : branch["br_status"]  for (i,branch) in _PMs.ref(pm, nw, :branch))
-
-    _PMs.var(pm, nw, cnd)[:branch_z] = z_branch
-
+    _PMs.var(pm, nw)[:z_branch] = z_branch
 end
 
 
 "variable: `0 <= damage_storage[l] <= 1` for `l` in `storage`es"
-function variable_storage_damage_indicator(pm::_PMs.GenericPowerModel; nw::Int=pm.cnw, relax = false)
+function variable_storage_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, relax = false)
     if relax == false
         z_storage_vars = JuMP.@variable(pm.model,
             [l in _PMs.ids(pm, nw, :storage_damaged)],
@@ -133,12 +131,11 @@ function variable_storage_damage_indicator(pm::_PMs.GenericPowerModel; nw::Int=p
 
     z_storage = Dict(i => haskey(storage, "damaged") && storage["damaged"] == 1 ? z_storage_vars[i] : storage["status"]  for (i,storage) in _PMs.ref(pm, nw, :storage))
     _PMs.var(pm, nw)[:z_storage] = z_storage
-
 end
 
 
 ""
-function variable_storage_mi_damage(pm::_PMs.GenericPowerModel; kwargs...)
+function variable_storage_mi_damage(pm::_PMs.AbstractPowerModel; kwargs...)
     variable_active_storage_damage(pm; kwargs...)
     variable_reactive_storage_damage(pm; kwargs...)
     _PMs.variable_storage_energy(pm; kwargs...)
@@ -149,7 +146,7 @@ end
 
 
 ""
-function variable_active_storage_damage(pm::_PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function variable_active_storage_damage(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     inj_lb, inj_ub = _PMs.ref_calc_storage_injection_bounds(_PMs.ref(pm, nw, :storage), _PMs.ref(pm, nw, :bus), cnd)
 
     _PMs.var(pm, nw, cnd)[:ps] = JuMP.@variable(pm.model,
@@ -169,7 +166,7 @@ end
 
 
 ""
-function variable_reactive_storage_damage(pm::_PMs.GenericPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function variable_reactive_storage_damage(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     inj_lb, inj_ub = _PMs.ref_calc_storage_injection_bounds(_PMs.ref(pm, nw, :storage), _PMs.ref(pm, nw, :bus), cnd)
 
     _PMs.var(pm, nw, cnd)[:qs] = JuMP.@variable(pm.model,

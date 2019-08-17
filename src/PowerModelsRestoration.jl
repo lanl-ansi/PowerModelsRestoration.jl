@@ -26,6 +26,7 @@ include("prob/rop.jl")
 
 include("form/shared.jl")
 include("form/wr.jl")
+include("form/apo.jl")
 
 include("core/export.jl")
 

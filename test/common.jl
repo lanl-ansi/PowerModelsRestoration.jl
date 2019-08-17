@@ -83,8 +83,3 @@ end
 function storage_power(result, nw_id::String, storage_ids::Array{String,1})
     return sum(storage_power(result, nw_id, storage_id) for storage_id in storage_ids)
 end
-
-
-# parse test cases
-case5_restoration = PowerModels.parse_file("../test/data/case5_restoration.m")
-case5_restoration_strg = PowerModels.parse_file("../test/data/case5_restoration_strg.m")

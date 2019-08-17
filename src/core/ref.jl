@@ -1,5 +1,5 @@
 ""
-function calc_equal_repairs_per_period(pm::_PMs.GenericPowerModel; nw::Int=pm.cnw)
+function calc_equal_repairs_per_period(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw)
 
     gen = _PMs.ref(pm, nw, :gen_damaged)
     storage = _PMs.ref(pm, nw, :storage_damaged)
