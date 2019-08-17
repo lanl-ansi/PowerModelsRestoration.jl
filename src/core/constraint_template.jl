@@ -152,6 +152,6 @@ function constraint_storage_damage(pm::_PMs.GenericPowerModel, i::Int; nw::Int=p
         qmin = max(inj_lb[i], _PMs.ref(pm, nw, :storage, i, "qmin", cnd))
         qmax = min(inj_ub[i], _PMs.ref(pm, nw, :storage, i, "qmax", cnd))
 
-        _PMs.constraint_storage_on_off(pm, nw, i, pmin, pmax, qmin, qmax, charge_ub, discharge_ub)
+        _PMs.constraint_storage_on_off(pm, nw, cnd, i, pmin, pmax, qmin, qmax, charge_ub, discharge_ub)
     end
 end

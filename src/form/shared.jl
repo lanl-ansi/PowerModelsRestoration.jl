@@ -1,8 +1,8 @@
 "required until storage for AbstractWRForm exists in PowerModels"
-function _PMs.constraint_storage_loss(pm::_PMs.GenericPowerModel{T}, n::Int, i, bus, r, x, standby_loss) where T <: _PMs.AbstractWRForm
-    w = _PMs.var(pm, n, pm.ccnd, :w, bus)
-    ps = _PMs.var(pm, n, pm.ccnd, :ps, i)
-    qs = _PMs.var(pm, n, pm.ccnd, :qs, i)
+function _PMs.constraint_storage_loss(pm::_PMs.GenericPowerModel{T}, n::Int, c::Int, i, bus, r, x, standby_loss) where T <: _PMs.AbstractWRForm
+    w = _PMs.var(pm, n, c, :w, bus)
+    ps = _PMs.var(pm, n, c, :ps, i)
+    qs = _PMs.var(pm, n, c, :qs, i)
     sc = _PMs.var(pm, n, :sc, i)
     sd = _PMs.var(pm, n, :sd, i)
 
