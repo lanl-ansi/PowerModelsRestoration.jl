@@ -88,7 +88,7 @@
             result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
 
             @test result["termination_status"] == OPTIMAL
-            @test isapprox(result["objective"], 701.40; atol = 1e-2)
+            @test isapprox(result["objective"], 578.864; atol = 1e-2)
 
             @test isapprox(gen_status(result,"1","1"), 0; atol=1e-6)
             @test isapprox(gen_status(result,"1","2"), 0; atol=1e-6)
@@ -120,17 +120,17 @@
             @test isapprox(storage_status(result, "3", "1"), 1; atol=1e-6)
             @test isapprox(storage_status(result, "3", "2"), 1; atol=1e-6)
 
-            @test isapprox(load_power(result, "1",["1","2","3"]), 4.3999; atol=1e-2)
+            @test isapprox(load_power(result, "1",["1","2","3"]), 2.24; atol=1e-2)
             @test isapprox(load_power(result, "2",["1","2","3"]), 7.0; atol=1e-2)
-            @test isapprox(load_power(result, "3",["1","2","3"]), 10.0; atol=1e-2)
+            @test isapprox(load_power(result, "3",["1","2","3"]), 9.624; atol=1e-2)
 
-            @test isapprox(gen_power(result, "1",["1","2","3","4","5"]), 4.398; atol=1e-2)
-            @test isapprox(gen_power(result, "2",["1","2","3","4","5"]), 7.0; atol=1e-2)
-            @test isapprox(gen_power(result, "3",["1","2","3","4","5"]), 10.0; atol=1e-2)
+            @test isapprox(gen_power(result, "1",["1","2","3","4","5"]), 2.0; atol=1e-2)
+            @test isapprox(gen_power(result, "2",["1","2","3","4","5"]), 7.2; atol=1e-2)
+            @test isapprox(gen_power(result, "3",["1","2","3","4","5"]), 9.3; atol=1e-2)
 
-            @test isapprox(storage_power(result, "1",["1","2"]), 0.0; atol=1e-2)
-            @test isapprox(storage_power(result, "2",["1","2"]), 0.0; atol=1e-2)
-            @test isapprox(storage_power(result, "3",["1","2"]), 0.0; atol=1e-2)
+            @test isapprox(storage_power(result, "1",["1","2"]), -0.240; atol=1e-2)
+            @test isapprox(storage_power(result, "2",["1","2"]),  0.200; atol=1e-2)
+            @test isapprox(storage_power(result, "3",["1","2"]), -0.324; atol=1e-2)
         end
     end
 
@@ -173,7 +173,6 @@
             @test isapprox(gen_power(result, "1",["1","2","3","4","5"]), 4; atol=1e-2)
             @test isapprox(gen_power(result, "2",["1","2","3","4","5"]), 7; atol=1e-2)
             @test isapprox(gen_power(result, "3",["1","2","3","4","5"]), 10; atol=1e-2)
-
         end
 
         @testset "5-bus strg case" begin
@@ -181,7 +180,7 @@
             result = PowerModelsRestoration.run_rop_uc(mn_data, PowerModels.DCPPowerModel, cbc_solver)
 
             @test result["termination_status"] == OPTIMAL
-            @test isapprox(result["objective"], 701.00; atol = 1e-2)
+            @test isapprox(result["objective"], 577.0; atol = 1e-2)
 
             @test isapprox(storage_status(result, "1", "1"), 0; atol=1e-6)
             @test isapprox(storage_status(result, "1", "2"), 1; atol=1e-6)
@@ -191,10 +190,9 @@
             @test isapprox(storage_status(result, "3", "2"), 1; atol=1e-6)
 
 
-            @test isapprox(storage_power(result, "1",["1","2"]), -0.240; atol=1e-2)
-            @test isapprox(storage_power(result, "2",["1","2"]), 0.0; atol=1e-2)
-            @test isapprox(storage_power(result, "3",["1","2"]), 0.0; atol=1e-2)
-
+            @test isapprox(storage_power(result, "1",["1","2"]),  0.4388; atol=1e-2)
+            @test isapprox(storage_power(result, "2",["1","2"]),  0.2000; atol=1e-2)
+            @test isapprox(storage_power(result, "3",["1","2"]), -0.7000; atol=1e-2)
         end
     end
 

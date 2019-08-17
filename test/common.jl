@@ -51,7 +51,12 @@ end
 
 ""
 function gen_power(result, nw_id::String, gen_id::String)
-    return result["solution"]["nw"][nw_id]["gen"][gen_id]["pg"]
+    value = result["solution"]["nw"][nw_id]["gen"][gen_id]["pg"]
+    if isnan(value)
+        return 0.0
+    else
+        return value
+    end
 end
 
 
