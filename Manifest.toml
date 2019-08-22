@@ -77,9 +77,9 @@ version = "0.10.3"
 
 [[InfrastructureModels]]
 deps = ["JuMP", "Memento"]
-git-tree-sha1 = "d380c59122887b4794e72bf92e9cf2a664654f18"
+git-tree-sha1 = "2f22661dc5316f5d443bb78b28300290d0cfaf47"
 uuid = "2030c09a-7f63-5d83-885d-db604e0e9cc0"
-version = "0.2.2"
+version = "0.3.0"
 
 [[InteractiveUtils]]
 deps = ["Markdown"]
@@ -158,7 +158,7 @@ uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 
 [[PowerModels]]
 deps = ["InfrastructureModels", "JSON", "JuMP", "LinearAlgebra", "MathOptInterface", "Memento", "SparseArrays"]
-git-tree-sha1 = "85e6c96e07e0e7644a67d0eb62bec512900e0198"
+git-tree-sha1 = "912af8c385d0c1545a0ff58c96159f7bbf85c49f"
 repo-rev = "v13-rc"
 repo-url = "https://github.com/lanl-ansi/PowerModels.jl.git"
 uuid = "c36e90e8-916a-50a6-bd94-075b64ef4655"
@@ -166,7 +166,7 @@ version = "0.13.0"
 
 [[PowerModelsMLD]]
 deps = ["InfrastructureModels", "JuMP", "Memento", "PowerModels"]
-git-tree-sha1 = "ef57ccc63f5b4994149bde5c4f2ce7f620e83e9b"
+git-tree-sha1 = "09715643c6a3a549b80f40b6b2f56cdca66e7b4b"
 repo-rev = "pms-v13"
 repo-url = "https://github.com/lanl-ansi/PowerModelsMLD.jl.git"
 uuid = "b04da1f8-93b0-5a19-8500-8b2903949876"
