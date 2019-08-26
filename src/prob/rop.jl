@@ -9,6 +9,9 @@ end
 ""
 function _post_rop(pm::_PMs.GenericPowerModel)
     for (n, network) in _PMs.nws(pm)
+
+        set_repair_time_elapsed(pm, nw=n)
+
         _MLD.variable_bus_voltage_indicator(pm, nw=n, relax=true)
         _PMs.variable_voltage_on_off(pm, nw=n)
 
@@ -26,7 +29,7 @@ function _post_rop(pm::_PMs.GenericPowerModel)
         _MLD.variable_demand_factor(pm, nw=n, relax=true)
         _MLD.variable_shunt_factor(pm, nw=n, relax=true)
 
-        cumulative_repairs = calc_equal_repairs_per_period(pm, nw=n)
+        cumulative_repairs = calc_cumulative_repairs_per_period(pm, nw=n)
         constraint_restoration_cardinality(pm, cumulative_repairs, nw=n)
 
         for i in _PMs.ids(pm, :ref_buses, nw=n)
@@ -69,12 +72,12 @@ function _post_rop(pm::_PMs.GenericPowerModel)
     n_1 = network_ids[1]
 
     for i in _PMs.ids(pm, :storage, nw=n_1)
-        _PMs.constraint_storage_state(pm, i, nw=n_1)
+        constraint_storage_state(pm, i, nw=n_1)
     end
 
     for n_2 in network_ids[2:end]
         for i in _PMs.ids(pm, :storage, nw=n_2)
-            _PMs.constraint_storage_state(pm, i, n_1, n_2)
+            constraint_storage_state(pm, i, n_1, n_2)
         end
         for i in _PMs.ids(pm, :gen, nw=n_2)
             constraint_active_gen(pm, i, n_1, n_2)
@@ -88,7 +91,7 @@ function _post_rop(pm::_PMs.GenericPowerModel)
         n_1 = n_2
     end
 
-    _MLD.objective_max_loadability_strg(pm)
+    PowerModelsRestoration.objective_max_loadability(pm)
 end
 
 
@@ -103,6 +106,9 @@ end
 ""
 function _post_rop_uc(pm::_PMs.GenericPowerModel)
     for (n, network) in _PMs.nws(pm)
+
+        set_repair_time_elapsed(pm, nw=n)
+
         _MLD.variable_bus_voltage_indicator(pm, nw=n, relax=false)
         _PMs.variable_voltage_on_off(pm, nw=n)
 
@@ -120,7 +126,7 @@ function _post_rop_uc(pm::_PMs.GenericPowerModel)
         _MLD.variable_demand_factor(pm, nw=n, relax=false)
         _MLD.variable_shunt_factor(pm, nw=n, relax=false)
 
-        cumulative_repairs = calc_equal_repairs_per_period(pm, nw=n)
+        cumulative_repairs = calc_cumulative_repairs_per_period(pm, nw=n)
         constraint_restoration_cardinality(pm, cumulative_repairs, nw=n)
 
         for i in _PMs.ids(pm, :ref_buses, nw=n)
@@ -163,12 +169,12 @@ function _post_rop_uc(pm::_PMs.GenericPowerModel)
     n_1 = network_ids[1]
 
     for i in _PMs.ids(pm, :storage, nw=n_1)
-        _PMs.constraint_storage_state(pm, i, nw=n_1)
+        constraint_storage_state(pm, i, nw=n_1)
     end
 
     for n_2 in network_ids[2:end]
         for i in _PMs.ids(pm, :storage, nw=n_2)
-            _PMs.constraint_storage_state(pm, i, n_1, n_2)
+            constraint_storage_state(pm, i, n_1, n_2)
         end
         for i in _PMs.ids(pm, :gen, nw=n_2)
             constraint_active_gen(pm, i, n_1, n_2)
@@ -182,7 +188,7 @@ function _post_rop_uc(pm::_PMs.GenericPowerModel)
         n_1 = n_2
     end
 
-    _MLD.objective_max_loadability_strg(pm)
+    objective_max_loadability(pm)
 end
 
 

@@ -155,3 +155,32 @@ function constraint_storage_damage(pm::_PMs.GenericPowerModel, i::Int; nw::Int=p
         _PMs.constraint_storage_on_off(pm, nw, i, pmin, pmax, qmin, qmax, charge_ub, discharge_ub)
     end
 end
+
+
+""
+function constraint_storage_state(pm::_PMs.GenericPowerModel, i::Int; nw::Int=pm.cnw)
+    storage = _PMs.ref(pm, nw, :storage, i)
+
+    if haskey(pm.data["nw"]["$(nw)"], "time_elapsed")
+        time_elapsed = pm.data["nw"]["$(nw)"]["time_elapsed"]
+    else
+        Memento.warn(_PMs._LOGGER, "network data should specify time_elapsed, using 1.0 as a default")
+        time_elapsed = 1.0
+    end
+
+    _PMs.constraint_storage_state_initial(pm, nw, i, storage["energy"], storage["charge_efficiency"], storage["discharge_efficiency"], time_elapsed)
+end
+
+""
+function constraint_storage_state(pm::_PMs.GenericPowerModel, i::Int, nw_1::Int, nw_2::Int)
+    storage = _PMs.ref(pm, nw_2, :storage, i)
+
+    if haskey(pm.data["nw"]["$(nw_1)"], "time_elapsed")
+        time_elapsed = pm.data["nw"]["$(nw_1)"]["time_elapsed"]
+    else
+        Memento.warn(_PMs._LOGGER, "network data should specify time_elapsed, using 1.0 as a default")
+        time_elapsed = 1.0
+    end
+
+    _PMs.constraint_storage_state(pm, nw_1, nw_2, i, storage["charge_efficiency"], storage["discharge_efficiency"], time_elapsed)
+end

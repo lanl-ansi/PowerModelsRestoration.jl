@@ -57,3 +57,22 @@ function clean_status!(nw_data)
         end
     end
 end
+
+
+""
+function set_repair_time_elapsed(pm::_PMs.GenericPowerModel; nw::Int=pm.cnw)
+    if haskey(_PMs.ref(pm,nw), "time_elapsed")
+        time_elapsed = _PMs.ref(pm,nw,"time_elapsed")
+    else
+        Memento.warn(_PMs._LOGGER, "network data should specify time_elapsed, using 1.0 as a default")
+        time_elapsed = 1.0
+        pm.data["nw"]["$(nw)"]["time_elapsed"] = time_elapsed
+    end
+
+    if nw != 1
+        time_elapsed = time_elapsed*calc_equal_repairs_per_period(pm)
+    end
+
+    pm.data["nw"]["$(nw)"]["time_elapsed"]=time_elapsed
+end
+
