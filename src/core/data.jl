@@ -69,10 +69,44 @@ function set_repair_time_elapsed(pm::_PMs.GenericPowerModel; nw::Int=pm.cnw)
         pm.data["nw"]["$(nw)"]["time_elapsed"] = time_elapsed
     end
 
-    if nw != 1
-        time_elapsed = time_elapsed*calc_equal_repairs_per_period(pm)
+    if nw != maximum(collect(_PMs.nw_ids(pm)))
+        time_elapsed = time_elapsed*calc_repair_time_elapsed(pm, nw=nw)
     end
 
     pm.data["nw"]["$(nw)"]["time_elapsed"]=time_elapsed
 end
 
+
+"Transforms a single network into a multinetwork with several deepcopies of the original network. Indexed from 0."
+function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, global_keys::Set{String})
+    @assert count > 0
+    if _IMs.ismultinetwork(sn_data)
+        Memento.error(_PMs._LOGGER, "replicate_restoration_network can only be used on single networks")
+    end
+
+    name = get(sn_data, "name", "anonymous")
+
+    mn_data = Dict{String,Any}(
+        "nw" => Dict{String,Any}()
+    )
+
+    mn_data["multinetwork"] = true
+
+    sn_data_tmp = deepcopy(sn_data)
+    for k in global_keys
+        if haskey(sn_data_tmp, k)
+            mn_data[k] = sn_data_tmp[k]
+        end
+
+        # note this is robust to cases where k is not present in sn_data_tmp
+        delete!(sn_data_tmp, k)
+    end
+
+    mn_data["name"] = "$(count) period restoration of $(name)"
+
+    for n in 0:count
+        mn_data["nw"]["$n"] = deepcopy(sn_data_tmp)
+    end
+
+    return mn_data
+end

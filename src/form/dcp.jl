@@ -10,7 +10,6 @@ function objective_max_loadability(pm::_PMs.GenericPowerModel{T}) where T <: _PM
     z_storage = Dict(n => _PMs.var(pm, n, :z_storage) for n in nws)
     time_elapsed = Dict(n => pm.data["nw"]["$(n)"]["time_elapsed"] for n in nws)
 
-
     load_weight = Dict(n =>
         Dict(i => get(load, "weight", 1.0) for (i,load) in _PMs.ref(pm, n, :load)) 
     for n in nws)
