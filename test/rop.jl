@@ -111,8 +111,8 @@
             @test isapprox(branch_status(result,"2","1"), 0; atol=1e-6)
             @test isapprox(branch_status(result,"2","2"), 0; atol=1e-6)
             @test isapprox(branch_status(result,"2","4"), 0; atol=1e-6)
-            @test isapprox(branch_status(result,"3","1"), 0; atol=1e-6)
-            @test isapprox(branch_status(result,"3","2"), 1; atol=1e-6)
+            @test isapprox(branch_status(result,"3","1"), 1; atol=1e-6)
+            @test isapprox(branch_status(result,"3","2"), 0; atol=1e-6)
             @test isapprox(branch_status(result,"3","4"), 1; atol=1e-6)
 
             @test isapprox(storage_status(result, "1", "1"), 0; atol=1e-6)
@@ -128,11 +128,11 @@
 
             @test isapprox(gen_power(result, "1",["1","2","3","4","5"]), 4.398; atol=1e-2)
             @test isapprox(gen_power(result, "2",["1","2","3","4","5"]), 7.0; atol=1e-2)
-            @test isapprox(gen_power(result, "3",["1","2","3","4","5"]), 9.5; atol=1e-2)
+            @test isapprox(gen_power(result, "3",["1","2","3","4","5"]), 9.875; atol=1e-2)
 
             @test isapprox(storage_power(result, "1",["1","2"]), 0.0; atol=1e-2)
             @test isapprox(storage_power(result, "2",["1","2"]), 0.0; atol=1e-2)
-            @test isapprox(storage_power(result, "3",["1","2"]), 0.5; atol=1e-2)
+            @test isapprox(storage_power(result, "3",["1","2"]), 0.125; atol=1e-2)
 
         end
     end
@@ -194,9 +194,9 @@
             @test isapprox(storage_status(result, "3", "2"), 1; atol=1e-6)
 
 
-            @test isapprox(storage_power(result, "1",["1","2"]), 0.0; atol=1e-2)
-            @test isapprox(storage_power(result, "2",["1","2"]), 0.0; atol=1e-2)
-            @test isapprox(storage_power(result, "3",["1","2"]), 0.0; atol=1e-2)
+            @test isapprox(storage_power(result, "1",["1","2"]), -0.24; atol=1e-2)
+            @test isapprox(storage_power(result, "2",["1","2"]),  0.00; atol=1e-2)
+            @test isapprox(storage_power(result, "3",["1","2"]),  0.50; atol=1e-2)
 
         end
     end
