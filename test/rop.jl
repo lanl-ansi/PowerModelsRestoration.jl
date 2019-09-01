@@ -68,8 +68,8 @@
             @test isapprox(branch_status(result,"2","1"), 0; atol=1e-6)
             @test isapprox(branch_status(result,"2","2"), 0; atol=1e-6)
             @test isapprox(branch_status(result,"2","4"), 1; atol=1e-6)
-            # @test isapprox(branch_status(result,"3","1"), 1; atol=1e-6)
-            @test isapprox(branch_status(result,"3","2"), 1; atol=1e-6)
+            @test isapprox(branch_status(result,"3","1"), 1; atol=1e-6)
+            @test isapprox(branch_status(result,"3","2"), 0; atol=1e-6)
             @test isapprox(branch_status(result,"3","4"), 1; atol=1e-6)
 
             @test isapprox(load_power(result, "1",["1","2","3"]), 4.3999; atol=1e-2)
@@ -160,7 +160,7 @@
             @test isapprox(branch_status(result,"2","1"), 0; atol=1e-6)
             @test isapprox(branch_status(result,"2","2"), 0; atol=1e-6)
             @test isapprox(branch_status(result,"2","4"), 1; atol=1e-6)
-            # @test isapprox(branch_status(result,"3","1"), 1; atol=1e-6)
+            @test isapprox(branch_status(result,"3","1"), 0; atol=1e-6)
             @test isapprox(branch_status(result,"3","2"), 1; atol=1e-6)
             @test isapprox(branch_status(result,"3","4"), 1; atol=1e-6)
 
@@ -188,8 +188,8 @@
             @test isapprox(storage_status(result, "3", "2"), 1; atol=1e-6)
 
 
-            @test isapprox(storage_power(result, "1",["1","2"]),  0.4388; atol=1e-2)
-            @test isapprox(storage_power(result, "2",["1","2"]),  0.2000; atol=1e-2)
+            @test isapprox(storage_power(result, "1",["1","2"]),  0.5000; atol=1e-2)
+            @test isapprox(storage_power(result, "2",["1","2"]),  0.1388; atol=1e-2)
             @test isapprox(storage_power(result, "3",["1","2"]), -0.7000; atol=1e-2)
         end
     end
@@ -201,12 +201,12 @@
             result = PowerModelsRestoration.run_rop(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
 
             @test result["termination_status"] == LOCALLY_SOLVED
-            @test isapprox(result["objective"], 6577.54; atol = 1e-2)
+            @test isapprox(result["objective"], 6538.22; atol = 1e-2)
 
-            @test isapprox(storage_status(result, "1", "1"), 0.000000; atol=1e-4)
-            @test isapprox(storage_status(result, "1", "2"), 1.000000; atol=1e-4)
-            @test isapprox(storage_status(result, "2", "1"), 1.000000; atol=1e-4)
-            @test isapprox(storage_status(result, "2", "2"), 1.000000; atol=1e-4)
+            @test isapprox(storage_status(result, "1", "1"), 0.0000; atol=1e-4)
+            @test isapprox(storage_status(result, "1", "2"), 1.0000; atol=1e-4)
+            @test isapprox(storage_status(result, "2", "1"), 0.6699; atol=1e-4)
+            @test isapprox(storage_status(result, "2", "2"), 1.0000; atol=1e-4)
         end
     end
 

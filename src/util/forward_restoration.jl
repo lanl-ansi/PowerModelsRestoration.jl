@@ -8,7 +8,6 @@ function run_forward_restoration(network_data, model_constructor, optimizer; kwa
     for n in net_id
         network = _network_data["nw"]["$n"]
         network["time_elapsed"] = get(_network_data, "time_elapsed", 1)
-        network["baseMVA"] = _network_data["baseMVA"]
         network["per_unit"] = _network_data["per_unit"]
 
         solution = _PMs.run_model(network, model_constructor, optimizer, _MLD.post_mld_strg; solution_builder=solution_rop, kwargs...)

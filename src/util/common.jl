@@ -6,7 +6,6 @@ function process_network(network_data)
         sol = Dict{String,Any}(
             "multinetwork" => true,
             "per_unit" => network_data["per_unit"],
-            "baseMVA" => network_data["baseMVA"],
             "nw" => Dict{String,Any}(n => network_data["nw"][n]["solution"]["solution"] for n in nw)
         )
         data = Dict{String,Any}(

@@ -1,3 +1,6 @@
+"All functions neccessary because z is sometimes an integer instead of variable_ref"
+function Base.isinteger(z::JuMP.VariableRef) return false end
+
 "`p[arc_from]^2 + q[arc_from]^2 <= w[f_bus]/tm*ccm[i]`"
 function _PMs.constraint_power_magnitude_sqr_on_off(pm::_PMs.AbstractQCWRModel, n::Int, c::Int, i, f_bus, arc_from, tm)
     w    = _PMs.var(pm, n, c, :w, f_bus)
