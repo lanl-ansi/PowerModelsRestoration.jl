@@ -18,7 +18,7 @@ end
 
 
 "Replace NaN and Nothing with 0 in multinetwork solutions"
-function clean_solution(solution)
+function clean_solution!(solution)
     for item_type in ["gen", "storage", "branch","load","shunt"]
         if haskey(solution["solution"], "nw")
             for (n, net) in solution["solution"]["nw"]

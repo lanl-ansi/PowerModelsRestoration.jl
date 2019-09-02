@@ -38,7 +38,7 @@ function calc_cumulative_repairs_per_period(pm::_PMs.GenericPowerModel; nw::Int=
     storage = _PMs.ref(pm, nw, :storage_damaged)
     branch = _PMs.ref(pm, nw, :branch_damaged)
 
-    nw
+    
     total_repairs = length(keys(gen)) + length(keys(storage)) + length(keys(branch))
 
     repair_periods = max(maximum(collect(keys(_PMs.nws(pm)))), 1)

@@ -14,7 +14,7 @@ function objective_max_loadability(pm::_PMs.GenericPowerModel)
         Dict(i => get(load, "weight", 1.0) for (i,load) in _PMs.ref(pm, n, :load)) 
     for n in nws)
 
-    M = Dict(n => 10*maximum([load_weight[n][i]*abs(load["pd"]) for (i,load) in _PMs.ref(pm, n, :load)]) for n in nws)
+    M = Dict(n => maximum([load_weight[n][i]*abs(load["pd"]) for (i,load) in _PMs.ref(pm, n, :load)]) for n in nws)
 
     return JuMP.@objective(pm.model, Max,
         sum( 
