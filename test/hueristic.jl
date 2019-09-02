@@ -2,7 +2,7 @@
 @testset "Hueristic" begin
 
     @testset "test ac hueristic" begin
-        mn_data = build_mn_data(case5_restoration, replicates=3)
+        mn_data = build_mn_data(case5_restoration, replicates=2)
         @testset "5-bus case" begin
             result = PowerModelsRestoration.run_rop_heuristic(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
@@ -23,7 +23,7 @@
 
 
     @testset "test dc hueristic" begin
-        mn_data = build_mn_data(case5_restoration, replicates=3)
+        mn_data = build_mn_data(case5_restoration, replicates=2)
         @testset "5-bus case" begin
             result = PowerModelsRestoration.run_rop_heuristic(mn_data, PowerModels.DCPPowerModel, cbc_solver)
 
@@ -39,7 +39,7 @@
     end
 
     @testset "test SOCWR hueristic" begin
-        mn_data = build_mn_data(case5_restoration, replicates=3)
+        mn_data = build_mn_data(case5_restoration, replicates=2)
         @testset "5-bus case" begin
             result = PowerModelsRestoration.run_rop_heuristic(mn_data, PowerModels.SOCWRPowerModel, ipopt_solver)
 
