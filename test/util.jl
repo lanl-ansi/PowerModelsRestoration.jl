@@ -1,7 +1,7 @@
 @testset "Forward Restoration" begin
     mn_data = build_mn_data(case5_restoration_strg, replicates=3)
     rop_result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
-    PowerModelsRestoration.clean_solution(rop_result)
+    PowerModelsRestoration.clean_solution!(rop_result)
 
     @testset "ac forward case" begin
 
@@ -9,7 +9,7 @@
         result = PowerModelsRestoration.run_forward_restoration(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
         @test result["termination_status"] == LOCALLY_SOLVED
-        @test isapprox(result["objective"], 8951.37; atol = 1e-2)
+        @test isapprox(result["objective"], 8421.368426450834; atol = 1e-2)
 
         @test isapprox(gen_status(result,"1","1"), gen_status(rop_result,"1","1"); atol=1e-6)
         @test isapprox(gen_status(result,"1","4"), gen_status(rop_result,"1","4"); atol=1e-6)
@@ -26,7 +26,7 @@
         result = PowerModelsRestoration.run_forward_restoration(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
 
         @test result["termination_status"] == LOCALLY_SOLVED
-        @test isapprox(result["objective"], 8951.37; atol = 1e-2)
+        @test isapprox(result["objective"], 8421.3683; atol = 1e-2)
 
         @test isapprox(gen_status(result,"1","1"), gen_status(rop_result,"1","1"); atol=1e-6)
         @test isapprox(gen_status(result,"1","4"), gen_status(rop_result,"1","4"); atol=1e-6)
