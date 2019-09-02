@@ -4,7 +4,7 @@ function run_rop_heuristic(network_data, model_constructor, optimizer; heuristic
     return run_forward_restoration(network_data, model_constructor, optimizer; kwargs...)
 end
 
-
+# TODO update time_elapsed for based on the repairs
 "repair network with random repair of items"
 function random_repair(network_data; repair_component_types=["gen", "branch", "storage"])
 
@@ -38,7 +38,7 @@ function random_repair(network_data; repair_component_types=["gen", "branch", "s
 
     comp_type_status = Dict("gen" => "gen_status", "branch" => "br_status", "storage" => "status")
     for n in networks
-        if n > 1
+        if n > 0
             for r in 1:repairs_per_period
                 if !isempty(repair_list)
                     item = pop!(repair_list)

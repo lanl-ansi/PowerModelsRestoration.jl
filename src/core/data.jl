@@ -76,6 +76,11 @@ function set_repair_time_elapsed(pm::_PMs.GenericPowerModel; nw::Int=pm.cnw)
     pm.data["nw"]["$(nw)"]["time_elapsed"]=time_elapsed
 end
 
+"Transforms a single network into a multinetwork with several deepcopies of the original network. Indexed from 0."
+function replicate_restoration_network(sn_data::Dict{String,<:Any}; count::Int=1)
+    return replicate_restoration_network(sn_data, count, Set(["baseMVA", "per_unit"]))
+end
+
 
 "Transforms a single network into a multinetwork with several deepcopies of the original network. Indexed from 0."
 function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, global_keys::Set{String})
