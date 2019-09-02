@@ -6,9 +6,6 @@ import PowerModels
 import PowerModelsMLD
 import Memento
 
-import MathOptInterface
-const MOI = MathOptInterface
-
 # Suppress warnings during testing.
 Memento.setlevel!(Memento.getlogger(InfrastructureModels), "error")
 Memento.setlevel!(Memento.getlogger(PowerModels), "error")
