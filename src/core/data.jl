@@ -96,36 +96,41 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
         mn_data["nw"]["$n"] = deepcopy(sn_data_tmp)
     end
 
-    for n in 0:count-1
-        if n != count
-            mn_data["nw"]["$n"]["time_elapsed"] = get(mn_data["nw"]["$n"],"time_elapsed",1)*calc_repair_time_elapsed(sn_data, n, count)
-        end
-    end
-
-    return mn_data
-end
-
-
-""
-function calc_repair_time_elapsed(data::Dict{String,<:Any}, nw::Int, count::Int)
-    
     total_repairs = 0
     for j in ["gen","branch","storage"]
-        for (i,item) in data[j]
+        for (i,item) in sn_data[j]
             total_repairs = total_repairs + (get(item,"damaged",0)==1 ? 1 : 0)
         end
     end
 
     repairs_per_period = ceil(Int, total_repairs/count)
+    for n in 0:count-1
+        if repairs_per_period*(n+1) < total_repairs 
+            mn_data["nw"]["$n"]["repairs"] = repairs_per_period
+        else
+            mn_data["nw"]["$n"]["repairs"] = total_repairs - repairs_per_period*(n)
+        end
 
-    repairs_per_period*(nw+1)
-    if repairs_per_period*(nw+1) < total_repairs 
-        repairs = repairs_per_period
-    else
-        repairs = total_repairs - repairs_per_period*(nw)
+        if haskey(mn_data["nw"]["$n"], "time_elapsed")
+            mn_data["nw"]["$n"]["time_elapsed"] = mn_data["nw"]["$n"]["repairs"]*mn_data["nw"]["$n"]["time_elapsed"]
+        else
+            mn_data["nw"]["$n"]["time_elapsed"] = mn_data["nw"]["$n"]["repairs"]*1.0
+        end
+
+        mn_data["nw"]["$n"]["repaired_total"] = mn_data["nw"]["$(n)"]["repairs"]*n
     end
 
-    return repairs
+    mn_data["nw"]["$(count)"]["repairs"] = 0
+    mn_data["nw"]["$(count)"]["repaired_total"] = total_repairs
+
+    if haskey(mn_data["nw"]["$(count)"], "time_elapsed")==false
+        mn_data["nw"]["$(count)"]["time_elapsed"] = 1.0
+    else 
+        mn_data["nw"]["$(count)"]["time_elapsed"]
+    end
+    
+
+    return mn_data
 end
 
 

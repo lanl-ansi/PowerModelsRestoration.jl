@@ -27,8 +27,7 @@ function _post_rop(pm::_PMs.GenericPowerModel)
         _MLD.variable_demand_factor(pm, nw=n, relax=true)
         _MLD.variable_shunt_factor(pm, nw=n, relax=true)
 
-        cumulative_repairs = calc_cumulative_repairs_per_period(pm, nw=n)
-        constraint_restoration_cardinality(pm, cumulative_repairs, nw=n)
+        constraint_restoration_cardinality(pm, nw=n)
 
         for i in _PMs.ids(pm, :ref_buses, nw=n)
             _PMs.constraint_theta_ref(pm, i, nw=n)
@@ -122,8 +121,7 @@ function _post_rop_uc(pm::_PMs.GenericPowerModel)
         _MLD.variable_demand_factor(pm, nw=n, relax=false)
         _MLD.variable_shunt_factor(pm, nw=n, relax=false)
 
-        cumulative_repairs = calc_cumulative_repairs_per_period(pm, nw=n)
-        constraint_restoration_cardinality(pm, cumulative_repairs, nw=n)
+        constraint_restoration_cardinality(pm, nw=n)
 
         for i in _PMs.ids(pm, :ref_buses, nw=n)
             _PMs.constraint_theta_ref(pm, i, nw=n)
