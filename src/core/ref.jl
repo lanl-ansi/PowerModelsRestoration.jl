@@ -14,7 +14,5 @@ function calc_cumulative_repairs_per_period(pm::_PMs.GenericPowerModel; nw::Int=
         cumulative_repairs = total_repairs
     end
 
-    @show nw
-    @show cumulative_repairs
     return cumulative_repairs
 end

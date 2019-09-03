@@ -98,7 +98,7 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
 
     for n in 0:count-1
         if n != count
-            @show mn_data["nw"]["$n"]["time_elapsed"] = get(mn_data["nw"]["$n"],"time_elapsed",1)*calc_repair_time_elapsed(sn_data, n, count)
+            mn_data["nw"]["$n"]["time_elapsed"] = get(mn_data["nw"]["$n"],"time_elapsed",1)*calc_repair_time_elapsed(sn_data, n, count)
         end
     end
 
@@ -115,9 +115,8 @@ function calc_repair_time_elapsed(data::Dict{String,<:Any}, nw::Int, count::Int)
             total_repairs = total_repairs + (get(item,"damaged",0)==1 ? 1 : 0)
         end
     end
-    @show count
-    @show total_repairs
-    @show repairs_per_period = ceil(Int, total_repairs/count)
+
+    repairs_per_period = ceil(Int, total_repairs/count)
 
     repairs_per_period*(nw+1)
     if repairs_per_period*(nw+1) < total_repairs 
