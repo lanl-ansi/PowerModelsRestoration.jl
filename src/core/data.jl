@@ -61,19 +61,20 @@ end
 
 ""
 function set_repair_time_elapsed(pm::_PMs.GenericPowerModel; nw::Int=pm.cnw)
-    if haskey(_PMs.ref(pm,nw), "time_elapsed")
-        time_elapsed = _PMs.ref(pm,nw,"time_elapsed")
+    if haskey(_PMs.ref(pm, nw), :time_elapsed)
+        time_elapsed = _PMs.ref(pm, nw)[:time_elapsed]
     else
         Memento.warn(_PMs._LOGGER, "network data should specify time_elapsed, using 1.0 as a default")
         time_elapsed = 1.0
-        pm.data["nw"]["$(nw)"]["time_elapsed"] = time_elapsed
+        _PMs.ref(pm, nw)[:time_elapsed] = time_elapsed
+
     end
 
     if nw != maximum(collect(_PMs.nw_ids(pm)))
         time_elapsed = time_elapsed*calc_repair_time_elapsed(pm, nw=nw)
     end
 
-    pm.data["nw"]["$(nw)"]["time_elapsed"]=time_elapsed
+    _PMs.ref(pm, nw)[:time_elapsed] = time_elapsed
 end
 
 "Transforms a single network into a multinetwork with several deepcopies of the original network. Indexed from 0."

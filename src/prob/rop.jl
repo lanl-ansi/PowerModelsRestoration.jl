@@ -72,12 +72,12 @@ function _post_rop(pm::_PMs.GenericPowerModel)
     n_1 = network_ids[1]
 
     for i in _PMs.ids(pm, :storage, nw=n_1)
-        constraint_storage_state(pm, i, nw=n_1)
+        _PMs.constraint_storage_state(pm, i, nw=n_1)
     end
 
     for n_2 in network_ids[2:end]
         for i in _PMs.ids(pm, :storage, nw=n_2)
-            constraint_storage_state(pm, i, n_1, n_2)
+            _PMs.constraint_storage_state(pm, i, n_1, n_2)
         end
         for i in _PMs.ids(pm, :gen, nw=n_2)
             constraint_active_gen(pm, i, n_1, n_2)
@@ -91,7 +91,7 @@ function _post_rop(pm::_PMs.GenericPowerModel)
         n_1 = n_2
     end
 
-    PowerModelsRestoration.objective_max_loadability(pm)
+    _MLD.objective_max_loadability_strg(pm)
 end
 
 
@@ -169,12 +169,12 @@ function _post_rop_uc(pm::_PMs.GenericPowerModel)
     n_1 = network_ids[1]
 
     for i in _PMs.ids(pm, :storage, nw=n_1)
-        constraint_storage_state(pm, i, nw=n_1)
+        _PMs.constraint_storage_state(pm, i, nw=n_1)
     end
 
     for n_2 in network_ids[2:end]
         for i in _PMs.ids(pm, :storage, nw=n_2)
-            constraint_storage_state(pm, i, n_1, n_2)
+            _PMs.constraint_storage_state(pm, i, n_1, n_2)
         end
         for i in _PMs.ids(pm, :gen, nw=n_2)
             constraint_active_gen(pm, i, n_1, n_2)
@@ -188,7 +188,7 @@ function _post_rop_uc(pm::_PMs.GenericPowerModel)
         n_1 = n_2
     end
 
-    objective_max_loadability(pm)
+    _MLD.objective_max_loadability_strg(pm)
 end
 
 

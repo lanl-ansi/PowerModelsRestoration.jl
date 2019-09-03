@@ -17,7 +17,7 @@ include("core/data.jl")
 include("core/constraint_template.jl")
 include("core/constraint.jl")
 include("core/ref.jl")
-include("core/objective.jl")
+# include("core/objective.jl")
 
 include("util/common.jl")
 include("util/heuristic.jl")
@@ -27,7 +27,7 @@ include("prob/rop.jl")
 
 include("form/shared.jl")
 include("form/wr.jl")
-include("form/dcp.jl")
+# include("form/dcp.jl")
 
 include("core/export.jl")
 
