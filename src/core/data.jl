@@ -59,24 +59,6 @@ function clean_status!(nw_data)
 end
 
 
-""
-function set_repair_time_elapsed(pm::_PMs.GenericPowerModel; nw::Int=pm.cnw)
-    if haskey(_PMs.ref(pm, nw), :time_elapsed)
-        time_elapsed = _PMs.ref(pm, nw)[:time_elapsed]
-    else
-        Memento.warn(_PMs._LOGGER, "network data should specify time_elapsed, using 1.0 as a default")
-        time_elapsed = 1.0
-        _PMs.ref(pm, nw)[:time_elapsed] = time_elapsed
-
-    end
-
-    if nw != maximum(collect(_PMs.nw_ids(pm)))
-        time_elapsed = time_elapsed*calc_repair_time_elapsed(pm, nw=nw)
-    end
-
-    _PMs.ref(pm, nw)[:time_elapsed] = time_elapsed
-end
-
 "Transforms a single network into a multinetwork with several deepcopies of the original network. Indexed from 0."
 function replicate_restoration_network(sn_data::Dict{String,<:Any}; count::Int=1)
     return replicate_restoration_network(sn_data, count, Set(["baseMVA", "per_unit"]))
@@ -114,5 +96,37 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
         mn_data["nw"]["$n"] = deepcopy(sn_data_tmp)
     end
 
+    for n in 0:count-1
+        if n != count
+            @show mn_data["nw"]["$n"]["time_elapsed"] = get(mn_data["nw"]["$n"],"time_elapsed",1)*calc_repair_time_elapsed(sn_data, n, count)
+        end
+    end
+
     return mn_data
 end
+
+
+""
+function calc_repair_time_elapsed(data::Dict{String,<:Any}, nw::Int, count::Int)
+    
+    total_repairs = 0
+    for j in ["gen","branch","storage"]
+        for (i,item) in data[j]
+            total_repairs = total_repairs + (get(item,"damaged",0)==1 ? 1 : 0)
+        end
+    end
+    @show count
+    @show total_repairs
+    @show repairs_per_period = ceil(Int, total_repairs/count)
+
+    repairs_per_period*(nw+1)
+    if repairs_per_period*(nw+1) < total_repairs 
+        repairs = repairs_per_period
+    else
+        repairs = total_repairs - repairs_per_period*(nw)
+    end
+
+    return repairs
+end
+
+

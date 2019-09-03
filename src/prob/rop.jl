@@ -10,8 +10,6 @@ end
 function _post_rop(pm::_PMs.GenericPowerModel)
     for (n, network) in _PMs.nws(pm)
 
-        set_repair_time_elapsed(pm, nw=n)
-
         _MLD.variable_bus_voltage_indicator(pm, nw=n, relax=true)
         _PMs.variable_voltage_on_off(pm, nw=n)
 
@@ -106,8 +104,6 @@ end
 ""
 function _post_rop_uc(pm::_PMs.GenericPowerModel)
     for (n, network) in _PMs.nws(pm)
-
-        set_repair_time_elapsed(pm, nw=n)
 
         _MLD.variable_bus_voltage_indicator(pm, nw=n, relax=false)
         _PMs.variable_voltage_on_off(pm, nw=n)
