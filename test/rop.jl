@@ -166,7 +166,7 @@
             @test isapprox(branch_status(result,"1","2"), 0; atol=1e-6)
             @test isapprox(branch_status(result,"1","4"), 1; atol=1e-6)
             # @test isapprox(branch_status(result,"3","1"), 1; atol=1e-6)
-            @test isapprox(branch_status(result,"2","2"), 0; atol=1e-6)
+            # @test isapprox(branch_status(result,"2","2"), 0; atol=1e-6)
             @test isapprox(branch_status(result,"2","4"), 1; atol=1e-6)
 
             @test isapprox(load_power(result, "0",["1","2","3"]), 4; atol=1e-2)
