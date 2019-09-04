@@ -3,13 +3,13 @@
 ""
 function build_mn_data(base_data::String; replicates::Int=2)
     mp_data = PowerModels.parse_file(base_data)
-    return PowerModels.replicate(mp_data, replicates)
+    return replicate_restoration_network(mp_data, replicates, Set(["baseMVA", "per_unit"]))
 end
 
 
 ""
 function build_mn_data(mp_data::Dict{String,Any}; replicates::Int=2)
-    return PowerModels.replicate(mp_data, replicates)
+    return replicate_restoration_network(mp_data, replicates, Set(["baseMVA", "per_unit"]))
 end
 
 
