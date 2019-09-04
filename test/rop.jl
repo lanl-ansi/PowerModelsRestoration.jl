@@ -7,7 +7,7 @@
             result = PowerModelsRestoration.run_rop(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
             @test result["termination_status"] == LOCALLY_SOLVED
-            @test isapprox(result["objective"], 14716.28; atol = 1e-2)
+            @test isapprox(result["objective"], 25765.38; atol = 1e-2)
 
             @test isapprox(gen_status(result,"0","1"), 0; atol=1e-2)
             @test isapprox(gen_status(result,"0","2"), 0; atol=1e-2)
@@ -19,10 +19,10 @@
             @test isapprox(gen_status(result,"1","4"), 1; atol=1e-2)
 
             @test isapprox(load_power(result, "0",["1","2","3"]), 4.3808; atol=1e-2)
-            @test isapprox(load_power(result, "1",["1","2","3"]), 9.9998; atol=1e-2)
+            @test isapprox(load_power(result, "1",["1","2","3"]), 9.8492; atol=1e-2)
 
             @test isapprox(gen_power(result, "0",["1","2","3","4","5"]), 4.398; atol=1e-2)
-            @test isapprox(gen_power(result, "1",["1","2","3","4","5"]), 10.03; atol=1e-1)
+            @test isapprox(gen_power(result, "1",["1","2","3","4","5"]), 9.87; atol=1e-1)
 
         end
 
@@ -49,7 +49,7 @@
             result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
 
             @test result["termination_status"] == OPTIMAL
-            @test isapprox(result["objective"], 1088.1; atol = 1e-2)
+            @test isapprox(result["objective"], 1508.1; atol = 1e-2)
 
             @test isapprox(gen_status(result,"0","1"), 0; atol=1e-6)
             @test isapprox(gen_status(result,"0","2"), 0; atol=1e-6)
@@ -90,7 +90,7 @@
             result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
 
             @test result["termination_status"] == OPTIMAL
-            @test isapprox(result["objective"], 1935.6; atol = 1e-2)
+            @test isapprox(result["objective"], 2805.6; atol = 1e-2)
 
             @test isapprox(gen_status(result,"0","1"), 0; atol=1e-6)
             @test isapprox(gen_status(result,"0","2"), 0; atol=1e-6)
@@ -144,7 +144,7 @@
             result = PowerModelsRestoration.run_rop_uc(mn_data, PowerModels.DCPPowerModel, cbc_solver)
 
             @test result["termination_status"] == OPTIMAL
-            @test isapprox(result["objective"], 1083.0; atol = 1e-2)
+            @test isapprox(result["objective"], 1503.0; atol = 1e-2)
 
             @test isapprox(gen_status(result,"0","1"), 0; atol=1e-6)
             @test isapprox(gen_status(result,"0","2"), 0; atol=1e-6)
@@ -184,7 +184,7 @@
             result = PowerModelsRestoration.run_rop_uc(mn_data, PowerModels.DCPPowerModel, cbc_solver)
 
             @test result["termination_status"] == OPTIMAL
-            @test isapprox(result["objective"], 1934.0; atol = 1e-2)
+            @test isapprox(result["objective"], 2804.0; atol = 1e-2)
 
             @test isapprox(storage_status(result, "0", "1"), 0; atol=1e-6)
             @test isapprox(storage_status(result, "0", "2"), 1; atol=1e-6)
