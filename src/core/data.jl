@@ -113,13 +113,13 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
         if repairs_per_period*(n) < total_repairs 
             mn_data["nw"]["$n"]["repairs"] = repairs_per_period
         else
-            mn_data["nw"]["$n"]["repairs"] = total_repairs - repairs_per_period*(n-1)
+            mn_data["nw"]["$n"]["repairs"] = total_repairs - mn_data["nw"]["$(n-1)"]["repaired_total"]
         end
 
         if haskey(mn_data["nw"]["$n"], "time_elapsed")
-            mn_data["nw"]["$n"]["time_elapsed"] = mn_data["nw"]["$n"]["repairs"]*mn_data["nw"]["$n"]["time_elapsed"]
+            @show mn_data["nw"]["$n"]["time_elapsed"] = (mn_data["nw"]["$n"]["repairs"] == 0 ? 1.0 : mn_data["nw"]["$n"]["repairs"])*mn_data["nw"]["$n"]["time_elapsed"]
         else
-            mn_data["nw"]["$n"]["time_elapsed"] = mn_data["nw"]["$n"]["repairs"]*1.0
+            @show mn_data["nw"]["$n"]["time_elapsed"] =  (mn_data["nw"]["$n"]["repairs"] == 0 ? 1.0 : mn_data["nw"]["$n"]["repairs"])*1.0
         end
 
         mn_data["nw"]["$n"]["repaired_total"] = sum(mn_data["nw"]["$(nw)"]["repairs"] for nw=0:n)
