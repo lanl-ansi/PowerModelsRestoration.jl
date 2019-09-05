@@ -24,6 +24,7 @@ include("util/heuristic.jl")
 include("util/forward_restoration.jl")
 
 include("prob/rop.jl")
+include("prob/mrsp.jl")
 
 include("form/shared.jl")
 include("form/wr.jl")

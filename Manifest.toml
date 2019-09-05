@@ -4,10 +4,10 @@
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BenchmarkTools]]
-deps = ["JSON", "Printf", "Statistics", "Test"]
-git-tree-sha1 = "5d1dd8577643ba9014574cd40d9c028cd5e4b85a"
+deps = ["JSON", "Printf", "Statistics"]
+git-tree-sha1 = "90b73db83791c5f83155016dd1cc1f684d4e1361"
 uuid = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
-version = "0.4.2"
+version = "0.4.3"
 
 [[BinDeps]]
 deps = ["Compat", "Libdl", "SHA", "URIParser"]
@@ -172,7 +172,7 @@ version = "0.13.0"
 
 [[PowerModelsMLD]]
 deps = ["InfrastructureModels", "JuMP", "Memento", "PowerModels"]
-git-tree-sha1 = "48ae735779b9da671e5bf610b1b8f567f929358c"
+git-tree-sha1 = "955e945067c124432d8b2c5d5eccdffa76416fba"
 repo-rev = "pms-v13"
 repo-url = "https://github.com/lanl-ansi/PowerModelsMLD.jl.git"
 uuid = "b04da1f8-93b0-5a19-8500-8b2903949876"

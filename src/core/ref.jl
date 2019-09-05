@@ -1,16 +1,32 @@
+# tools for working with a PowerModels ref dict structures
+
 ""
-function calc_equal_repairs_per_period(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw)
+function ref_add_damaged_items!(pm::_PMs.AbstractPowerModel)
+    ref_add_damaged_gens!(pm)
+    ref_add_damaged_branches!(pm)
+    ref_add_damaged_storage!(pm)
+end
 
-    gen = _PMs.ref(pm, nw, :gen_damaged)
-    storage = _PMs.ref(pm, nw, :storage_damaged)
-    branch = _PMs.ref(pm, nw, :branch_damaged)
 
-    total_repairs = length(keys(gen)) + length(keys(storage)) + length(keys(branch))
+""
+function ref_add_damaged_gens!(pm::_PMs.AbstractPowerModel)
+    for (nw, nw_ref) in pm.ref[:nw]
+        nw_ref[:gen_damaged] = Dict(x for x in nw_ref[:gen] if haskey(x.second, "damaged") && x.second["damaged"] == 1 in keys(nw_ref[:gen]))
+    end
+end
 
-    repair_periods = max(sum(length(_PMs.nws(pm)))-1, 1)
-    repairs_per_period = ceil(Int, total_repairs/repair_periods)
 
-    cumulative_repairs = repairs_per_period*(nw-1)
+""
+function ref_add_damaged_branches!(pm::_PMs.AbstractPowerModel)
+    for (nw, nw_ref) in pm.ref[:nw]
+        nw_ref[:branch_damaged] = Dict(x for x in nw_ref[:branch] if haskey(x.second, "damaged") && x.second["damaged"] == 1 in keys(nw_ref[:branch]))
+    end
+end
 
-    return cumulative_repairs
+
+""
+function ref_add_damaged_storage!(pm::_PMs.AbstractPowerModel)
+    for (nw, nw_ref) in pm.ref[:nw]
+        nw_ref[:storage_damaged] = Dict(x for x in nw_ref[:storage] if haskey(x.second, "damaged") && x.second["damaged"] == 1 in keys(nw_ref[:storage]))
+    end
 end

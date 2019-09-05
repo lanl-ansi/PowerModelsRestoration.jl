@@ -4,7 +4,6 @@ function run_rop_heuristic(network_data, model_constructor, optimizer; heuristic
     return run_forward_restoration(network_data, model_constructor, optimizer; kwargs...)
 end
 
-
 "repair network with random repair of items"
 function random_repair(network_data; repair_component_types=["gen", "branch", "storage"])
 
@@ -38,7 +37,7 @@ function random_repair(network_data; repair_component_types=["gen", "branch", "s
 
     comp_type_status = Dict("gen" => "gen_status", "branch" => "br_status", "storage" => "status")
     for n in networks
-        if n > 1
+        if n > 0
             for r in 1:repairs_per_period
                 if !isempty(repair_list)
                     item = pop!(repair_list)
@@ -58,28 +57,28 @@ function random_repair(network_data; repair_component_types=["gen", "branch", "s
 
 end
 
+# not developed function #
+# ""
+# function largest_item_repair(network_data)
 
-""
-function largest_item_repair(network_data)
+#     networks = []
+#     if haskey(network_data, "nw")
+#         for n in keys(network_data["nw"])
+#             push!(networks, parse(Int, n))
+#         end
+#     else
+#         # TODO push error for non-multinetwork
+#     end
 
-    networks = []
-    if haskey(network_data, "nw")
-        for n in keys(network_data["nw"])
-            push!(networks, parse(Int, n))
-        end
-    else
-        # TODO push error for non-multinetwork
-    end
+#     total_repairs = 0 #count damaged items
 
-    total_repairs = 0 #count damaged items
+#     repair_periods = length(networks)
 
-    repair_periods = length(networks)
+#     repairs_per_period = ceil(Int, total_repairs/repair_periods)
 
-    repairs_per_period = ceil(Int, total_repairs/repair_periods)
+#     for n in networks
+#         #pick an item to repair
+#     end
 
-    for n in networks
-        #pick an item to repair
-    end
-
-    return network_data
-end
+#     return network_data
+# end

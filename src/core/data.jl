@@ -18,7 +18,7 @@ end
 
 
 "Replace NaN and Nothing with 0 in multinetwork solutions"
-function clean_solution(solution)
+function clean_solution!(solution)
     for item_type in ["gen", "storage", "branch","load","shunt"]
         if haskey(solution["solution"], "nw")
             for (n, net) in solution["solution"]["nw"]
@@ -57,3 +57,73 @@ function clean_status!(nw_data)
         end
     end
 end
+
+
+"Transforms a single network into a multinetwork with several deepcopies of the original network. Indexed from 0."
+function replicate_restoration_network(sn_data::Dict{String,<:Any}; count::Int=1, global_keys::Set{String}=Set{String}())
+    return replicate_restoration_network(sn_data, count, union(global_keys, _PMs._pm_global_keys))
+end
+
+
+"Transforms a single network into a multinetwork with several deepcopies of the original network. Indexed from 0."
+function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, global_keys::Set{String})
+    @assert count > 0
+    if _IMs.ismultinetwork(sn_data)
+        Memento.error(_PMs._LOGGER, "replicate_restoration_network can only be used on single networks")
+    end
+
+    name = get(sn_data, "name", "anonymous")
+
+    mn_data = Dict{String,Any}(
+        "nw" => Dict{String,Any}()
+    )
+
+    mn_data["multinetwork"] = true
+
+    sn_data_tmp = deepcopy(sn_data)
+    for k in global_keys
+        if haskey(sn_data_tmp, k)
+            mn_data[k] = sn_data_tmp[k]
+        end
+
+        # note this is robust to cases where k is not present in sn_data_tmp
+        delete!(sn_data_tmp, k)
+    end
+
+    mn_data["name"] = "$(count) period restoration of $(name)"
+
+    for n in 0:count
+        mn_data["nw"]["$n"] = deepcopy(sn_data_tmp)
+    end
+
+    total_repairs = 0
+    for j in ["gen","branch","storage"]
+        for (i,item) in sn_data[j]
+            total_repairs = total_repairs + (get(item,"damaged",0)==1 ? 1 : 0)
+        end
+    end
+
+    repairs_per_period = ceil(Int, total_repairs/count)
+
+    mn_data["nw"]["0"]["repairs"] = 0
+    mn_data["nw"]["0"]["time_elapsed"] = repairs_per_period
+    mn_data["nw"]["0"]["repaired_total"] = 0
+
+    for n in 1:count
+        if repairs_per_period*(n) < total_repairs 
+            mn_data["nw"]["$n"]["repairs"] = repairs_per_period
+        else
+            mn_data["nw"]["$n"]["repairs"] = total_repairs - mn_data["nw"]["$(n-1)"]["repaired_total"]
+        end
+
+        time_elapsed = get(mn_data["nw"]["$n"], "time_elapsed", 1.0)
+        repairs = mn_data["nw"]["$n"]["repairs"] == 0 ? 1.0 : mn_data["nw"]["$n"]["repairs"]
+        mn_data["nw"]["$n"]["time_elapsed"] = repairs*time_elapsed
+
+        mn_data["nw"]["$n"]["repaired_total"] = sum(mn_data["nw"]["$(nw)"]["repairs"] for nw=0:n)
+    end
+
+    return mn_data
+end
+
+
