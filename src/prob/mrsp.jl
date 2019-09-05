@@ -9,7 +9,7 @@ end
 ""
 function post_mrsp(pm::_PMs.GenericPowerModel)
     _MLD.variable_bus_voltage_indicator(pm)
-    _PMs.variable_voltage_on_off(pm)
+    _MLD.variable_bus_voltage_on_off(pm)
 
     variable_branch_damage_indicator(pm)
     _PMs.variable_branch_flow(pm)
