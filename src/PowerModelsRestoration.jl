@@ -16,12 +16,14 @@ include("core/variable.jl")
 include("core/data.jl")
 include("core/constraint_template.jl")
 include("core/constraint.jl")
+include("core/ref.jl")
 
 include("util/common.jl")
 include("util/heuristic.jl")
 include("util/forward_restoration.jl")
 
 include("prob/rop.jl")
+include("prob/mrsp.jl")
 
 include("form/shared.jl")
 include("form/wr.jl")
