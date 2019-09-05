@@ -1,13 +1,15 @@
 ""
-function constraint_restoration_cardinality(pm::_PMs.GenericPowerModel, cumulative_repairs::Int, n::Int)
+function constraint_restoration_cardinality(pm::_PMs.GenericPowerModel, n::Int, cumulative_repairs::Int)
     z_storage = _PMs.var(pm, n, :z_storage)
     z_gen = _PMs.var(pm, n, :z_gen)
-    z_branch = _PMs.var(pm, n, pm.ccnd, :branch_z)        
+    z_branch = _PMs.var(pm, n, pm.ccnd, :branch_z)
 
-    JuMP.@constraint(pm.model, sum(z_branch[i] for (i,branch) in _PMs.ref(pm, n, :branch_damaged))
-                             + sum(z_gen[i] for (i,gen) in _PMs.ref(pm, n, :gen_damaged))
-                             + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, n, :storage_damaged))
-                             <= cumulative_repairs)
+    JuMP.@constraint(pm.model, 
+        sum(z_branch[i] for (i,branch) in _PMs.ref(pm, n, :branch_damaged))
+        + sum(z_gen[i] for (i,gen) in _PMs.ref(pm, n, :gen_damaged))
+        + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, n, :storage_damaged))
+        <= cumulative_repairs
+    )
 end
 
 

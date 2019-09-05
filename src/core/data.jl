@@ -116,14 +116,12 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
             mn_data["nw"]["$n"]["repairs"] = total_repairs - mn_data["nw"]["$(n-1)"]["repaired_total"]
         end
 
-        if haskey(mn_data["nw"]["$n"], "time_elapsed")
-            mn_data["nw"]["$n"]["time_elapsed"] = (mn_data["nw"]["$n"]["repairs"] == 0 ? 1.0 : mn_data["nw"]["$n"]["repairs"])*mn_data["nw"]["$n"]["time_elapsed"]
-        else
-            mn_data["nw"]["$n"]["time_elapsed"] =  (mn_data["nw"]["$n"]["repairs"] == 0 ? 1.0 : mn_data["nw"]["$n"]["repairs"])*1.0
-        end
+        time_elapsed = get(mn_data["nw"]["$n"], "time_elapsed", 1.0)
+        repairs = mn_data["nw"]["$n"]["repairs"] == 0 ? 1.0 : mn_data["nw"]["$n"]["repairs"]
+        mn_data["nw"]["$n"]["time_elapsed"] = repairs*time_elapsed
 
         mn_data["nw"]["$n"]["repaired_total"] = sum(mn_data["nw"]["$(nw)"]["repairs"] for nw=0:n)
-    end    
+    end
 
     return mn_data
 end
