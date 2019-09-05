@@ -63,8 +63,6 @@ function post_rop(pm::_PMs.AbstractPowerModel)
         end
     end
 
-    _PMs.constraint_model_voltage_on_off(pm)
-
 
     network_ids = sort(collect(_PMs.nw_ids(pm)))
     n_1 = network_ids[1]
