@@ -146,7 +146,7 @@
 
             @test result["termination_status"] == LOCALLY_SOLVED
             # non-stable solution in osx and linux
-            @test isapprox(result["objective"], 25756.0; atol = 1e0)
+            @test isapprox(result["objective"], 25756.0; atol = 1e1)
 
             @test isapprox(gen_status(result,"0","1"), 0; atol=1e-2)
             @test isapprox(gen_status(result,"0","2"), 0; atol=1e-2)
