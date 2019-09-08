@@ -9,7 +9,7 @@
         result = PowerModelsRestoration.run_forward_restoration(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
         @test result["termination_status"] == LOCALLY_SOLVED
-        @test isapprox(result["objective"], 8421.22; atol = 1)
+        @test isapprox(result["objective"], 8834.38; atol = 1)
 
         @test isapprox(gen_status(result,"1","1"), gen_status(rop_result,"1","1"); atol=1e-6)
         @test isapprox(gen_status(result,"1","4"), gen_status(rop_result,"1","4"); atol=1e-6)
@@ -25,7 +25,7 @@
         result = PowerModelsRestoration.run_forward_restoration(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
 
         @test result["termination_status"] == LOCALLY_SOLVED
-        @test isapprox(result["objective"], 8421.36; atol = 1e0)
+        @test isapprox(result["objective"], 8834.38; atol = 1e0)
 
         @test isapprox(gen_status(result,"1","1"), gen_status(rop_result,"1","1"); atol=1e-6)
         @test isapprox(gen_status(result,"1","4"), gen_status(rop_result,"1","4"); atol=1e-6)

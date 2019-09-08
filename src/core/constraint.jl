@@ -60,3 +60,13 @@ function constraint_active_branch(pm::_PMs.AbstractPowerModel,  i::Int, nw_1::In
     end
 end
 
+"Load delivered at each node must be greater than or equal the previous time period"
+function constraint_increasing_load(pm::_PMs.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
+    if haskey(_PMs.ref(pm, nw_1, :branch_damaged), i)
+        z_demand_1 = _PMs.var(pm, nw_1, :z_demand, i)
+        z_demand_2 = _PMs.var(pm, nw_2, :z_demand, i)
+
+        JuMP.@constraint(pm.model, z_demand_2 >= z_demand_1)
+    end
+end
+

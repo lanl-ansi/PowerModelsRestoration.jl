@@ -84,6 +84,9 @@ function post_rop(pm::_PMs.AbstractPowerModel)
         for i in _PMs.ids(pm, :branch, nw=n_2)
             constraint_active_branch(pm, i, n_1, n_2)
         end
+        for i in _PMs.ids(pm, :load, nw=n_2)
+            constraint_increasing_load(pm, i, n_1, n_2)
+        end
         n_1 = n_2
     end
 
@@ -91,7 +94,7 @@ function post_rop(pm::_PMs.AbstractPowerModel)
     constraint_restoration_cardinality_lower(pm, nw=n_final)
 
 
-    _MLD.objective_max_loadability_strg(pm)
+    objective_max_load_delivered(pm)
 end
 
 
