@@ -26,7 +26,7 @@ function post_rop(pm::_PMs.AbstractPowerModel)
         _MLD.variable_demand_factor(pm, nw=n, relax=true)
         _MLD.variable_shunt_factor(pm, nw=n, relax=true)
 
-        constraint_restoration_cardinality(pm, nw=n)
+        constraint_restoration_cardinality_upper(pm, nw=n)
 
         _PMs.constraint_model_voltage_on_off(pm, nw=n)
 
@@ -86,6 +86,10 @@ function post_rop(pm::_PMs.AbstractPowerModel)
         end
         n_1 = n_2
     end
+
+    n_final = last(network_ids)
+    constraint_restoration_cardinality_lower(pm, nw=n_final)
+
 
     _MLD.objective_max_loadability_strg(pm)
 end

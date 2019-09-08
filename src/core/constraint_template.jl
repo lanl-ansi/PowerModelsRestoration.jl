@@ -1,6 +1,12 @@
-"Limit the number of items restored in each time-step"
-function constraint_restoration_cardinality(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cumulative_repairs=_PMs.ref(pm, nw, :repaired_total))
-    constraint_restoration_cardinality(pm, nw, cumulative_repairs)
+"Limit the maximum number of items restored in each time-step"
+function constraint_restoration_cardinality_upper(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cumulative_repairs=_PMs.ref(pm, nw, :repaired_total))
+    constraint_restoration_cardinality_upper(pm, nw, cumulative_repairs)
+end
+
+
+"Limit the minimum number of items restored in each time-step"
+function constraint_restoration_cardinality_lower(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cumulative_repairs=_PMs.ref(pm, nw, :repaired_total))
+    constraint_restoration_cardinality_lower(pm, nw, cumulative_repairs)
 end
 
 
