@@ -90,38 +90,41 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
         delete!(sn_data_tmp, k)
     end
 
+    item_dict = Dict("gen"=>"gen_status", "branch"=>"br_status", "storage"=>"status")
+    total_repairs = 0
+    for (j, st) in item_dict
+        for (i,item) in sn_data[j]
+            total_repairs = total_repairs + get(item,"damaged",0)*get(item,st,0)
+        end
+    end
+
+    if count >= total_repairs
+        Memento.warn(_PMs._LOGGER, "More restoration steps than damaged components.  Reducing restoration steps to $(total_repairs).")
+        count = total_repairs
+    end
+
     mn_data["name"] = "$(count) period restoration of $(name)"
 
     for n in 0:count
         mn_data["nw"]["$n"] = deepcopy(sn_data_tmp)
     end
 
-    total_repairs = 0
-    for j in ["gen","branch","storage"]
-        for (i,item) in sn_data[j]
-            total_repairs = total_repairs + (get(item,"damaged",0)==1 ? 1 : 0)
-        end
-    end
-
-    repairs_per_period = ceil(Int, total_repairs/count)
+    repairs_per_period = total_repairs/count
 
     mn_data["nw"]["0"]["repairs"] = 0
-    mn_data["nw"]["0"]["time_elapsed"] = repairs_per_period
     mn_data["nw"]["0"]["repaired_total"] = 0
-
+    
     for n in 1:count
         if repairs_per_period*(n) < total_repairs 
-            mn_data["nw"]["$n"]["repairs"] = repairs_per_period
+            mn_data["nw"]["$n"]["repairs"] = trunc(Int,round(repairs_per_period*n - mn_data["nw"]["$(n-1)"]["repaired_total"]))
         else
             mn_data["nw"]["$n"]["repairs"] = total_repairs - mn_data["nw"]["$(n-1)"]["repaired_total"]
         end
 
-        time_elapsed = get(mn_data["nw"]["$n"], "time_elapsed", 1.0)
-        repairs = mn_data["nw"]["$n"]["repairs"] == 0 ? 1.0 : mn_data["nw"]["$n"]["repairs"]
-        mn_data["nw"]["$n"]["time_elapsed"] = repairs*time_elapsed
-
+        mn_data["nw"]["$(n-1)"]["time_elapsed"] = mn_data["nw"]["$n"]["repairs"] * get(mn_data["nw"]["$(n-1)"], "time_elapsed", 1.0)
         mn_data["nw"]["$n"]["repaired_total"] = sum(mn_data["nw"]["$(nw)"]["repairs"] for nw=0:n)
     end
+    mn_data["nw"]["$(count)"]["time_elapsed"] = get(mn_data["nw"]["$(count)"], "time_elapsed", 1.0)
 
     return mn_data
 end

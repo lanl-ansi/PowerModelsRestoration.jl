@@ -23,7 +23,7 @@ function constraint_restoration_cardinality_lower(pm::_PMs.AbstractPowerModel, n
         sum(z_branch[i] for (i,branch) in _PMs.ref(pm, n, :branch_damaged))
         + sum(z_gen[i] for (i,gen) in _PMs.ref(pm, n, :gen_damaged))
         + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, n, :storage_damaged))
-        <= cumulative_repairs
+        >= cumulative_repairs
     )
 end
 
