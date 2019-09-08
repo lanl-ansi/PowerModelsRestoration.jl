@@ -38,7 +38,7 @@ function post_rop(pm::_PMs.AbstractPowerModel)
             _MLD.constraint_power_balance_shed(pm, i, nw=n)
         end
 
-        for i in _PMs.ids(pm, :gen_damaged, nw=n)
+        for i in _PMs.ids(pm, :damaged_gen, nw=n)
             constraint_generation_damage(pm, i, nw=n)
         end
 

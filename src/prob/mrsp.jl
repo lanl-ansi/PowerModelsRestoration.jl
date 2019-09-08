@@ -34,7 +34,7 @@ function post_mrsp(pm::_PMs.AbstractPowerModel)
         _PMs.constraint_power_balance(pm, i)
     end
 
-    for i in _PMs.ids(pm, :gen_damaged)
+    for i in _PMs.ids(pm, :damaged_gen)
         constraint_generation_damage(pm, i)
     end
 
@@ -71,9 +71,9 @@ function objective_min_restoration(pm::_PMs.AbstractPowerModel)
     z_branch = _PMs.var(pm, pm.cnw, :z_branch)
 
     JuMP.@objective(pm.model, Min,
-        sum(z_branch[i] for (i,branch) in _PMs.ref(pm, :branch_damaged))
-        + sum(z_gen[i] for (i,gen) in _PMs.ref(pm, :gen_damaged))
-        + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, :storage_damaged))
+        sum(z_branch[i] for (i,branch) in _PMs.ref(pm, :damaged_branch))
+        + sum(z_gen[i] for (i,gen) in _PMs.ref(pm, :damaged_gen))
+        + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, :damaged_storage))
     )
 end
 

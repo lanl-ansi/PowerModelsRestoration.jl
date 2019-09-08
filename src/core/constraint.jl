@@ -5,9 +5,9 @@ function constraint_restoration_cardinality_upper(pm::_PMs.AbstractPowerModel, n
     z_branch = _PMs.var(pm, n, :z_branch)
 
     JuMP.@constraint(pm.model,
-        sum(z_branch[i] for (i,branch) in _PMs.ref(pm, n, :branch_damaged))
-        + sum(z_gen[i] for (i,gen) in _PMs.ref(pm, n, :gen_damaged))
-        + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, n, :storage_damaged))
+        sum(z_branch[i] for (i,branch) in _PMs.ref(pm, n, :damaged_branch))
+        + sum(z_gen[i] for (i,gen) in _PMs.ref(pm, n, :damaged_gen))
+        + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, n, :damaged_storage))
         <= cumulative_repairs
     )
 end
@@ -20,9 +20,9 @@ function constraint_restoration_cardinality_lower(pm::_PMs.AbstractPowerModel, n
     z_branch = _PMs.var(pm, n, :z_branch)
 
     JuMP.@constraint(pm.model,
-        sum(z_branch[i] for (i,branch) in _PMs.ref(pm, n, :branch_damaged))
-        + sum(z_gen[i] for (i,gen) in _PMs.ref(pm, n, :gen_damaged))
-        + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, n, :storage_damaged))
+        sum(z_branch[i] for (i,branch) in _PMs.ref(pm, n, :damaged_branch))
+        + sum(z_gen[i] for (i,gen) in _PMs.ref(pm, n, :damaged_gen))
+        + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, n, :damaged_storage))
         >= cumulative_repairs
     )
 end
@@ -30,7 +30,7 @@ end
 
 ""
 function constraint_active_gen(pm::_PMs.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
-    if haskey(_PMs.ref(pm, nw_1, :gen_damaged), i)
+    if haskey(_PMs.ref(pm, nw_1, :damaged_gen), i)
         z_gen_1 = _PMs.var(pm, nw_1, :z_gen, i)
         z_gen_2 = _PMs.var(pm, nw_2, :z_gen, i)
 
@@ -41,7 +41,7 @@ end
 
 ""
 function constraint_active_storage(pm::_PMs.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
-    if haskey(_PMs.ref(pm, nw_1, :storage_damaged), i)
+    if haskey(_PMs.ref(pm, nw_1, :damaged_storage), i)
         z_storage_1 = _PMs.var(pm, nw_1, :z_storage, i)
         z_storage_2 = _PMs.var(pm, nw_2, :z_storage, i)
 
@@ -52,7 +52,7 @@ end
 
 ""
 function constraint_active_branch(pm::_PMs.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
-    if haskey(_PMs.ref(pm, nw_1, :branch_damaged), i)
+    if haskey(_PMs.ref(pm, nw_1, :damaged_branch), i)
         z_branch_1 = _PMs.var(pm, nw_1, :z_branch, i)
         z_branch_2 = _PMs.var(pm, nw_2, :z_branch, i)
 
@@ -62,7 +62,7 @@ end
 
 "Load delivered at each node must be greater than or equal the previous time period"
 function constraint_increasing_load(pm::_PMs.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
-    if haskey(_PMs.ref(pm, nw_1, :branch_damaged), i)
+    if haskey(_PMs.ref(pm, nw_1, :damaged_branch), i)
         z_demand_1 = _PMs.var(pm, nw_1, :z_demand, i)
         z_demand_2 = _PMs.var(pm, nw_2, :z_demand, i)
 

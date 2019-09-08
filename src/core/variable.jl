@@ -7,14 +7,14 @@ function variable_generation_damage_indicator(pm::_PMs.AbstractPowerModel; nw::I
 
     if relax == false
         z_gen_vars = JuMP.@variable(pm.model,
-            [l in _PMs.ids(pm, nw, :gen_damaged)],
+            [l in _PMs.ids(pm, nw, :damaged_gen)],
             base_name="$(nw)_damage_gen",
             binary = true,
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :gen, l), "gen_damage_start", 1, 0.0)
         )
     else
         z_gen_vars = JuMP.@variable(pm.model,
-            [l in _PMs.ids(pm, nw, :gen_damaged)],
+            [l in _PMs.ids(pm, nw, :damaged_gen)],
             base_name="$(nw)_damage_gen",
             lower_bound = 0,
             upper_bound = 1,
@@ -90,14 +90,14 @@ function variable_branch_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=p
 
     if relax == false
         z_branch_vars = JuMP.@variable(pm.model,
-            [l in _PMs.ids(pm, nw, :branch_damaged)],
+            [l in _PMs.ids(pm, nw, :damaged_branch)],
             base_name="$(nw)_damage_branch",
             binary = true,
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "branch_damage_start", 1, 0.0)
         )
     else
         z_branch_vars = JuMP.@variable(pm.model,
-            [l in _PMs.ids(pm, nw, :branch_damaged)],
+            [l in _PMs.ids(pm, nw, :damaged_branch)],
             base_name="$(nw)_damage_branch",
             lower_bound = 0,
             upper_bound = 1,
@@ -114,14 +114,14 @@ end
 function variable_storage_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, relax = false)
     if relax == false
         z_storage_vars = JuMP.@variable(pm.model,
-            [l in _PMs.ids(pm, nw, :storage_damaged)],
+            [l in _PMs.ids(pm, nw, :damaged_storage)],
             base_name="$(nw)storage",
             binary = true,
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :storage, l), "storage_damage_start", 1, 0.0)
         )
     else
         z_storage_vars = JuMP.@variable(pm.model,
-            [l in _PMs.ids(pm, nw, :storage_damaged)],
+            [l in _PMs.ids(pm, nw, :damaged_storage)],
             base_name="$(nw)storage",
             lower_bound = 0,
             upper_bound = 1,

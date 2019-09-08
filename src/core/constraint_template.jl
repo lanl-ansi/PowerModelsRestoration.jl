@@ -12,7 +12,7 @@ end
 
 ""
 function constraint_generation_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    if haskey(_PMs.ref(pm, nw, :gen_damaged), i)
+    if haskey(_PMs.ref(pm, nw, :damaged_gen), i)
         gen = _PMs.ref(pm, nw, :gen, i)
         _PMs.constraint_generation_on_off(pm, nw, cnd, i, gen["pmin"][cnd], gen["pmax"][cnd], gen["qmin"][cnd], gen["qmax"][cnd])
     end
@@ -36,7 +36,7 @@ function constraint_ohms_yt_from_damage(pm::_PMs.AbstractPowerModel, i::Int; nw:
     # TODO make indexing of :wi,:wr standardized
     ## Because :wi, :wr are indexed by bus_id or bus_pairs depending on if the value is on_off or
     # standard, there are indexing issues.  Temporary solution: always call *_on_off variant
-    if haskey(_PMs.ref(pm, nw, :branch_damaged), i)
+    if haskey(_PMs.ref(pm, nw, :damaged_branch), i)
         vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
         vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
         _PMs.constraint_ohms_yt_from_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_fr, b_fr, tr[cnd], ti[cnd], tm, vad_min, vad_max)
@@ -65,7 +65,7 @@ function constraint_ohms_yt_to_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::I
     # TODO make indexing of :wi,:wr standardized
     ## Because :wi, :wr are indexed by bus_id or bus_pairs depending on if the value is on_off or
     # standard, there are indexing issues.  Temporary solution: always call *_on_off variant
-    if haskey(_PMs.ref(pm, nw, :branch_damaged), i)
+    if haskey(_PMs.ref(pm, nw, :damaged_branch), i)
         vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
         vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
 
@@ -87,7 +87,7 @@ function constraint_voltage_angle_difference_damage(pm::_PMs.AbstractPowerModel,
     # TODO make indexing of :wi,:wr standardized
     # Because :wi, :wr are indexed by bus_id or bus_pairs depending on if the value is on_off or
     # standard, there are indexing issues.  Temporary solution: always call *_on_off variant
-    if haskey(_PMs.ref(pm, nw, :branch_damaged), i)
+    if haskey(_PMs.ref(pm, nw, :damaged_branch), i)
 
         vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
         vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
@@ -116,7 +116,7 @@ function constraint_thermal_limit_from_damage(pm::_PMs.AbstractPowerModel, i::In
     t_bus = branch["t_bus"]
     f_idx = (i, f_bus, t_bus)
 
-    if haskey(_PMs.ref(pm, nw, :branch_damaged), i)
+    if haskey(_PMs.ref(pm, nw, :damaged_branch), i)
         _PMs.constraint_thermal_limit_from_on_off(pm, nw, cnd, i, f_idx, branch["rate_a"][cnd])
     else
         if !haskey(_PMs.con(pm, nw, cnd), :sm_fr)
@@ -134,7 +134,7 @@ function constraint_thermal_limit_to_damage(pm::_PMs.AbstractPowerModel, i::Int;
     t_bus = branch["t_bus"]
     t_idx = (i, t_bus, f_bus)
 
-    if haskey(_PMs.ref(pm, nw, :branch_damaged), i)
+    if haskey(_PMs.ref(pm, nw, :damaged_branch), i)
         _PMs.constraint_thermal_limit_to_on_off(pm, nw, cnd, i, t_idx, branch["rate_a"][cnd])
     else
         if !haskey(_PMs.con(pm, nw, cnd), :sm_to)
@@ -147,7 +147,7 @@ end
 
 ""
 function constraint_storage_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    if haskey(_PMs.ref(pm, nw, :storage_damaged), i)
+    if haskey(_PMs.ref(pm, nw, :damaged_storage), i)
         storage = _PMs.ref(pm, nw, :storage, i)
         charge_ub = storage["charge_rating"]
         discharge_ub = storage["discharge_rating"]
