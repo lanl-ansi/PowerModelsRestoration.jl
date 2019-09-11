@@ -29,17 +29,14 @@ function post_rop(pm::_PMs.AbstractPowerModel)
         constraint_restoration_cardinality_upper(pm, nw=n)
 
         _PMs.constraint_model_voltage_on_off(pm, nw=n)
-       
         for i in _PMs.ids(pm, :ref_buses, nw=n)
             _PMs.constraint_theta_ref(pm, i, nw=n)
         end
 
         for i in _PMs.ids(pm, :bus, nw=n)
-            #constraint_ bus_damage ??
             _MLD.constraint_power_balance_shed(pm, i, nw=n)
 
              # only applies voltage_on_off constraint to damaged buses)
-            constraint_bus_damage(pm, i, nw=n)
 
         end
 

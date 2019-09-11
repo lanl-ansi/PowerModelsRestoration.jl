@@ -90,7 +90,7 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
         delete!(sn_data_tmp, k)
     end
 
-    item_dict = Dict("gen"=>"gen_status", "branch"=>"br_status", "storage"=>"status")
+    item_dict = Dict("gen"=>"gen_status", "branch"=>"br_status", "storage"=>"status", "bus"=>"status")
     total_repairs = 0
     for (j, st) in item_dict
         for (i,item) in sn_data[j]
