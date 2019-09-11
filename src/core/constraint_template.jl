@@ -18,6 +18,22 @@ function constraint_generation_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::I
     end
 end
 
+""
+function constraint_bus_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    if haskey(_PMs.ref(pm, nw, :damaged_bus), i)
+        bus = _PMs.ref(pm, nw, :bus, i)
+        constraint_voltage_magnitude_on_off(pm, nw, cnd, i, bus["vmin"][cnd], bus["vmax"][cnd])
+
+        # Limit generation if connected to damaged bu
+        for gen_id in _PMs.ref(pm, nw, :bus_gens, i)
+            gen = _PMs.ref(pm, nw, :gen, i)
+            constraint_gen_bus_connection(pm, nw, cnd, gen_id, i, gen["pmin"][cnd], gen["pmax"][cnd], gen["qmin"][cnd], gen["qmax"][cnd])
+        end
+
+        #TODO limit branch flow, storage, load
+    end
+end
+
 
 ""
 function constraint_ohms_yt_from_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)

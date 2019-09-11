@@ -5,6 +5,7 @@ function ref_add_damaged_items!(pm::_PMs.AbstractPowerModel)
     ref_add_damaged_gens!(pm)
     ref_add_damaged_branches!(pm)
     ref_add_damaged_storage!(pm)
+    ref_add_damaged_buses!(pm)
 end
 
 
@@ -12,6 +13,13 @@ end
 function ref_add_damaged_gens!(pm::_PMs.AbstractPowerModel)
     for (nw, nw_ref) in pm.ref[:nw]
         nw_ref[:damaged_gen] = Dict(x for x in nw_ref[:gen] if haskey(x.second, "damaged") && x.second["damaged"] == 1 in keys(nw_ref[:gen]))
+    end
+end
+
+""
+function ref_add_damaged_buses!(pm::_PMs.AbstractPowerModel)
+    for (nw, nw_ref) in pm.ref[:nw]
+        nw_ref[:damaged_bus] = Dict(x for x in nw_ref[:bus] if haskey(x.second, "damaged") && x.second["damaged"] == 1 in keys(nw_ref[:bus]))
     end
 end
 

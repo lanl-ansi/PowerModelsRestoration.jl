@@ -9,8 +9,9 @@ end
 ""
 function post_rop(pm::_PMs.AbstractPowerModel)
     for (n, network) in _PMs.nws(pm)
-        _MLD.variable_bus_voltage_indicator(pm, nw=n)
-        _PMs.variable_voltage_on_off(pm, nw=n)
+        variable_bus_damage_indicator(pm, nw=n)
+        variable_bus_damage(pm, nw=n)
+        @show _PMs.var(pm, nw=n, cnd=1, :va)
 
         variable_branch_damage_indicator(pm, nw=n)
         _PMs.variable_branch_flow(pm, nw=n)
@@ -29,13 +30,18 @@ function post_rop(pm::_PMs.AbstractPowerModel)
         constraint_restoration_cardinality_upper(pm, nw=n)
 
         _PMs.constraint_model_voltage_on_off(pm, nw=n)
-
+       
         for i in _PMs.ids(pm, :ref_buses, nw=n)
             _PMs.constraint_theta_ref(pm, i, nw=n)
         end
 
         for i in _PMs.ids(pm, :bus, nw=n)
+            #constraint_ bus_damage ??
             _MLD.constraint_power_balance_shed(pm, i, nw=n)
+
+             # only applies voltage_on_off constraint to damaged buses)
+            constraint_bus_damage(pm, i, nw=n)
+
         end
 
         for i in _PMs.ids(pm, :damaged_gen, nw=n)
@@ -78,6 +84,9 @@ function post_rop(pm::_PMs.AbstractPowerModel)
         for i in _PMs.ids(pm, :gen, nw=n_2)
             constraint_active_gen(pm, i, n_1, n_2)
         end
+        for i in _PMs.ids(pm, :bus, nw=n_2)
+            constraint_active_bus(pm, i, n_1, n_2)
+        end
         for i in _PMs.ids(pm, :storage, nw=n_2)
             constraint_active_storage(pm, i, n_1, n_2)
         end
@@ -100,7 +109,7 @@ end
 
 "report restoration solution"
 function solution_rop(pm::_PMs.AbstractPowerModel, sol::Dict{String,Any})
-    _MLD.add_setpoint_bus_status!(sol,pm)
+    add_setpoint_bus_status!(sol,pm)
     _PMs.add_setpoint_bus_voltage!(sol, pm)
     _PMs.add_setpoint_generator_status!(sol, pm)
     _PMs.add_setpoint_generator_power!(sol, pm)
@@ -111,4 +120,8 @@ function solution_rop(pm::_PMs.AbstractPowerModel, sol::Dict{String,Any})
     _PMs.add_setpoint_storage!(sol, pm)
     _MLD.add_setpoint_load!(sol,pm)
     _MLD.add_setpoint_shunt!(sol,pm)
+end
+
+function add_setpoint_bus_status!(sol, pm::_PMs.AbstractPowerModel)
+    _PMs.add_setpoint!(sol, pm, "bus", "status", :z_bus, status_name="bus_type", inactive_status_value = 4, conductorless=true, default_value = (item) -> if item["bus_type"] == 4 0.0 else 1.0 end)
 end

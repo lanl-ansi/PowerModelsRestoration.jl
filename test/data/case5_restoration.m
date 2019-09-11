@@ -14,6 +14,15 @@ mpc.bus = [
 	4	 3	 400.0	 131.47	 0.0	 0.0	 1	 1.00000	 0.00000	 230.0	 1	 1.10000	 0.90000;
 	10	 2	 0.0	 0.0	 0.0	 0.0	 1	 1.00000	 3.59033	 230.0	 1	 1.10000	 0.90000;
 ];
+%column_names%  damaged status
+mpc.bus_damage = [
+	1 1;
+	1 1;
+	1 1;
+	0 1;
+	0 1;
+];
+
 
 %% generator data
 %	bus	Pg	Qg	Qmax	Qmin	Vg	mBase	status	Pmax	Pmin
