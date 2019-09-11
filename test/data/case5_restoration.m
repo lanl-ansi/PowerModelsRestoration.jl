@@ -16,9 +16,9 @@ mpc.bus = [
 ];
 %column_names%  damaged status
 mpc.bus_damage = [
-	1 1;
-	1 1;
-	1 1;
+	0 1;
+	0 1;
+	0 1;
 	0 1;
 	0 1;
 ];

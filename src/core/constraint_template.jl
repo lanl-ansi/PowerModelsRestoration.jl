@@ -30,7 +30,17 @@ function constraint_bus_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.c
             constraint_gen_bus_connection(pm, nw, cnd, gen_id, i, gen["pmin"][cnd], gen["pmax"][cnd], gen["qmin"][cnd], gen["qmax"][cnd])
         end
 
-        #TODO limit branch flow, storage, load
+        for load_id in _PMs.ref(pm, nw, :bus_loads, i)
+            load = _PMs.ref(pm, nw, :load, i)
+            constraint_load_bus_connection(pm, nw, cnd, load_id, i)
+        end
+
+        for storage_id in _PMs.ref(pm, nw, :bus_storage, i)
+            storage = _PMs.ref(pm, nw, :storage_id, i)
+            constraint_storage_bus_connection(pm, nw, cnd, storage_id, i, storage["pmin"][cnd], storage["pmax"][cnd], storage["qmin"][cnd], storage["qmax"][cnd])
+        end
+
+        #TODO limit branch flow
     end
 end
 

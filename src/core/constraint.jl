@@ -9,7 +9,7 @@ function constraint_restoration_cardinality_upper(pm::_PMs.AbstractPowerModel, n
         sum(z_branch[i] for (i,branch) in _PMs.ref(pm, n, :damaged_branch))
         + sum(z_gen[i] for (i,gen) in _PMs.ref(pm, n, :damaged_gen))
         + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, n, :damaged_storage))
-        + sum(z_branch[i] for (i,bus) in _PMs.ref(pm, n, :damaged_storage))
+        + sum(z_bus[i] for (i,bus) in _PMs.ref(pm, n, :damaged_bus))
         <= cumulative_repairs
     )
 end
@@ -26,7 +26,7 @@ function constraint_restoration_cardinality_lower(pm::_PMs.AbstractPowerModel, n
         sum(z_branch[i] for (i,branch) in _PMs.ref(pm, n, :damaged_branch))
         + sum(z_gen[i] for (i,gen) in _PMs.ref(pm, n, :damaged_gen))
         + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, n, :damaged_storage))
-        + sum(z_branch[i] for (i,bus) in _PMs.ref(pm, n, :damaged_storage))
+        + sum(z_bus[i] for (i,bus) in _PMs.ref(pm, n, :damaged_bus))
         >= cumulative_repairs
     )
 end
@@ -85,6 +85,29 @@ function constraint_increasing_load(pm::_PMs.AbstractPowerModel,  i::Int, nw_1::
 end
 
 
+"on/off constraint for storage connected to damaged buses"
+function constraint_storage_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, c::Int, storage_id::Int, bus_id::Int, pmin, pmax, qmin, qmax)
+    ps = _PMs.var(pm, n, c, :pg, storage_id)
+    qs = _PMs.var(pm, n, c, :qg, storage_id)
+    z_bus = _PMs.var(pm, n, :z_bus, bus_id)
+
+    JuMP.@constraint(pm.model, ps <= pmax*z_bus)
+    JuMP.@constraint(pm.model, ps >= pmin*z_bus)
+    JuMP.@constraint(pm.model, qs <= qmax*z_bus)
+    JuMP.@constraint(pm.model, qs >= qmin*z_bus)
+end
+
+
+"on/off constraint for storage connected to damaged buses"
+function constraint_storage_bus_connection(pm::_PMs.AbstractDCPModel, n::Int, c::Int, storage_id::Int, bus_id::Int, pmin, pmax, qmin, qmax)
+    pg = _PMs.var(pm, n, c, :pg, storage_id)
+    z_bus = _PMs.var(pm, n, :z_bus, bus_id)
+
+    JuMP.@constraint(pm.model, pg <= pmax*z_bus)
+    JuMP.@constraint(pm.model, pg >= pmin*z_bus)
+end
+
+
 "on/off constraint for generators connected to damaged buses"
 function constraint_gen_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, c::Int, gen_id::Int, bus_id::Int, pmin, pmax, qmin, qmax)
     pg = _PMs.var(pm, n, c, :pg, gen_id)
@@ -98,13 +121,21 @@ function constraint_gen_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, c::I
 end
 
 
-"on/off constraint for generators"
+"on/off constraint for generators connected to damaged buses"
 function constraint_gen_bus_connection(pm::_PMs.AbstractDCPModel, n::Int, c::Int, gen_id::Int, bus_id::Int, pmin, pmax, qmin, qmax)
     pg = _PMs.var(pm, n, c, :pg, gen_id)
     z_bus = _PMs.var(pm, n, :z_bus, bus_id)
 
     JuMP.@constraint(pm.model, pg <= pmax*z_bus)
     JuMP.@constraint(pm.model, pg >= pmin*z_bus)
+end
+
+"on/off constraint for loads connected to damaged buses"
+function constraint_load_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, c::Int, load_id::Int, bus_id::Int)
+    z_demand = _PMs.var(pm, n, :z_demand, load_id)
+    z_bus = _PMs.var(pm, n, :z_bus, bus_id)
+
+    JuMP.@constraint(pm.model, z_demand <= z_bus)
 end
 
 function constraint_voltage_magnitude_on_off(pm::_PMs.AbstractPowerModel, n::Int, c::Int, i::Int, vmin, vmax)

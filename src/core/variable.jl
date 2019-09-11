@@ -2,65 +2,6 @@
 function JuMP.value(x::Real) return x end
 
 
-"variable: `0 <= damage_bus[l] <= 1` for `l` in `bus`es"
-function variable_bus_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, relax = false)
-    if relax == false
-        z_bus_vars = JuMP.@variable(pm.model,
-            [l in _PMs.ids(pm, nw, :damaged_bus)],
-            base_name="$(nw)_damage_bus",
-            binary = true,
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, l), "bus_damage_start", 1, 0.0)
-        )
-    else
-        z_bus_vars = JuMP.@variable(pm.model,
-            [l in _PMs.ids(pm, nw, :damaged_bus)],
-            base_name="$(nw)_damage_bus",
-            lower_bound = 0,
-            upper_bound = 1,
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, l), "bus_damage_start", 1, 0.0)
-        )
-    end
-
-    z_bus = Dict(i => haskey(bus, "damaged") && bus["damaged"] == 1 ? z_bus_vars[i] : bus["status"]  for (i,bus) in _PMs.ref(pm, nw, :bus))
-    _PMs.var(pm, nw)[:z_bus] = z_bus
-end
-
-function variable_bus_damage(pm::_PMs.AbstractACPModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true, kwargs...)
-    _PMs.variable_voltage_angle(pm, nw=nw, cnd=cnd, bounded=bounded, kwargs...)
-    for i in _PMs.ids(pm, nw, :bus)
-        if bounded
-            _PMs.var(pm, nw, cnd)[:vm] = JuMP.@variable(pm.model,
-                [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_$(cnd)_vm",
-                lower_bound =_PMs. ref(pm, nw, :bus, i, "vmin", cnd),
-                upper_bound = _PMs.ref(pm, nw, :bus, i, "vmax", cnd),
-                start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "vm_start", cnd, 1.0)
-            )
-            for i in _PMs.ids(pm, nw, :bus)
-                if haskey(_PMs.ref(pm, nw, :bus, i), "damaged") && _PMs.ref(pm, nw, :bus,i)["damaged"] == 1
-                    JuMP.set_upper_bound(_PMs.var(pm, nw, cnd, :vm, i), max(0, _PMs.ref(pm, nw, :bus, i, "vmax", cnd)))
-                    JuMP.set_lower_bound(_PMs.var(pm, nw, cnd, :vm, i), min(0, _PMs.ref(pm, nw, :bus, i, "vmin", cnd)))
-                end
-            end
-        else
-            _PMs.var(pm, nw, cnd)[:vm] = JuMP.@variable(pm.model,
-                [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_$(cnd)_vm",
-                start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "vm_start", cnd, 1.0)
-            )
-        end
-    end
-end
-
-variable_bus_damage(pm::_PMs.AbstractDCPModel; kwargs...) = _PMs.variable_voltage_angle(pm; kwargs...)
-
-
-#TODO change to only use on_off/bounded or unbounded for damaged components
-function variable_bus_damage(pm::_PMs.AbstractWRModel; kwargs...)
-    _MLD.variable_voltage_magnitude_sqr_on_off(pm; kwargs...)
-    _MLD.variable_bus_voltage_product_on_off(pm; kwargs...)
-end
-
-
-
 "variable: `0 <= damage_gen[l] <= 1` for `l` in `gen`es"
 function variable_generation_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, relax=false)
 
@@ -241,3 +182,28 @@ function variable_reactive_storage_damage(pm::_PMs.AbstractPowerModel; nw::Int=p
         end
     end
 end
+
+
+"variable: `0 <= damage_bus[l] <= 1` for `l` in `bus`es"
+function variable_bus_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, relax = false)
+    if relax == false
+        z_bus_vars = JuMP.@variable(pm.model,
+            [l in _PMs.ids(pm, nw, :damaged_bus)],
+            base_name="$(nw)_damage_bus",
+            binary = true,
+            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, l), "bus_damage_start", 1, 0.0)
+        )
+    else
+        z_bus_vars = JuMP.@variable(pm.model,
+            [l in _PMs.ids(pm, nw, :damaged_bus)],
+            base_name="$(nw)_damage_bus",
+            lower_bound = 0,
+            upper_bound = 1,
+            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, l), "bus_damage_start", 1, 0.0)
+        )
+    end
+
+    z_bus = Dict(i => haskey(bus, "damaged") && bus["damaged"] == 1 ? z_bus_vars[i] : bus["status"]  for (i,bus) in _PMs.ref(pm, nw, :bus))
+    _PMs.var(pm, nw)[:z_bus] = z_bus
+end
+

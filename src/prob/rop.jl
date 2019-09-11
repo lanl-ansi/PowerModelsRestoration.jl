@@ -9,9 +9,8 @@ end
 ""
 function post_rop(pm::_PMs.AbstractPowerModel)
     for (n, network) in _PMs.nws(pm)
-        variable_bus_damage_indicator(pm, nw=n)
-        variable_bus_damage(pm, nw=n)
-        @show _PMs.var(pm, nw=n, cnd=1, :va)
+        variable_bus_damage_indicator(pm, nw=n, relax=false)
+        _PMs.variable_voltage_on_off(pm, nw=n)
 
         variable_branch_damage_indicator(pm, nw=n)
         _PMs.variable_branch_flow(pm, nw=n)
