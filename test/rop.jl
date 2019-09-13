@@ -119,41 +119,18 @@
             @test isapprox(bus_status(result,"0","4"), 0; atol=1e-2)
             @test isapprox(bus_status(result,"0","10"), 1; atol=1e-2)
 
-            @test isapprox(bus_status(result,"1","1"), 1; atol=1e-2)
-            @test isapprox(bus_status(result,"1","2"), 1; atol=1e-2)
-            @test isapprox(bus_status(result,"1","3"), 1; atol=1e-2)
-            @test isapprox(bus_status(result,"1","4"), 1; atol=1e-2)
-            @test isapprox(bus_status(result,"1","10"), 1; atol=1e-2)
-
-            @test isapprox(bus_status(result,"2","1"), 1; atol=1e-2)
-            @test isapprox(bus_status(result,"2","2"), 1; atol=1e-2)
-            @test isapprox(bus_status(result,"2","3"), 1; atol=1e-2)
-            @test isapprox(bus_status(result,"2","4"), 1; atol=1e-2)
-            @test isapprox(bus_status(result,"2","10"), 1; atol=1e-2)
-
             @test isapprox(bus_status(result,"3","1"), 1; atol=1e-2)
             @test isapprox(bus_status(result,"3","2"), 1; atol=1e-2)
             @test isapprox(bus_status(result,"3","3"), 1; atol=1e-2)
             @test isapprox(bus_status(result,"3","4"), 1; atol=1e-2)
             @test isapprox(bus_status(result,"3","10"), 1; atol=1e-2)
 
+            
             @test isapprox(gen_status(result,"0","1"), 0; atol=1e-6)
             @test isapprox(gen_status(result,"0","2"), 0; atol=1e-6)
             @test isapprox(gen_status(result,"0","3"), 1; atol=1e-6)
             @test isapprox(gen_status(result,"0","4"), 0; atol=1e-6)
             @test isapprox(gen_status(result,"0","5"), 1; atol=1e-6)
-
-            @test isapprox(gen_status(result,"1","1"), 0; atol=1e-6)
-            @test isapprox(gen_status(result,"1","2"), 0; atol=1e-6)
-            @test isapprox(gen_status(result,"1","3"), 1; atol=1e-6)
-            @test isapprox(gen_status(result,"1","4"), 1; atol=1e-6)
-            @test isapprox(gen_status(result,"1","5"), 1; atol=1e-6)
-
-            @test isapprox(gen_status(result,"2","1"), 0; atol=1e-6)
-            @test isapprox(gen_status(result,"2","2"), 1; atol=1e-6)
-            @test isapprox(gen_status(result,"2","3"), 1; atol=1e-6)
-            @test isapprox(gen_status(result,"2","4"), 1; atol=1e-6)
-            @test isapprox(gen_status(result,"2","5"), 1; atol=1e-6)
 
             @test isapprox(gen_status(result,"3","1"), 1; atol=1e-6)
             @test isapprox(gen_status(result,"3","2"), 1; atol=1e-6)
@@ -170,22 +147,6 @@
             @test isapprox(branch_status(result,"0","6"), 0; atol=1e-6)
             @test isapprox(branch_status(result,"0","7"), 0; atol=1e-6)
 
-            @test isapprox(branch_status(result,"1","1"), 0; atol=1e-6)
-            @test isapprox(branch_status(result,"1","2"), 0; atol=1e-6)
-            @test isapprox(branch_status(result,"1","3"), 0; atol=1e-6)
-            @test isapprox(branch_status(result,"1","4"), 1; atol=1e-6)
-            @test isapprox(branch_status(result,"1","5"), 0; atol=1e-6)
-            @test isapprox(branch_status(result,"1","6"), 0; atol=1e-6)
-            @test isapprox(branch_status(result,"1","7"), 1; atol=1e-6)
-
-            @test isapprox(branch_status(result,"2","1"), 1; atol=1e-6)
-            @test isapprox(branch_status(result,"2","2"), 0; atol=1e-6)
-            @test isapprox(branch_status(result,"2","3"), 0; atol=1e-6)
-            @test isapprox(branch_status(result,"2","4"), 1; atol=1e-6)
-            @test isapprox(branch_status(result,"2","5"), 0; atol=1e-6)
-            @test isapprox(branch_status(result,"2","6"), 0; atol=1e-6)
-            @test isapprox(branch_status(result,"2","7"), 1; atol=1e-6)
-
             @test isapprox(branch_status(result,"3","1"), 1; atol=1e-6)
             @test isapprox(branch_status(result,"3","2"), 1; atol=1e-6)
             @test isapprox(branch_status(result,"3","3"), 1; atol=1e-6)
@@ -197,12 +158,6 @@
 
             @test isapprox(storage_status(result, "0", "1"), 0; atol=1e-6)
             @test isapprox(storage_status(result, "0", "2"), 1; atol=1e-6)
-
-            @test isapprox(storage_status(result, "1", "1"), 0; atol=1e-6)
-            @test isapprox(storage_status(result, "1", "2"), 1; atol=1e-6)
-
-            @test isapprox(storage_status(result, "2", "1"), 0; atol=1e-6)
-            @test isapprox(storage_status(result, "2", "2"), 1; atol=1e-6)
 
             @test isapprox(storage_status(result, "3", "1"), 1; atol=1e-6)
             @test isapprox(storage_status(result, "3", "2"), 1; atol=1e-6)
