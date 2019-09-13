@@ -26,7 +26,7 @@ function post_rop(pm::_PMs.AbstractPowerModel)
         _MLD.variable_demand_factor(pm, nw=n, relax=true)
         _MLD.variable_shunt_factor(pm, nw=n, relax=true)
 
-        constraint_restoration_cardinality_upper(pm, nw=n)
+        constraint_restoration_cardinality_ub(pm, nw=n)
 
         ## TODO Apply on_off constraints on damaged buses only.  apply ordinary bus_voltage constraint to undamaged buses.
         _PMs.constraint_model_voltage_on_off(pm, nw=n)
@@ -40,7 +40,7 @@ function post_rop(pm::_PMs.AbstractPowerModel)
             constraint_bus_damage(pm, i, nw=n)
         end
 
-        for i in _PMs.ids(pm, :damaged_gen, nw=n)
+        for i in _PMs.ids(pm, :gen, nw=n)
             constraint_generation_damage(pm, i, nw=n)
         end
 
@@ -95,9 +95,8 @@ function post_rop(pm::_PMs.AbstractPowerModel)
         n_1 = n_2
     end
 
-    n_final = last(network_ids)
-    constraint_restoration_cardinality_lower(pm, nw=n_final)
-
+    # n_final = last(network_ids)
+    constraint_restore_all_items(pm)
 
     objective_max_load_delivered(pm)
 end

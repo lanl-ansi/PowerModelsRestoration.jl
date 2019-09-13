@@ -1,6 +1,6 @@
 ```@docs
 process_network
-run_forward_restoration
+run_restoration_simulation
 run_rop_heuristic
 random_repair
 ```

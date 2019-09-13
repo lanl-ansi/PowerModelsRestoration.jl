@@ -1,5 +1,5 @@
 "Compute forward restoration of network_data"
-function run_forward_restoration(network_data, model_constructor, optimizer; kwargs...)
+function run_restoration_simulation(network_data, model_constructor, optimizer; kwargs...)
     _network_data = deepcopy(network_data)
 
     clean_status!(_network_data)
