@@ -18,32 +18,6 @@ function constraint_generation_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::I
     end
 end
 
-""
-function constraint_bus_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    if haskey(_PMs.ref(pm, nw, :damaged_bus), i)
-        bus = _PMs.ref(pm, nw, :bus, i)
-        constraint_voltage_magnitude_on_off(pm, nw, cnd, i, bus["vmin"][cnd], bus["vmax"][cnd])
-
-        # Limit generation if connected to damaged bu
-        for gen_id in _PMs.ref(pm, nw, :bus_gens, i)
-            gen = _PMs.ref(pm, nw, :gen, i)
-            constraint_gen_bus_connection(pm, nw, cnd, gen_id, i, gen["pmin"][cnd], gen["pmax"][cnd], gen["qmin"][cnd], gen["qmax"][cnd])
-        end
-
-        for load_id in _PMs.ref(pm, nw, :bus_loads, i)
-            load = _PMs.ref(pm, nw, :load, i)
-            constraint_load_bus_connection(pm, nw, cnd, load_id, i)
-        end
-
-        for storage_id in _PMs.ref(pm, nw, :bus_storage, i)
-            storage = _PMs.ref(pm, nw, :storage_id, i)
-            constraint_storage_bus_connection(pm, nw, cnd, storage_id, i, storage["pmin"][cnd], storage["pmax"][cnd], storage["qmin"][cnd], storage["qmax"][cnd])
-        end
-
-        #TODO limit branch flow
-    end
-end
-
 
 ""
 function constraint_ohms_yt_from_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
@@ -188,5 +162,30 @@ function constraint_storage_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=
     end
 end
 
+""
+function constraint_bus_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd, kwargs...)
+    if haskey(_PMs.ref(pm, nw, :damaged_bus), i)
+        bus = _PMs.ref(pm, nw, :bus, i)
 
+        for gen_id in _PMs.ref(pm, nw, :bus_gens, i)
+            constraint_gen_bus_connection(pm, nw, gen_id, i)
+        end
+
+        for load_id in _PMs.ref(pm, nw, :bus_loads, i)
+            constraint_load_bus_connection(pm, nw, load_id, i)
+        end
+
+        for storage_id in _PMs.ref(pm, nw, :bus_storage, i)
+            constraint_storage_bus_connection(pm, nw, storage_id, i)
+        end
+
+        for (branch_id, bus_fr, bus_to) in _PMs.ref(pm, nw, :arcs_from)
+            if bus_fr==i 
+                constraint_branch_bus_connection(pm, nw, branch_id, bus_fr)
+            else bus_to==i
+                constraint_branch_bus_connection(pm, nw, branch_id, bus_fr)
+            end
+        end    
+    end
+end
 

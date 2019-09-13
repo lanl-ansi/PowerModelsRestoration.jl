@@ -207,3 +207,7 @@ function variable_bus_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.c
     _PMs.var(pm, nw)[:z_bus] = z_bus
 end
 
+function variable_bus_damage(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, kwargs...)
+    ## TODO create on_off variant only for damaged buses. Use bus_voltage for non damaged componets
+    _PMs.variable_voltage_on_off(pm, nw=nw, kwargs...)
+end

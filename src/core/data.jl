@@ -56,6 +56,14 @@ function clean_status!(nw_data)
             end
         end
     end
+    
+    for (n, net) in nw_data["nw"]
+        for (i, bus) in get(net, "bus", Dict())
+            if haskey(bus, "status") && bus["status"]==0
+                bus["bus_type"] = 4
+            end
+        end
+    end
 end
 
 
@@ -71,6 +79,8 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
     if _IMs.ismultinetwork(sn_data)
         Memento.error(_PMs._LOGGER, "replicate_restoration_network can only be used on single networks")
     end
+
+    propagate_damage_status!(sn_data)
 
     name = get(sn_data, "name", "anonymous")
 
@@ -90,11 +100,15 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
         delete!(sn_data_tmp, k)
     end
 
-    item_dict = Dict("gen"=>"gen_status", "branch"=>"br_status", "storage"=>"status", "bus"=>"status")
+    item_dict = Dict("gen"=>"gen_status", "branch"=>"br_status", "storage"=>"status", "bus"=>"bus_type")
     total_repairs = 0
     for (j, st) in item_dict
         for (i,item) in sn_data[j]
-            total_repairs = total_repairs + get(item,"damaged",0)*get(item,st,0)
+            if j=="bus"
+                total_repairs += (get(item,"damaged",0)==1 && get(item,st,1 )!= 4) ? 1 : 0
+            else
+                total_repairs += get(item,"damaged",0)*get(item,st,0)
+            end
         end
     end
 
@@ -127,6 +141,82 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
     mn_data["nw"]["$(count)"]["time_elapsed"] = get(mn_data["nw"]["$(count)"], "time_elapsed", 1.0)
 
     return mn_data
+end
+
+""
+function propagate_damage_status!(data::Dict{String,<:Any})
+    if InfrastructureModels.ismultinetwork(data)
+        for (i,nw_data) in data["nw"]
+            _propagate_damage_status!(nw_data)
+        end
+    else
+        _propagate_damage_status!(data)
+    end
+end
+
+
+""
+function _propagate_damage_status!(data::Dict{String,<:Any})
+    buses = Dict(bus["bus_i"] => bus for (i,bus) in data["bus"])
+
+    incident_gen = _PMs.bus_gen_lookup(data["gen"], data["bus"])
+    incident_active_gen = Dict()
+    for (i, gen_list) in incident_gen
+        incident_active_gen[i] = [gen for gen in gen_list if gen["damaged"] == 0]
+        #incident_active_gen[i] = filter(gen -> gen["gen_status"] != 0, gen_list)
+    end
+
+    incident_storage = _PMs.bus_storage_lookup(data["storage"], data["bus"])
+    incident_active_storage = Dict()
+    for (i, storage_list) in incident_storage
+        incident_active_storage[i] = [gen for gen in storage_list if gen["damaged"] == 0]
+    end
+
+    incident_branch = Dict(bus["bus_i"] => [] for (i,bus) in data["bus"])
+    for (i,branch) in data["branch"]
+        push!(incident_branch[branch["f_bus"]], branch)
+        push!(incident_branch[branch["t_bus"]], branch)
+    end
+
+    updated = true
+    iteration = 0
+
+    for (i,branch) in data["branch"]
+        if branch["damaged"] != 1
+            f_bus = buses[branch["f_bus"]]
+            t_bus = buses[branch["t_bus"]]
+
+            if f_bus["damaged"] == 1|| t_bus["damaged"] == 1
+                Memento.info(_PMs._LOGGER, "deactivating branch $(i):($(branch["f_bus"]),$(branch["t_bus"])) due to damaged connecting bus")
+                branch["damaged"] = 1
+                updated = true
+            end
+        end
+    end
+
+    for (i,bus) in buses
+        if bus["damaged"] == 1
+            for gen in incident_active_gen[i]
+                if gen["damaged"] != 1
+                    Memento.info(_PMs._LOGGER, "deactivating generator $(gen["index"]) due to damaged bus $(i)")
+                    gen["damaged"] = 1
+                    updated = true
+                end
+            end
+        end
+    end
+
+    for (i,bus) in buses
+        if bus["damaged"] == 1
+            for storage in incident_active_storage[i]
+                if storage["damaged"] != 1
+                    Memento.info(_PMs._LOGGER, "deactivating storage $(storage["index"]) due to damaged bus $(i)")
+                    storage["damaged"] = 1
+                    updated = true
+                end
+            end
+        end
+    end
 end
 
 

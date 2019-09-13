@@ -8,9 +8,8 @@ end
 
 ""
 function post_mrsp(pm::_PMs.AbstractPowerModel)
-    _MLD.variable_bus_voltage_indicator(pm)
-    #_MLD.variable_bus_voltage_on_off(pm)
-    _PMs.variable_voltage_on_off(pm)
+    variable_bus_damage_indicator(pm)
+    variable_bus_damage(pm)
 
     variable_branch_damage_indicator(pm)
     _PMs.variable_branch_flow(pm)
@@ -28,6 +27,7 @@ function post_mrsp(pm::_PMs.AbstractPowerModel)
 
     for i in _PMs.ids(pm, :ref_buses)
         _PMs.constraint_theta_ref(pm, i)
+        constraint_bus_damage(pm, i)
     end
 
     for i in _PMs.ids(pm, :bus)
@@ -69,6 +69,7 @@ function objective_min_restoration(pm::_PMs.AbstractPowerModel)
     z_storage = _PMs.var(pm, pm.cnw, :z_storage)
     z_gen = _PMs.var(pm, pm.cnw, :z_gen)
     z_branch = _PMs.var(pm, pm.cnw, :z_branch)
+    z_bus = _PMs.var(pm, pm.cnw, :z_bus)
 
     JuMP.@objective(pm.model, Min,
         sum(z_branch[i] for (i,branch) in _PMs.ref(pm, :damaged_branch))
@@ -80,7 +81,7 @@ end
 
 "report minimal restoration set solution"
 function solution_mrsp(pm::_PMs.AbstractPowerModel, sol::Dict{String,Any})
-    _MLD.add_setpoint_bus_status!(sol,pm)
+    add_setpoint_bus_status!(sol,pm)
     _PMs.add_setpoint_bus_voltage!(sol, pm)
     _PMs.add_setpoint_generator_status!(sol, pm)
     _PMs.add_setpoint_generator_power!(sol, pm)

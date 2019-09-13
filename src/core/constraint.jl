@@ -86,72 +86,41 @@ end
 
 
 "on/off constraint for storage connected to damaged buses"
-function constraint_storage_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, c::Int, storage_id::Int, bus_id::Int, pmin, pmax, qmin, qmax)
-    ps = _PMs.var(pm, n, c, :pg, storage_id)
-    qs = _PMs.var(pm, n, c, :qg, storage_id)
+function constraint_storage_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, storage_id::Int, bus_id::Int)
+    z_storage = _PMs.var(pm, n, :z_storage, storage_id)
     z_bus = _PMs.var(pm, n, :z_bus, bus_id)
 
-    JuMP.@constraint(pm.model, ps <= pmax*z_bus)
-    JuMP.@constraint(pm.model, ps >= pmin*z_bus)
-    JuMP.@constraint(pm.model, qs <= qmax*z_bus)
-    JuMP.@constraint(pm.model, qs >= qmin*z_bus)
-end
-
-
-"on/off constraint for storage connected to damaged buses"
-function constraint_storage_bus_connection(pm::_PMs.AbstractDCPModel, n::Int, c::Int, storage_id::Int, bus_id::Int, pmin, pmax, qmin, qmax)
-    pg = _PMs.var(pm, n, c, :pg, storage_id)
-    z_bus = _PMs.var(pm, n, :z_bus, bus_id)
-
-    JuMP.@constraint(pm.model, pg <= pmax*z_bus)
-    JuMP.@constraint(pm.model, pg >= pmin*z_bus)
+    JuMP.@constraint(pm.model, z_storage <= z_bus)
 end
 
 
 "on/off constraint for generators connected to damaged buses"
-function constraint_gen_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, c::Int, gen_id::Int, bus_id::Int, pmin, pmax, qmin, qmax)
-    pg = _PMs.var(pm, n, c, :pg, gen_id)
-    qg = _PMs.var(pm, n, c, :qg, gen_id)
+function constraint_gen_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, gen_id::Int, bus_id::Int)
+    z_gen= _PMs.var(pm, n, :z_gen, gen_id)
     z_bus = _PMs.var(pm, n, :z_bus, bus_id)
 
-    JuMP.@constraint(pm.model, pg <= pmax*z_bus)
-    JuMP.@constraint(pm.model, pg >= pmin*z_bus)
-    JuMP.@constraint(pm.model, qg <= qmax*z_bus)
-    JuMP.@constraint(pm.model, qg >= qmin*z_bus)
+    JuMP.@constraint(pm.model, z_gen <= z_bus)
 end
 
-
-"on/off constraint for generators connected to damaged buses"
-function constraint_gen_bus_connection(pm::_PMs.AbstractDCPModel, n::Int, c::Int, gen_id::Int, bus_id::Int, pmin, pmax, qmin, qmax)
-    pg = _PMs.var(pm, n, c, :pg, gen_id)
-    z_bus = _PMs.var(pm, n, :z_bus, bus_id)
-
-    JuMP.@constraint(pm.model, pg <= pmax*z_bus)
-    JuMP.@constraint(pm.model, pg >= pmin*z_bus)
-end
 
 "on/off constraint for loads connected to damaged buses"
-function constraint_load_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, c::Int, load_id::Int, bus_id::Int)
-    z_demand = _PMs.var(pm, n, :z_demand, load_id)
+function constraint_load_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, load_id::Int, bus_id::Int)
+    if haskey(_PMs.var(pm,n), :z_demand)
+        z_demand = _PMs.var(pm, n, :z_demand, load_id)
+        z_bus = _PMs.var(pm, n, :z_bus, bus_id)
+
+        JuMP.@constraint(pm.model, z_demand <= z_bus)
+    end
+end
+
+## Add constraint_shunt_bus_connection?  If vm is forced to zero, this shouldnt be necessary?
+
+"on/off constraint for branches connected to damaged buses"
+function constraint_branch_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, branch_id::Int, bus_id::Int)
+    z_branch = _PMs.var(pm, n, :z_branch, branch_id)
     z_bus = _PMs.var(pm, n, :z_bus, bus_id)
 
-    JuMP.@constraint(pm.model, z_demand <= z_bus)
-end
-
-function constraint_voltage_magnitude_on_off(pm::_PMs.AbstractPowerModel, n::Int, c::Int, i::Int, vmin, vmax)
-    vm = _PMs.var(pm, n, c, :vm, i)
-    z_bus = _PMs.var(pm, n, :z_bus, i)
-
-    JuMP.@constraint(pm.model, vm <= vmax*z_bus)
-    JuMP.@constraint(pm.model, vm >= vmin*z_bus)
-end
-
-function constraint_voltage_magnitude_sqr_on_off(pm::_PMs.AbstractPowerModel, n::Int, c::Int, i::Int, vmin, vmax)
-    w = _PMs.var(pm, n, c, :w, i)
-    z_bus = _PMs.var(pm, n, :z_bus, i)
-
-    JuMP.@constraint(pm.model, w <= vmax^2*z_bus)
-    JuMP.@constraint(pm.model, w >= vmin^2*z_bus)
+    JuMP.@constraint(pm.model, z_branch <= z_bus)
 end
 
 

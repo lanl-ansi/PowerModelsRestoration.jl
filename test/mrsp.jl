@@ -6,7 +6,7 @@
             result = PowerModelsRestoration.run_mrsp("../test/data/case5_restoration_strg.m", PowerModels.ACPPowerModel, juniper_solver)
 
             @test result["termination_status"] == LOCALLY_SOLVED
-            @test isapprox(result["objective"], 3.0; atol = 1e-2)
+            @test isapprox(result["objective"], 2.0; atol = 1e-2)
 
             @test isapprox(gen_status(result,"1"), 0; atol=1e-2)
             @test isapprox(gen_status(result,"2"), 0; atol=1e-2)
@@ -32,7 +32,7 @@
             result = PowerModelsRestoration.run_mrsp("../test/data/case5_restoration_strg.m", PowerModels.DCPPowerModel, cbc_solver)
 
             @test result["termination_status"] == OPTIMAL
-            @test isapprox(result["objective"], 3.0; atol = 1e-2)
+            @test isapprox(result["objective"], 2.0; atol = 1e-2)
 
             @test isapprox(gen_status(result,"1"), 0; atol=1e-2)
             @test isapprox(gen_status(result,"2"), 0; atol=1e-2)
@@ -59,7 +59,13 @@
             result = PowerModelsRestoration.run_mrsp("../test/data/case5_restoration_strg.m", PowerModels.SOCWRPowerModel, juniper_solver)
 
             @test result["termination_status"] == LOCALLY_SOLVED
-            @test isapprox(result["objective"], 3.0; atol = 1e-2)
+            @test isapprox(result["objective"], 2.0; atol = 1e-2)
+
+            @test isapprox(bus_status(result,"1"), 1; atol=1e-2)
+            @test isapprox(bus_status(result,"2"), 1; atol=1e-2)
+            @test isapprox(bus_status(result,"3"), 1; atol=1e-2)
+            @test isapprox(bus_status(result,"4"), 1; atol=1e-2)
+            @test isapprox(bus_status(result,"10"), 1; atol=1e-2)
 
             @test isapprox(gen_status(result,"1"), 0; atol=1e-2)
             @test isapprox(gen_status(result,"2"), 0; atol=1e-2)
