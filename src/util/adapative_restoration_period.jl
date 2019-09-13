@@ -6,8 +6,10 @@ function adapative_restoration_period(network_data, model_constructor, optimizer
     initial_iteration = run_rop(initial_restoration, model_constructor, optimizer; kwargs...)
     _PMs.update_data!(initial_restoration,initial_iteration["solution"])
     
-    repairs_in_period = item_repair_sequence(initial_restoration)
+    repair_sequence = item_repair_sequence(initial_restoration)
+
     item_types = Dict("gen"=>"gen_status", "branch"=>"br_status", "storage"=>"status", "bus"=>"status")
+
     for nw in sort(collect(keys(initial_restoration["nw"])))
         temp_data = deepcopy(initial_restoration["nw"][nw])
         # Set damaged (repairable) components.
@@ -18,8 +20,9 @@ function adapative_restoration_period(network_data, model_constructor, optimizer
 
             for (id, item) in temp_data[item_type]
                 ## NEED TO CHANGE HOW DATA STRUCUTRE IS CREATED
-                if  id in repairs_in_period["nw"][nw][item_type]
+                if  id in repair_sequence["nw"][nw][item_type]
                     item["damaged"] = 1
+                    item[status] = 1
                     repair_count+=1
                 else
                     item["damaged"] = 0
@@ -59,19 +62,20 @@ function item_repair_sequence(network::Dict{String, Any})
     for (nw, net) in network["nw"]
         network_repair = Dict{String, Any}()
         for (type, status) in item_types
-            item_repair = Dict{String, Any}()
+            item_repair = String[]
             for (i, item) in net[type]
                 if item[status]==0
                     if haskey(network["nw"],"$(parse(Int,nw)+1)")
                         if network["nw"]["$(parse(Int,nw)+1)"][type][i][status]==1
-                            item_repair=i
-                            network_repair[type] = i
+                            push!(item_repair, i)
                         end
                     else
-                        # Error: now all items in network are repaired
+                        # Error: not all items in network are repaired
                     end
                 end
             end
+            network_repair[type] = item_repair
+
         end
         repair_list["nw"][nw]=network_repair
     end
