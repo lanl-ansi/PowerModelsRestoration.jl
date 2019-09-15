@@ -47,20 +47,29 @@ function clean_solution!(solution)
 end
 
 
-"Replace non-binary status codes for devices" #needed because PowerModels filters non-zero status items
-function clean_status!(nw_data)
-    for item_type in ["load", "shunt"]
-        for (n, net) in nw_data["nw"]
-            for (i,item) in get(net, item_type, Dict())
-                item["status"] = ceil(item["status"])
-            end
+# Required because PowerModels assumes integral status values
+"Replace non-binary status codes for devices"
+function clean_status!(data)
+    if InfrastructureModels.ismultinetwork(data)
+        for (i, nw_data) in data["nw"]
+            _clean_status!(nw_data)
+        end
+    else
+        _clean_status!(data)
+    end
+end
+
+function _clean_status!(network)
+    for (i, bus) in get(network, "bus", Dict())
+        if haskey(bus, "status") && isapprox(bus["status"], 0)
+            bus["bus_type"] = 4
         end
     end
-    
-    for (n, net) in nw_data["nw"]
-        for (i, bus) in get(net, "bus", Dict())
-            if haskey(bus, "status") && bus["status"]==0
-                bus["bus_type"] = 4
+
+    for (comp_name, status_key) in _PMs.pm_component_status
+        for (i, comp) in get(network, comp_name, Dict())
+            if haskey(comp, status_key)
+                comp[status_key] = round(Int, comp[status_key])
             end
         end
     end
