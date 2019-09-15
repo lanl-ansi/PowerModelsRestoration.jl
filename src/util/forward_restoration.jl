@@ -16,7 +16,7 @@ function run_restoration_simulation(network_data, model_constructor, optimizer; 
         # TODO is this the correct way to update storage energy?
         #=
         for (j, storage) in get(network_forward, "storage", Dict())
-            energy = solution["solution"]["storage"]["$j"]["se"]
+            energy = result["solution"]["storage"]["$j"]["se"]
             if !isnan(energy)
                 storage["energy"] = energy
             else # if network fails to solve, then set energy value to previous network's energy value
@@ -29,5 +29,5 @@ function run_restoration_simulation(network_data, model_constructor, optimizer; 
         Memento.warn(_PMs._LOGGER, "restoration step $(n), objective $(result["objective"]), active power $(active_power_served)")
     end
 
-    return solution = process_network(_network_data)
+    return process_network(_network_data)
 end
