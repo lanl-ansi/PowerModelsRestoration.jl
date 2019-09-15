@@ -47,20 +47,38 @@ function clean_solution!(solution)
 end
 
 
-"Replace non-binary status codes for devices" #needed because PowerModels filters non-zero status items
-function clean_status!(nw_data)
-    for item_type in ["load", "shunt"]
-        for (n, net) in nw_data["nw"]
-            for (i,item) in get(net, item_type, Dict())
-                item["status"] = ceil(item["status"])
+# Required because PowerModels assumes integral status values
+"Replace non-integer status codes for devices, maps bus status to bus_type"
+function clean_status!(data)
+    if InfrastructureModels.ismultinetwork(data)
+        for (i, nw_data) in data["nw"]
+            _clean_status!(nw_data)
+        end
+    else
+        _clean_status!(data)
+    end
+end
+
+function _clean_status!(network)
+    for (i, bus) in get(network, "bus", Dict())
+        if haskey(bus, "status")
+            status = round(Int, bus["status"])
+            if status == 0
+                bus["bus_type"] = 4
+            elseif status == 1
+                if bus["bus_type"] == 4
+                    Memento.warn(_PMs._LOGGER, "bus $(i) given status 1 but the bus_type is 4")
+                end
+            else
+                @assert false
             end
         end
     end
-    
-    for (n, net) in nw_data["nw"]
-        for (i, bus) in get(net, "bus", Dict())
-            if haskey(bus, "status") && bus["status"]==0
-                bus["bus_type"] = 4
+
+    for (comp_name, status_key) in _PMs.pm_component_status
+        for (i, comp) in get(network, comp_name, Dict())
+            if haskey(comp, status_key)
+                comp[status_key] = round(Int, comp[status_key])
             end
         end
     end
