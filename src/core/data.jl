@@ -180,14 +180,13 @@ function _propagate_damage_status!(data::Dict{String,<:Any})
     incident_gen = _PMs.bus_gen_lookup(data["gen"], data["bus"])
     incident_active_gen = Dict()
     for (i, gen_list) in incident_gen
-        incident_active_gen[i] = [gen for gen in gen_list if gen["damaged"] == 0]
-        #incident_active_gen[i] = filter(gen -> gen["gen_status"] != 0, gen_list)
+        incident_active_gen[i] = [gen for gen in gen_list if ~haskey(gen, "damaged") || gen["damaged"] == 0]
     end
 
     incident_storage = _PMs.bus_storage_lookup(data["storage"], data["bus"])
     incident_active_storage = Dict()
     for (i, storage_list) in incident_storage
-        incident_active_storage[i] = [gen for gen in storage_list if gen["damaged"] == 0]
+        incident_active_storage[i] = [gen for gen in storage_list if ~haskey(gen, "damaged") || gen["damaged"] == 0]
     end
 
     incident_branch = Dict(bus["bus_i"] => [] for (i,bus) in data["bus"])
@@ -200,11 +199,11 @@ function _propagate_damage_status!(data::Dict{String,<:Any})
     iteration = 0
 
     for (i,branch) in data["branch"]
-        if branch["damaged"] != 1
+        if ~haskey(branch, "damaged") || branch["damaged"] != 1
             f_bus = buses[branch["f_bus"]]
             t_bus = buses[branch["t_bus"]]
 
-            if f_bus["damaged"] == 1|| t_bus["damaged"] == 1
+            if (haskey(f_bus, "damaged") && f_bus["damaged"]) == 1 || (haskey(t_bus, "damaged") && t_bus["damaged"]) == 1
                 Memento.info(_PMs._LOGGER, "deactivating branch $(i):($(branch["f_bus"]),$(branch["t_bus"])) due to damaged connecting bus")
                 branch["damaged"] = 1
                 updated = true
@@ -213,25 +212,21 @@ function _propagate_damage_status!(data::Dict{String,<:Any})
     end
 
     for (i,bus) in buses
-        if bus["damaged"] == 1
+        if haskey(bus, "damaged") && bus["damaged"] == 1
             for gen in incident_active_gen[i]
-                if gen["damaged"] != 1
-                    Memento.info(_PMs._LOGGER, "deactivating generator $(gen["index"]) due to damaged bus $(i)")
-                    gen["damaged"] = 1
-                    updated = true
-                end
+                Memento.info(_PMs._LOGGER, "deactivating generator $(gen["index"]) due to damaged bus $(i)")
+                gen["damaged"] = 1
+                updated = true
             end
         end
     end
 
     for (i,bus) in buses
-        if bus["damaged"] == 1
+        if haskey(bus, "damaged") && bus["damaged"] == 1
             for storage in incident_active_storage[i]
-                if storage["damaged"] != 1
-                    Memento.info(_PMs._LOGGER, "deactivating storage $(storage["index"]) due to damaged bus $(i)")
-                    storage["damaged"] = 1
-                    updated = true
-                end
+                Memento.info(_PMs._LOGGER, "deactivating storage $(storage["index"]) due to damaged bus $(i)")
+                storage["damaged"] = 1
+                updated = true
             end
         end
     end
