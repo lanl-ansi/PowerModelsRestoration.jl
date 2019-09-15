@@ -2,15 +2,15 @@
 function run_restoration_simulation(network_data, model_constructor, optimizer; kwargs...)
     _network_data = deepcopy(network_data)
 
-    clean_status!(_network_data)  #sets status==Nan, Nothing -> status=0 and  bus["status"]==0 -> bus["bus_type"]=4 
+    clean_status!(_network_data)
     net_id = map(x->parse(Int,x), sort(collect(keys(_network_data["nw"]))))
 
     for n in net_id
         network = _network_data["nw"]["$n"]
         network["per_unit"] = _network_data["per_unit"]
 
-        solution = _PMs.run_model(network, model_constructor, optimizer, _MLD.post_mld_strg; solution_builder=solution_rop, kwargs...)
-        _network_data["nw"]["$n"]["solution"] = solution
+        result = _PMs.run_model(network, model_constructor, optimizer, _MLD.post_mld_strg; solution_builder=solution_rop, kwargs...)
+        _network_data["nw"]["$n"]["solution"] = result
         network_forward = get(_network_data["nw"],"$(n+1)", Dict())
 
         # TODO is this the correct way to update storage energy?
@@ -24,6 +24,9 @@ function run_restoration_simulation(network_data, model_constructor, optimizer; 
             end
         end
         =#
+
+        active_power_served = sum(load["pd"] for (i,load) in result["solution"]["load"])
+        Memento.warn(_PMs._LOGGER, "restoration step $(n), objective $(result["objective"]), active power $(active_power_served)")
     end
 
     return solution = process_network(_network_data)

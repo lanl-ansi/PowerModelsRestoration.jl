@@ -48,7 +48,7 @@ end
 
 
 # Required because PowerModels assumes integral status values
-"Replace non-binary status codes for devices"
+"Replace non-integer status codes for devices, maps bus status to bus_type"
 function clean_status!(data)
     if InfrastructureModels.ismultinetwork(data)
         for (i, nw_data) in data["nw"]
@@ -61,8 +61,17 @@ end
 
 function _clean_status!(network)
     for (i, bus) in get(network, "bus", Dict())
-        if haskey(bus, "status") && isapprox(bus["status"], 0)
-            bus["bus_type"] = 4
+        if haskey(bus, "status")
+            status = round(Int, bus["status"])
+            if status == 0
+                bus["bus_type"] = 4
+            elseif status == 1
+                if bus["bus_type"] == 4
+                    Memento.warn(_PMs._LOGGER, "bus $(i) given status 1 but the bus_type is 4")
+                end
+            else
+                @assert false
+            end
         end
     end
 
