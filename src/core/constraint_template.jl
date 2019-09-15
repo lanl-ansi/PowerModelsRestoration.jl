@@ -9,12 +9,11 @@ function constraint_restoration_cardinality_lb(pm::_PMs.AbstractPowerModel; nw::
     constraint_restoration_cardinality_lb(pm, nw, cumulative_repairs)
 end
 
-
-"Require all items restored in final time-step"
-function constraint_restore_all_items(pm::_PMs.AbstractPowerModel)
-    nw = maximum(_PMs.nw_ids(pm))
-    constraint_restore_all_items(pm, nw)
-end
+#  
+# "Require all items restored in final time-step"
+# function constraint_restore_all_items(pm::_PMs.AbstractPowerModel; nw::Int=maximum(_PMs.nw_ids(pm)))
+#     constraint_restore_all_items(pm, nw)
+# end
 
 
 ""

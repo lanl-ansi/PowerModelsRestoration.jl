@@ -95,8 +95,8 @@ function post_rop(pm::_PMs.AbstractPowerModel)
         n_1 = n_2
     end
 
-    # n_final = last(network_ids)
-    constraint_restore_all_items(pm)
+    n_final = last(network_ids)
+    constraint_restore_all_items(pm, n_final)
 
     objective_max_load_delivered(pm)
 end
