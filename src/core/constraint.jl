@@ -33,22 +33,31 @@ end
 
 
 function constraint_restore_all_items(pm, n)
+    z_demand = _PMs.var(pm, n, :z_demand)
+    z_shunt = _PMs.var(pm, n, :z_storage)
     z_storage = _PMs.var(pm, n, :z_storage)
     z_gen = _PMs.var(pm, n, :z_gen)
     z_branch = _PMs.var(pm, n, :z_branch)
     z_bus = _PMs.var(pm, n, :z_bus)
 
-    for (i,storage) in  _PMs.ref(pm, n, :damaged_storage);   
-        JuMP.@constraint(pm.model, z_storage[i]==1); 
+    for (i,load) in  _PMs.ref(pm, n, :load)
+        JuMP.@constraint(pm.model, z_demand[i] == 1)
+    end
+    for (i,shunt) in  _PMs.ref(pm, n, :shunt)
+        JuMP.@constraint(pm.model, z_shunt[i] == 1)
+    end
+
+    for (i,storage) in  _PMs.ref(pm, n, :damaged_storage)
+        JuMP.@constraint(pm.model, z_storage[i] == 1)
     end
     for (i,gen) in  _PMs.ref(pm, n, :damaged_gen)
-        JuMP.@constraint(pm.model, z_gen[i]==1 )
+        JuMP.@constraint(pm.model, z_gen[i] == 1)
     end
     for (i,branch) in  _PMs.ref(pm, n, :damaged_branch)
-        JuMP.@constraint(pm.model, z_branch[i]==1)
+        JuMP.@constraint(pm.model, z_branch[i] == 1)
     end
     for (i,bus) in  _PMs.ref(pm, n, :damaged_bus)
-        JuMP.@constraint(pm.model, z_bus[i]==1)
+        JuMP.@constraint(pm.model, z_bus[i] == 1)
     end
 end
 
