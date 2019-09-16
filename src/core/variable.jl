@@ -203,8 +203,7 @@ function variable_bus_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.c
         )
     end
 
-    #z_bus = Dict(i => haskey(bus, "damaged") && bus["damaged"] == 1 ? z_bus_vars[i] : bus["bus_type"]==4 ? 1 : 0  for (i,bus) in _PMs.ref(pm, nw, :bus))
-    z_bus = Dict(i => haskey(bus, "damaged") && bus["damaged"] == 1 ? z_bus_vars[i] : bus["status"] for (i,bus) in _PMs.ref(pm, nw, :bus))
+    z_bus = Dict(i => haskey(bus, "damaged") && bus["damaged"] == 1 ? z_bus_vars[i] : bus["bus_type"]==4 ? 0 : 1  for (i,bus) in _PMs.ref(pm, nw, :bus))
     _PMs.var(pm, nw)[:z_bus] = z_bus
 end
 

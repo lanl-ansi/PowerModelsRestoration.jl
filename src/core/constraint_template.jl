@@ -169,9 +169,10 @@ function constraint_storage_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=
 end
 
 ""
-function constraint_bus_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd, kwargs...)
+function constraint_bus_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     if haskey(_PMs.ref(pm, nw, :damaged_bus), i)
         bus = _PMs.ref(pm, nw, :bus, i)
+
 
         for gen_id in _PMs.ref(pm, nw, :bus_gens, i)
             constraint_gen_bus_connection(pm, nw, gen_id, i)
@@ -185,13 +186,10 @@ function constraint_bus_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.c
             constraint_storage_bus_connection(pm, nw, storage_id, i)
         end
 
-        for (branch_id, bus_fr, bus_to) in _PMs.ref(pm, nw, :arcs_from)
-            if bus_fr==i 
-                constraint_branch_bus_connection(pm, nw, branch_id, bus_fr)
-            else bus_to==i
-                constraint_branch_bus_connection(pm, nw, branch_id, bus_fr)
-            end
-        end    
+        for (branch_id, bus_fr, bus_to) in _PMs.ref(pm, nw, :bus_arcs, i)
+            @assert bus_fr == i
+            constraint_branch_bus_connection(pm, nw, branch_id, bus_fr)
+        end
     end
 end
 

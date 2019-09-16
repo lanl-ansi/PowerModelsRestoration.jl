@@ -27,11 +27,11 @@ function post_mrsp(pm::_PMs.AbstractPowerModel)
 
     for i in _PMs.ids(pm, :ref_buses)
         _PMs.constraint_theta_ref(pm, i)
-        constraint_bus_damage(pm, i)
     end
 
     for i in _PMs.ids(pm, :bus)
         _PMs.constraint_power_balance(pm, i)
+        constraint_bus_damage(pm, i)
     end
 
     for i in _PMs.ids(pm, :damaged_gen)
