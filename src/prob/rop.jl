@@ -44,7 +44,16 @@ function post_rop(pm::_PMs.AbstractPowerModel)
             constraint_generation_damage(pm, i, nw=n)
         end
 
+        for i in _PMs.ids(pm, :load, nw=n)
+            constraint_load_damage(pm, i, nw=n)
+        end
+
+        for i in _PMs.ids(pm, :shunt, nw=n)
+            constraint_shunt_damage(pm, i, nw=n)
+        end
+
         for i in _PMs.ids(pm, :branch, nw=n)
+            constraint_branch_damage(pm, i, nw=n)
             constraint_ohms_yt_from_damage(pm, i, nw=n)
             constraint_ohms_yt_to_damage(pm, i, nw=n)
 
