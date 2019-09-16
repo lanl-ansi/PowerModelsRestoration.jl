@@ -34,7 +34,7 @@ end
 
 function constraint_restore_all_items(pm, n)
     z_demand = _PMs.var(pm, n, :z_demand)
-    z_shunt = _PMs.var(pm, n, :z_storage)
+    z_shunt = _PMs.var(pm, n, :z_shunt)
     z_storage = _PMs.var(pm, n, :z_storage)
     z_gen = _PMs.var(pm, n, :z_gen)
     z_branch = _PMs.var(pm, n, :z_branch)
@@ -143,7 +143,15 @@ function constraint_load_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, loa
     end
 end
 
-## Add constraint_shunt_bus_connection?  If vm is forced to zero, this shouldnt be necessary?
+"on/off constraint for shunts connected to damaged buses"
+function constraint_shunt_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, shunt_id::Int, bus_id::Int)
+    if haskey(_PMs.var(pm,n), :z_shunt)
+        z_shunt = _PMs.var(pm, n, :z_shunt, shunt_id)
+        z_bus = _PMs.var(pm, n, :z_bus, bus_id)
+
+        JuMP.@constraint(pm.model, z_shunt <= z_bus)
+    end
+end
 
 "on/off constraint for branches connected to damaged buses"
 function constraint_branch_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, branch_id::Int, bus_id::Int)

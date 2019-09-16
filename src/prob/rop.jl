@@ -36,8 +36,8 @@ function post_rop(pm::_PMs.AbstractPowerModel)
         end
 
         for i in _PMs.ids(pm, :bus, nw=n)
-            _MLD.constraint_power_balance_shed(pm, i, nw=n)
             constraint_bus_damage(pm, i, nw=n)
+            _MLD.constraint_power_balance_shed(pm, i, nw=n)
         end
 
         for i in _PMs.ids(pm, :gen, nw=n)
