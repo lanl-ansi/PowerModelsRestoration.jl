@@ -178,16 +178,20 @@ function _propagate_damage_status!(data::Dict{String,<:Any})
     buses = Dict(bus["bus_i"] => bus for (i,bus) in data["bus"])
 
     incident_gen = _PMs.bus_gen_lookup(data["gen"], data["bus"])
+    #=
     incident_active_gen = Dict()
     for (i, gen_list) in incident_gen
         incident_active_gen[i] = [gen for gen in gen_list if ~haskey(gen, "damaged") || gen["damaged"] == 0]
     end
+    =#
 
     incident_storage = _PMs.bus_storage_lookup(data["storage"], data["bus"])
+    #=
     incident_active_storage = Dict()
     for (i, storage_list) in incident_storage
         incident_active_storage[i] = [storage for storage in storage_list if ~haskey(storage, "damaged") || storage["damaged"] == 0]
     end
+    =#
 
     incident_branch = Dict(bus["bus_i"] => [] for (i,bus) in data["bus"])
     for (i,branch) in data["branch"]
@@ -195,27 +199,19 @@ function _propagate_damage_status!(data::Dict{String,<:Any})
         push!(incident_branch[branch["t_bus"]], branch)
     end
 
-    for (i,branch) in data["branch"]
-        if ~haskey(branch, "damaged") || branch["damaged"] != 1
-            f_bus = buses[branch["f_bus"]]
-            t_bus = buses[branch["t_bus"]]
-
-            if (haskey(f_bus, "damaged") && f_bus["damaged"]) == 1 || (haskey(t_bus, "damaged") && t_bus["damaged"]) == 1
-                Memento.info(_PMs._LOGGER, "damaging branch $(i):($(branch["f_bus"]),$(branch["t_bus"])) due to damaged connecting bus")
-                branch["damaged"] = 1
-            end
-        end
-    end
-
     for (i,bus) in buses
         if haskey(bus, "damaged") && bus["damaged"] == 1
-            for gen in incident_active_gen[i]
+            for gen in incident_gen[i]
                 Memento.info(_PMs._LOGGER, "damaging generator $(gen["index"]) due to damaged bus $(i)")
                 gen["damaged"] = 1
             end
-            for storage in incident_active_storage[i]
+            for storage in incident_storage[i]
                 Memento.info(_PMs._LOGGER, "damaging storage $(storage["index"]) due to damaged bus $(i)")
                 storage["damaged"] = 1
+            end
+            for branch in incident_branch[i]
+                Memento.info(_PMs._LOGGER, "damaging branch $(branch["index"]) due to damaged bus $(i)")
+                branch["damaged"] = 1
             end
         end
     end
