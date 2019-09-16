@@ -115,14 +115,14 @@ function variable_storage_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=
     if relax == false
         z_storage_vars = JuMP.@variable(pm.model,
             [l in _PMs.ids(pm, nw, :damaged_storage)],
-            base_name="$(nw)storage",
+            base_name="$(nw)_damage_storage",
             binary = true,
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :storage, l), "storage_damage_start", 1, 0.0)
         )
     else
         z_storage_vars = JuMP.@variable(pm.model,
             [l in _PMs.ids(pm, nw, :damaged_storage)],
-            base_name="$(nw)storage",
+            base_name="$(nw)_damage_storage",
             lower_bound = 0,
             upper_bound = 1,
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :storage, l), "storage_damage_start", 1, 0.0)
