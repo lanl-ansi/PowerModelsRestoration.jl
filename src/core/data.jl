@@ -178,20 +178,7 @@ function _propagate_damage_status!(data::Dict{String,<:Any})
     buses = Dict(bus["bus_i"] => bus for (i,bus) in data["bus"])
 
     incident_gen = _PMs.bus_gen_lookup(data["gen"], data["bus"])
-    #=
-    incident_active_gen = Dict()
-    for (i, gen_list) in incident_gen
-        incident_active_gen[i] = [gen for gen in gen_list if ~haskey(gen, "damaged") || gen["damaged"] == 0]
-    end
-    =#
-
     incident_storage = _PMs.bus_storage_lookup(data["storage"], data["bus"])
-    #=
-    incident_active_storage = Dict()
-    for (i, storage_list) in incident_storage
-        incident_active_storage[i] = [storage for storage in storage_list if ~haskey(storage, "damaged") || storage["damaged"] == 0]
-    end
-    =#
 
     incident_branch = Dict(bus["bus_i"] => [] for (i,bus) in data["bus"])
     for (i,branch) in data["branch"]
