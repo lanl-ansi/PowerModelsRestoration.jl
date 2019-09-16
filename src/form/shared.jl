@@ -8,13 +8,13 @@ function _PMs.constraint_storage_loss(pm::_PMs.AbstractWModels, n::Int, i, bus, 
 
     JuMP.@constraint(pm.model, 
         sum(ps[c] for c in conductors) + (sd - sc)
-        ==
+        >=
         p_loss + sum(r[c]*(ps[c]^2 + qs[c]^2)/JuMP.upper_bound(w[c]) for c in conductors)
     )
 
     JuMP.@constraint(pm.model, 
         sum(qs[c] for c in conductors)
-        ==
+        >=
         q_loss + sum(x[c]*(ps[c]^2 + qs[c]^2)/JuMP.upper_bound(w[c]) for c in conductors)
     )
 end
