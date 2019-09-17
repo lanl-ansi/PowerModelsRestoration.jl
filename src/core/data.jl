@@ -62,11 +62,11 @@ end
 function _clean_status!(network)
     for (i, bus) in get(network, "bus", Dict())
         if haskey(bus, "status")
-            status = round(Int, bus["status"])
+            status = bus["status"] = round(Int, bus["status"])
             if status == 0
                 bus["bus_type"] = 4
             elseif status == 1
-                if bus["bus_type"] == 4
+                if get(bus, "bus_type", -1) == 4
                     Memento.warn(_PMs._LOGGER, "bus $(i) given status 1 but the bus_type is 4")
                 end
             else
@@ -178,16 +178,7 @@ function _propagate_damage_status!(data::Dict{String,<:Any})
     buses = Dict(bus["bus_i"] => bus for (i,bus) in data["bus"])
 
     incident_gen = _PMs.bus_gen_lookup(data["gen"], data["bus"])
-    incident_active_gen = Dict()
-    for (i, gen_list) in incident_gen
-        incident_active_gen[i] = [gen for gen in gen_list if ~haskey(gen, "damaged") || gen["damaged"] == 0]
-    end
-
     incident_storage = _PMs.bus_storage_lookup(data["storage"], data["bus"])
-    incident_active_storage = Dict()
-    for (i, storage_list) in incident_storage
-        incident_active_storage[i] = [gen for gen in storage_list if ~haskey(gen, "damaged") || gen["damaged"] == 0]
-    end
 
     incident_branch = Dict(bus["bus_i"] => [] for (i,bus) in data["bus"])
     for (i,branch) in data["branch"]
@@ -195,41 +186,85 @@ function _propagate_damage_status!(data::Dict{String,<:Any})
         push!(incident_branch[branch["t_bus"]], branch)
     end
 
-    updated = true
-    iteration = 0
-
-    for (i,branch) in data["branch"]
-        if ~haskey(branch, "damaged") || branch["damaged"] != 1
-            f_bus = buses[branch["f_bus"]]
-            t_bus = buses[branch["t_bus"]]
-
-            if (haskey(f_bus, "damaged") && f_bus["damaged"]) == 1 || (haskey(t_bus, "damaged") && t_bus["damaged"]) == 1
-                Memento.info(_PMs._LOGGER, "deactivating branch $(i):($(branch["f_bus"]),$(branch["t_bus"])) due to damaged connecting bus")
-                branch["damaged"] = 1
-                updated = true
-            end
-        end
-    end
-
     for (i,bus) in buses
         if haskey(bus, "damaged") && bus["damaged"] == 1
-            for gen in incident_active_gen[i]
-                Memento.info(_PMs._LOGGER, "deactivating generator $(gen["index"]) due to damaged bus $(i)")
+            for gen in incident_gen[i]
+                Memento.info(_PMs._LOGGER, "damaging generator $(gen["index"]) due to damaged bus $(i)")
                 gen["damaged"] = 1
-                updated = true
+            end
+            for storage in incident_storage[i]
+                Memento.info(_PMs._LOGGER, "damaging storage $(storage["index"]) due to damaged bus $(i)")
+                storage["damaged"] = 1
+            end
+            for branch in incident_branch[i]
+                Memento.info(_PMs._LOGGER, "damaging branch $(branch["index"]) due to damaged bus $(i)")
+                branch["damaged"] = 1
             end
         end
     end
 
-    for (i,bus) in buses
-        if haskey(bus, "damaged") && bus["damaged"] == 1
-            for storage in incident_active_storage[i]
-                Memento.info(_PMs._LOGGER, "deactivating storage $(storage["index"]) due to damaged bus $(i)")
-                storage["damaged"] = 1
-                updated = true
-            end
-        end
-    end
 end
 
 
+"""
+prints a summary of a restoration solution to the terminal
+"""
+function print_summary_restoration(data::Dict{String,<:Any})
+    summary_restoration(stdout, data)
+end
+
+"""
+prints a summary of a restoration solution
+"""
+function summary_restoration(io::IO, data::Dict{String,<:Any})
+    if !_IMs.ismultinetwork(data)
+        Memento.error(_LOGGER, "summary_restoration requires multinetwork data")
+    end
+
+    networks = sort(collect(keys(data["nw"])), by=x -> parse(Int, x))
+    component_names = sort(collect(keys(_PMs.pm_component_status)))
+
+    network = data["nw"][networks[1]]
+    header = ["step", "pd", "qd"]
+    for comp_name in component_names
+        if haskey(network, comp_name)
+            components = network[comp_name]
+            comp_ids = sort(collect(keys(components)), by=x -> parse(Int, x))
+            for comp_id in comp_ids
+                push!(header, "$(comp_name)_$(comp_id)")
+            end
+        end
+    end
+    println(io, join(header, ", "))
+
+    for nw in networks
+        network = data["nw"][nw]
+
+        summary_data = Any[nw]
+
+        load_pd = sum(load["pd"] for (i,load) in network["load"])
+        load_qd = sum(load["qd"] for (i,load) in network["load"])
+        push!(summary_data, trunc(load_pd, sigdigits=5))
+        push!(summary_data, trunc(load_qd, sigdigits=5))
+
+        for comp_name in component_names
+            comp_status_name = _PMs.pm_component_status[comp_name]
+            if haskey(network, comp_name)
+                components = network[comp_name]
+                comp_ids = sort(collect(keys(components)), by=x -> parse(Int, x))
+                for comp_id in comp_ids
+                    comp = components[comp_id]
+                    status_value = -1
+                    if haskey(comp, comp_status_name)
+                        status_value = comp[comp_status_name]
+                    elseif haskey(comp, "status")
+                        status_value = comp["status"]
+                    end
+                    push!(summary_data, status_value)
+                end
+            end
+        end
+
+        println(io, join([string(v) for v in summary_data], ", "))
+    end
+end

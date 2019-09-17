@@ -27,18 +27,19 @@ function post_mrsp(pm::_PMs.AbstractPowerModel)
 
     for i in _PMs.ids(pm, :ref_buses)
         _PMs.constraint_theta_ref(pm, i)
-        constraint_bus_damage(pm, i)
     end
 
     for i in _PMs.ids(pm, :bus)
+        constraint_bus_damage(pm, i)
         _PMs.constraint_power_balance(pm, i)
     end
 
-    for i in _PMs.ids(pm, :damaged_gen)
+    for i in _PMs.ids(pm, :gen)
         constraint_generation_damage(pm, i)
     end
 
     for i in _PMs.ids(pm, :branch)
+        constraint_branch_damage(pm, i)
         constraint_ohms_yt_from_damage(pm, i)
         constraint_ohms_yt_to_damage(pm, i)
 
@@ -75,6 +76,7 @@ function objective_min_restoration(pm::_PMs.AbstractPowerModel)
         sum(z_branch[i] for (i,branch) in _PMs.ref(pm, :damaged_branch))
         + sum(z_gen[i] for (i,gen) in _PMs.ref(pm, :damaged_gen))
         + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, :damaged_storage))
+        + sum(z_bus[i] for (i,bus) in _PMs.ref(pm, :damaged_bus))
     )
 end
 

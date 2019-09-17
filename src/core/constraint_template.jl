@@ -18,9 +18,74 @@ end
 
 ""
 function constraint_generation_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    if haskey(_PMs.ref(pm, nw, :damaged_gen), i)
-        gen = _PMs.ref(pm, nw, :gen, i)
+    gen = _PMs.ref(pm, nw, :gen, i)
+
+    gen_damaged = haskey(_PMs.ref(pm, nw, :damaged_gen), i)
+    bus_damaged = haskey(_PMs.ref(pm, nw, :damaged_bus), gen["gen_bus"])
+
+    if gen_damaged
         _PMs.constraint_generation_on_off(pm, nw, cnd, i, gen["pmin"][cnd], gen["pmax"][cnd], gen["qmin"][cnd], gen["qmax"][cnd])
+        if bus_damaged
+            constraint_gen_bus_connection(pm, nw, i, gen["gen_bus"])
+        end
+    end
+    if bus_damaged && !gen_damaged
+        Memento.error(_PMs._LOGGER, "non-damaged generator $(i) connected to damaged bus $(gen["gen_bus"])")
+    end
+end
+
+
+""
+function constraint_load_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    load = _PMs.ref(pm, nw, :load, i)
+
+    bus_damaged = haskey(_PMs.ref(pm, nw, :damaged_bus), load["load_bus"])
+
+    if bus_damaged
+        constraint_load_bus_connection(pm, nw, i, load["load_bus"])
+    end
+    #if bus_damaged && !load_damaged
+    #    Memento.error(_PMs._LOGGER, "non-damaged load $(i) connected to damaged bus $(load["load_bus"])")
+    #end
+end
+
+
+""
+function constraint_shunt_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    shunt = _PMs.ref(pm, nw, :shunt, i)
+
+    bus_damaged = haskey(_PMs.ref(pm, nw, :damaged_bus), shunt["shunt_bus"])
+
+    if bus_damaged
+        constraint_shunt_bus_connection(pm, nw, i, shunt["shunt_bus"])
+    end
+    #if bus_damaged && !shunt_damaged
+    #    Memento.error(_PMs._LOGGER, "non-damaged shunt $(i) connected to damaged bus $(shunt["shunt_bus"])")
+    #end
+end
+
+
+""
+function constraint_branch_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    branch = _PMs.ref(pm, nw, :branch, i)
+
+    branch_damaged = haskey(_PMs.ref(pm, nw, :damaged_branch), i)
+    bus_fr_damaged = haskey(_PMs.ref(pm, nw, :damaged_bus), branch["f_bus"])
+    bus_to_damaged = haskey(_PMs.ref(pm, nw, :damaged_bus), branch["t_bus"])
+
+    if branch_damaged
+        if bus_fr_damaged
+            constraint_branch_bus_connection(pm, nw, i, branch["f_bus"])
+        end
+        if bus_to_damaged
+            constraint_branch_bus_connection(pm, nw, i, branch["t_bus"])
+        end
+    end
+    if bus_fr_damaged && !branch_damaged
+        Memento.error(_PMs._LOGGER, "non-damaged branch $(i) connected to damaged bus $(branch["f_bus"])")
+    end
+    if bus_to_damaged && !branch_damaged
+        Memento.error(_PMs._LOGGER, "non-damaged branch $(i) connected to damaged bus $(branch["t_bus"])")
     end
 end
 
@@ -153,8 +218,16 @@ end
 
 ""
 function constraint_storage_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    if haskey(_PMs.ref(pm, nw, :damaged_storage), i)
-        storage = _PMs.ref(pm, nw, :storage, i)
+    storage = _PMs.ref(pm, nw, :storage, i)
+
+    storage_damaged = haskey(_PMs.ref(pm, nw, :damaged_storage), i)
+    bus_damaged = haskey(_PMs.ref(pm, nw, :damaged_bus), storage["storage_bus"])
+
+    for storage_id in _PMs.ref(pm, nw, :bus_storage, i)
+        constraint_storage_bus_connection(pm, nw, storage_id, i)
+    end
+
+    if storage_damaged
         charge_ub = storage["charge_rating"]
         discharge_ub = storage["discharge_rating"]
 
@@ -165,33 +238,17 @@ function constraint_storage_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=
         qmax = min(inj_ub[i], _PMs.ref(pm, nw, :storage, i, "qmax", cnd))
 
         _PMs.constraint_storage_on_off(pm, nw, cnd, i, pmin, pmax, qmin, qmax, charge_ub, discharge_ub)
+        if bus_damaged
+            constraint_storage_bus_connection(pm, nw, i, storage["storage_bus"])
+        end
+    end
+    if bus_damaged && !storage_damaged
+        Memento.error(_PMs._LOGGER, "non-damaged storage $(i) connected to damaged bus $(gen["storage_bus"])")
     end
 end
 
 ""
-function constraint_bus_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd, kwargs...)
-    if haskey(_PMs.ref(pm, nw, :damaged_bus), i)
-        bus = _PMs.ref(pm, nw, :bus, i)
-
-        for gen_id in _PMs.ref(pm, nw, :bus_gens, i)
-            constraint_gen_bus_connection(pm, nw, gen_id, i)
-        end
-
-        for load_id in _PMs.ref(pm, nw, :bus_loads, i)
-            constraint_load_bus_connection(pm, nw, load_id, i)
-        end
-
-        for storage_id in _PMs.ref(pm, nw, :bus_storage, i)
-            constraint_storage_bus_connection(pm, nw, storage_id, i)
-        end
-
-        for (branch_id, bus_fr, bus_to) in _PMs.ref(pm, nw, :arcs_from)
-            if bus_fr==i 
-                constraint_branch_bus_connection(pm, nw, branch_id, bus_fr)
-            else bus_to==i
-                constraint_branch_bus_connection(pm, nw, branch_id, bus_fr)
-            end
-        end    
-    end
+function constraint_bus_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    # TODO add on/off voltage
 end
 

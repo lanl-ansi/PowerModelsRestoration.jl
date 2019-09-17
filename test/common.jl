@@ -45,6 +45,10 @@ function bus_status(result, bus_id)
     return result["solution"]["bus"][bus_id]["status"]
 end
 
+""
+function bus_status(result, bus_id)
+    return result["solution"]["bus"][bus_id]["status"]
+end
 
 ""
 function branch_status(result, nw_id, branch_id)
