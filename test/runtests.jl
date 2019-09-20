@@ -24,12 +24,12 @@ juniper_solver = with_optimizer(Juniper.Optimizer, nl_solver=PowerModels.with_op
 
 include("common.jl")
 
-@testset "PowerModelsRestoration" begin
+# @testset "PowerModelsRestoration" begin
 
-include("mrsp.jl")
-include("rop.jl")
-include("hueristic.jl")
-include("util.jl")
+# include("mrsp.jl")
+# include("rop.jl")
+# include("hueristic.jl")
+# include("util.jl")
 
-end
+# end
 
