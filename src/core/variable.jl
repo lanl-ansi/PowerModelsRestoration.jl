@@ -78,8 +78,8 @@ function variable_reactive_generation_damage(pm::_PMs.AbstractPowerModel; nw::In
 
     for i in _PMs.ids(pm, nw, :gen)
         if haskey(_PMs.ref(pm, nw, :gen, i), "damaged") && _PMs.ref(pm, nw, :gen,i)["damaged"] == 1
-            JuMP.set_upper_bound(_PMs.var(pm, nw, cnd, :pg, i), max(0, _PMs.ref(pm, nw, :gen, i, "qmax", cnd)))
-            JuMP.set_lower_bound(_PMs.var(pm, nw, cnd, :pg, i), min(0, _PMs.ref(pm, nw, :gen, i, "qmin", cnd)))
+            JuMP.set_upper_bound(_PMs.var(pm, nw, cnd, :qg, i), max(0, _PMs.ref(pm, nw, :gen, i, "qmax", cnd)))
+            JuMP.set_lower_bound(_PMs.var(pm, nw, cnd, :qg, i), min(0, _PMs.ref(pm, nw, :gen, i, "qmin", cnd)))
         end
     end
 end
