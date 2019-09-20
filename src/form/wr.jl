@@ -82,3 +82,65 @@ function _PMs.constraint_power_magnitude_sqr_on_off(pm::_PMs.AbstractQCWRModel, 
     JuMP.@constraint(pm.model, p_fr^2 + q_fr^2 <= w_ub*ccm*z/tm^2)
     JuMP.@constraint(pm.model, p_fr^2 + q_fr^2 <= w*ccm_ub*z/tm^2)
 end
+
+
+
+""
+function constraint_ohms_yt_from_damage(pm::_PMs.AbstractWRModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    branch = _PMs.ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+    t_idx = (i, t_bus, f_bus)
+
+    g, b = _PMs.calc_branch_y(branch)
+    tr, ti = _PMs.calc_branch_t(branch)
+    g_fr = branch["g_fr"][cnd]
+    b_fr = branch["b_fr"][cnd]
+    tm = branch["tap"][cnd]
+
+    # TODO make indexing of :wi,:wr standardized
+    ## Because :wi, :wr are indexed by bus_id or bus_pairs depending on if the value is on_off or
+    # standard, there are indexing issues.  Temporary solution: always call *_on_off variant
+    if haskey(_PMs.ref(pm, nw, :damaged_branch), i)
+        vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
+        vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
+        _PMs.constraint_ohms_yt_from_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_fr, b_fr, tr[cnd], ti[cnd], tm, vad_min, vad_max)
+    else
+        vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
+        vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
+        _PMs.constraint_ohms_yt_from_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_fr, b_fr, tr[cnd], ti[cnd], tm, vad_min, vad_max)
+        #_PMs.constraint_ohms_yt_from(pm, nw, cnd, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_fr, b_fr, tr[cnd], ti[cnd], tm)
+    end
+end
+
+
+""
+function constraint_ohms_yt_to_damage(pm::_PMs.AbstractWRModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    branch = _PMs.ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+    t_idx = (i, t_bus, f_bus)
+
+    g, b = _PMs.calc_branch_y(branch)
+    tr, ti = _PMs.calc_branch_t(branch)
+    g_to = branch["g_to"][cnd]
+    b_to = branch["b_to"][cnd]
+    tm = branch["tap"][cnd]
+
+    # TODO make indexing of :wi,:wr standardized
+    ## Because :wi, :wr are indexed by bus_id or bus_pairs depending on if the value is on_off or
+    # standard, there are indexing issues.  Temporary solution: always call *_on_off variant
+    if haskey(_PMs.ref(pm, nw, :damaged_branch), i)
+        vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
+        vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
+
+        _PMs.constraint_ohms_yt_to_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_to, b_to, tr[cnd], ti[cnd], tm, vad_min, vad_max)
+    else
+        vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
+        vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
+        _PMs.constraint_ohms_yt_to_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_to, b_to, tr[cnd], ti[cnd], tm, vad_min, vad_max)
+        #_PMs.constraint_ohms_yt_to(pm, nw, cnd, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_to, b_to, tr[cnd], ti[cnd], tm)
+    end
+end

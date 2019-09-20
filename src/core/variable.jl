@@ -1,6 +1,29 @@
 "Need because of mix of vars/real in z_gen, z_branch, z_storage"
 function JuMP.value(x::Real) return x end
 
+"variable: `v[i]` for `i` in `bus`es"
+function variable_voltage_magnitude_on_off(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+    if bounded
+        _PMs.var(pm, nw, cnd)[:vm] = JuMP.@variable(pm.model,
+            [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_$(cnd)_vm",
+            lower_bound = _PMs.ref(pm, nw, :bus, i, "vmin", cnd),
+            upper_bound = _PMs.ref(pm, nw, :bus, i, "vmax", cnd),
+            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "vm_start", cnd, 1.0)
+        )
+    else
+        _PMs.var(pm, nw, cnd)[:vm] = JuMP.@variable(pm.model,
+            [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_$(cnd)_vm",
+            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "vm_start", cnd, 1.0)
+        )
+    end
+
+    for i in _PMs.ids(pm, nw, :bus)
+        if haskey(_PMs.ref(pm, nw, :bus, i), "damaged") && _PMs.ref(pm, nw, :bus, i)["damaged"] == 1
+            JuMP.set_lower_bound(_PMs.var(pm, nw, cnd, :vm, i), 0.0)
+        end
+    end
+end
+
 
 "variable: `0 <= damage_gen[l] <= 1` for `l` in `gen`es"
 function variable_generation_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, relax=false)
@@ -205,9 +228,4 @@ function variable_bus_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.c
 
     z_bus = Dict(i => haskey(bus, "damaged") && bus["damaged"] == 1 ? z_bus_vars[i] : bus["bus_type"]==4 ? 0 : 1  for (i,bus) in _PMs.ref(pm, nw, :bus))
     _PMs.var(pm, nw)[:z_bus] = z_bus
-end
-
-function variable_voltage_damage(pm::_PMs.AbstractPowerModel; kwargs...)
-    ## TODO create on_off variant only for damaged buses. Use bus_voltage for non damaged componets
-    _PMs.variable_voltage_on_off(pm; kwargs...)
 end

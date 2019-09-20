@@ -27,7 +27,7 @@
         end
 
         @testset "5-bus storage case" begin
-        ## locally infeasible if 1 time_period is used
+            ## locally infeasible if 1 time_period is used
             mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=2)
             result = PowerModelsRestoration.run_rop(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
