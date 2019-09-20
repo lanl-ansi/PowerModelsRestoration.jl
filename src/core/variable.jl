@@ -22,7 +22,7 @@ function variable_generation_damage_indicator(pm::_PMs.AbstractPowerModel; nw::I
         )
     end
 
-    z_gen = Dict(i => haskey(gen, "damaged") && gen["damaged"] == 1 ? z_gen_vars[i] : gen["gen_status"]  for (i,gen) in _PMs.ref(pm, nw, :gen))
+    z_gen = Dict(i => haskey(gen, "damaged") && gen["damaged"] == 1 ? z_gen_vars[i] : gen["gen_status"] for (i,gen) in _PMs.ref(pm, nw, :gen))
     _PMs.var(pm, nw)[:z_gen] = z_gen
 end
 
@@ -39,7 +39,7 @@ function variable_active_generation_damage(pm::_PMs.AbstractPowerModel; nw::Int=
     for i in _PMs.ids(pm, nw, :gen)
         if bounded
             _PMs.var(pm, nw, cnd)[:pg] = JuMP.@variable(pm.model,
-                [i in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_$(cnd)_pg",
+                [i in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_$(cnd)_pg_dmg",
                 lower_bound = _PMs.ref(pm, nw, :gen, i, "pmin", cnd),
                 upper_bound = _PMs.ref(pm, nw, :gen, i, "pmax", cnd),
                 start = _PMs.comp_start_value(_PMs.ref(pm, nw, :gen, i), "pg_start", cnd)
@@ -52,7 +52,7 @@ function variable_active_generation_damage(pm::_PMs.AbstractPowerModel; nw::Int=
             end
         else
             _PMs.var(pm, nw, cnd)[:pg] = JuMP.@variable(pm.model,
-                [i in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_$(cnd)_pg",
+                [i in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_$(cnd)_pg_dmg",
                 start = _PMs.comp_start_value(_PMs.ref(pm, nw, :gen, i), "pg_start", cnd)
             )
         end
@@ -78,8 +78,8 @@ function variable_reactive_generation_damage(pm::_PMs.AbstractPowerModel; nw::In
 
     for i in _PMs.ids(pm, nw, :gen)
         if haskey(_PMs.ref(pm, nw, :gen, i), "damaged") && _PMs.ref(pm, nw, :gen,i)["damaged"] == 1
-            JuMP.set_upper_bound(_PMs.var(pm, nw, cnd, :pg, i), max(0, _PMs.ref(pm, nw, :gen, i, "qmax", cnd)))
-            JuMP.set_lower_bound(_PMs.var(pm, nw, cnd, :pg, i), min(0, _PMs.ref(pm, nw, :gen, i, "qmin", cnd)))
+            JuMP.set_upper_bound(_PMs.var(pm, nw, cnd, :qg, i), max(0, _PMs.ref(pm, nw, :gen, i, "qmax", cnd)))
+            JuMP.set_lower_bound(_PMs.var(pm, nw, cnd, :qg, i), min(0, _PMs.ref(pm, nw, :gen, i, "qmin", cnd)))
         end
     end
 end
@@ -111,7 +111,7 @@ end
 
 
 "variable: `0 <= damage_storage[l] <= 1` for `l` in `storage`es"
-function variable_storage_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, relax = false)
+function variable_storage_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, relax=false)
     if relax == false
         z_storage_vars = JuMP.@variable(pm.model,
             [l in _PMs.ids(pm, nw, :damaged_storage)],
@@ -150,7 +150,7 @@ function variable_active_storage_damage(pm::_PMs.AbstractPowerModel; nw::Int=pm.
     inj_lb, inj_ub = _PMs.ref_calc_storage_injection_bounds(_PMs.ref(pm, nw, :storage), _PMs.ref(pm, nw, :bus), cnd)
 
     _PMs.var(pm, nw, cnd)[:ps] = JuMP.@variable(pm.model,
-        [i in _PMs.ids(pm, nw, :storage)], base_name="$(nw)_$(cnd)_ps",
+        [i in _PMs.ids(pm, nw, :storage)], base_name="$(nw)_$(cnd)_ps_dmg",
         lower_bound = inj_lb[i],
         upper_bound = inj_ub[i],
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :storage, i), "ps_start", cnd)
@@ -170,7 +170,7 @@ function variable_reactive_storage_damage(pm::_PMs.AbstractPowerModel; nw::Int=p
     inj_lb, inj_ub = _PMs.ref_calc_storage_injection_bounds(_PMs.ref(pm, nw, :storage), _PMs.ref(pm, nw, :bus), cnd)
 
     _PMs.var(pm, nw, cnd)[:qs] = JuMP.@variable(pm.model,
-        [i in _PMs.ids(pm, nw, :storage)], base_name="$(nw)_$(cnd)_qs",
+        [i in _PMs.ids(pm, nw, :storage)], base_name="$(nw)_$(cnd)_qs_dmg",
         lower_bound = max(inj_lb[i], _PMs.ref(pm, nw, :storage, i, "qmin", cnd)),
         upper_bound = min(inj_ub[i], _PMs.ref(pm, nw, :storage, i, "qmax", cnd)),
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :storage, i), "qs_start", cnd)
@@ -207,7 +207,7 @@ function variable_bus_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.c
     _PMs.var(pm, nw)[:z_bus] = z_bus
 end
 
-function variable_bus_damage(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, kwargs...)
+function variable_voltage_damage(pm::_PMs.AbstractPowerModel; kwargs...)
     ## TODO create on_off variant only for damaged buses. Use bus_voltage for non damaged componets
-    _PMs.variable_voltage_on_off(pm, nw=nw, kwargs...)
+    _PMs.variable_voltage_on_off(pm; kwargs...)
 end

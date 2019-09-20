@@ -125,7 +125,7 @@ end
 
 "on/off constraint for generators connected to damaged buses"
 function constraint_gen_bus_connection(pm::_PMs.AbstractPowerModel, n::Int, gen_id::Int, bus_id::Int)
-    z_gen= _PMs.var(pm, n, :z_gen, gen_id)
+    z_gen = _PMs.var(pm, n, :z_gen, gen_id)
     z_bus = _PMs.var(pm, n, :z_bus, bus_id)
 
     JuMP.@constraint(pm.model, z_gen <= z_bus)

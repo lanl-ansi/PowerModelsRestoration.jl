@@ -9,7 +9,7 @@ end
 ""
 function post_mrsp(pm::_PMs.AbstractPowerModel)
     variable_bus_damage_indicator(pm)
-    variable_bus_damage(pm)
+    variable_voltage_damage(pm)
 
     variable_branch_damage_indicator(pm)
     _PMs.variable_branch_flow(pm)
@@ -22,7 +22,6 @@ function post_mrsp(pm::_PMs.AbstractPowerModel)
     variable_generation_damage_indicator(pm)
     variable_generation_damage(pm)
 
-    #_MLD.constraint_bus_voltage_on_off(pm)
     _PMs.constraint_model_voltage_on_off(pm)
 
     for i in _PMs.ids(pm, :ref_buses)
