@@ -76,7 +76,6 @@ function post_rop(pm::_PMs.AbstractPowerModel)
 
     network_ids = sort(collect(_PMs.nw_ids(pm)))
     n_1 = network_ids[1]
-
     for i in _PMs.ids(pm, :storage, nw=n_1)
         _PMs.constraint_storage_state(pm, i, nw=n_1)
     end
