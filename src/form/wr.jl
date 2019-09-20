@@ -1,6 +1,66 @@
 "All functions neccessary because z is sometimes an integer instead of variable_ref"
 function Base.isinteger(z::JuMP.VariableRef) return false end
 
+""
+function variable_voltage_damage(pm::_PMs.AbstractWRModel; kwargs...)
+    variable_voltage_magnitude_sqr_on_off(pm; kwargs...)
+    _PMs.variable_voltage_magnitude_sqr_from_on_off(pm; kwargs...)
+    _PMs.variable_voltage_magnitude_sqr_to_on_off(pm; kwargs...)
+
+    _PMs.variable_voltage_product_on_off(pm; kwargs...)
+end
+
+""
+function variable_voltage_magnitude_sqr_on_off(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, bounded = true)
+    if bounded
+        _PMs.var(pm, nw, cnd)[:w] = JuMP.@variable(pm.model,
+            [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_$(cnd)_w",
+            lower_bound = 0.0,
+            upper_bound = _PMs.ref(pm, nw, :bus, i, "vmax", cnd)^2,
+            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "w_start", cnd, 1.001)
+        )
+    else
+        _PMs.var(pm, nw, cnd)[:w] = JuMP.@variable(pm.model,
+            [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_$(cnd)_w",
+            lower_bound = 0.0,
+            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "w_start", cnd, 1.001)
+        )
+    end
+end
+
+#=
+""
+function constraint_model_voltage_damage(pm::_PMs.AbstractWRModel, n::Int, c::Int)
+    w  = var(pm, n, c, :w)
+    wr = var(pm, n, c, :wr)
+    wi = var(pm, n, c, :wi)
+    z  = var(pm, n, :z_branch)
+
+    w_fr = var(pm, n, c, :w_fr)
+    w_to = var(pm, n, c, :w_to)
+
+    _PMs.constraint_voltage_magnitude_sqr_from_on_off(pm, n, c)
+    _PMs.constraint_voltage_magnitude_sqr_to_on_off(pm, n, c)
+    _PMs.constraint_voltage_product_on_off(pm, n, c)
+
+    for (l,i,j) in ref(pm, n, :arcs_from)
+        _IMs.relaxation_complex_product_on_off(pm.model, w[i], w[j], wr[l], wi[l], z[l])
+        _IMs.relaxation_equality_on_off(pm.model, w[i], w_fr[l], z[l])
+        _IMs.relaxation_equality_on_off(pm.model, w[j], w_to[l], z[l])
+    end
+end
+=#
+
+""
+function constraint_bus_damage(pm::_PMs.AbstractWRModel, n::Int, c::Int, i::Int, vm_min, vm_max)
+    w = _PMs.var(pm, n, c, :w, i)
+    z = _PMs.var(pm, n, :z_bus, i)
+
+    JuMP.@constraint(pm.model, w <= z*vm_max^2)
+    JuMP.@constraint(pm.model, w >= z*vm_min^2)
+end
+
+
 "`p[arc_from]^2 + q[arc_from]^2 <= w[f_bus]/tm*ccm[i]`"
 function _PMs.constraint_power_magnitude_sqr_on_off(pm::_PMs.AbstractQCWRModel, n::Int, c::Int, i, f_bus, arc_from, tm)
     w    = _PMs.var(pm, n, c, :w, f_bus)
@@ -21,4 +81,66 @@ function _PMs.constraint_power_magnitude_sqr_on_off(pm::_PMs.AbstractQCWRModel, 
     JuMP.@constraint(pm.model, p_fr^2 + q_fr^2 <= w*ccm*z_ub/tm^2)
     JuMP.@constraint(pm.model, p_fr^2 + q_fr^2 <= w_ub*ccm*z/tm^2)
     JuMP.@constraint(pm.model, p_fr^2 + q_fr^2 <= w*ccm_ub*z/tm^2)
+end
+
+
+
+""
+function constraint_ohms_yt_from_damage(pm::_PMs.AbstractWRModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    branch = _PMs.ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+    t_idx = (i, t_bus, f_bus)
+
+    g, b = _PMs.calc_branch_y(branch)
+    tr, ti = _PMs.calc_branch_t(branch)
+    g_fr = branch["g_fr"][cnd]
+    b_fr = branch["b_fr"][cnd]
+    tm = branch["tap"][cnd]
+
+    # TODO make indexing of :wi,:wr standardized
+    ## Because :wi, :wr are indexed by bus_id or bus_pairs depending on if the value is on_off or
+    # standard, there are indexing issues.  Temporary solution: always call *_on_off variant
+    if haskey(_PMs.ref(pm, nw, :damaged_branch), i)
+        vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
+        vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
+        _PMs.constraint_ohms_yt_from_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_fr, b_fr, tr[cnd], ti[cnd], tm, vad_min, vad_max)
+    else
+        vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
+        vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
+        _PMs.constraint_ohms_yt_from_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_fr, b_fr, tr[cnd], ti[cnd], tm, vad_min, vad_max)
+        #_PMs.constraint_ohms_yt_from(pm, nw, cnd, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_fr, b_fr, tr[cnd], ti[cnd], tm)
+    end
+end
+
+
+""
+function constraint_ohms_yt_to_damage(pm::_PMs.AbstractWRModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    branch = _PMs.ref(pm, nw, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+    t_idx = (i, t_bus, f_bus)
+
+    g, b = _PMs.calc_branch_y(branch)
+    tr, ti = _PMs.calc_branch_t(branch)
+    g_to = branch["g_to"][cnd]
+    b_to = branch["b_to"][cnd]
+    tm = branch["tap"][cnd]
+
+    # TODO make indexing of :wi,:wr standardized
+    ## Because :wi, :wr are indexed by bus_id or bus_pairs depending on if the value is on_off or
+    # standard, there are indexing issues.  Temporary solution: always call *_on_off variant
+    if haskey(_PMs.ref(pm, nw, :damaged_branch), i)
+        vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
+        vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
+
+        _PMs.constraint_ohms_yt_to_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_to, b_to, tr[cnd], ti[cnd], tm, vad_min, vad_max)
+    else
+        vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
+        vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
+        _PMs.constraint_ohms_yt_to_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_to, b_to, tr[cnd], ti[cnd], tm, vad_min, vad_max)
+        #_PMs.constraint_ohms_yt_to(pm, nw, cnd, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_to, b_to, tr[cnd], ti[cnd], tm)
+    end
 end

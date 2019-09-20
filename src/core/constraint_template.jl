@@ -1,3 +1,8 @@
+""
+function constraint_model_voltage_damage(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    constraint_model_voltage_damage(pm, nw, cnd)
+end
+
 "Limit the maximum number of items restored in each time-step"
 function constraint_restoration_cardinality_ub(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cumulative_repairs=_PMs.ref(pm, nw, :repaired_total))
     constraint_restoration_cardinality_ub(pm, nw, cumulative_repairs)
@@ -112,9 +117,10 @@ function constraint_ohms_yt_from_damage(pm::_PMs.AbstractPowerModel, i::Int; nw:
         vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
         _PMs.constraint_ohms_yt_from_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_fr, b_fr, tr[cnd], ti[cnd], tm, vad_min, vad_max)
     else
-        vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
-        vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
-        _PMs.constraint_ohms_yt_from_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_fr, b_fr, tr[cnd], ti[cnd], tm, vad_min, vad_max)
+        #vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
+        #vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
+        #_PMs.constraint_ohms_yt_from_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_fr, b_fr, tr[cnd], ti[cnd], tm, vad_min, vad_max)
+        _PMs.constraint_ohms_yt_from(pm, nw, cnd, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_fr, b_fr, tr[cnd], ti[cnd], tm)
     end
 end
 
@@ -142,10 +148,10 @@ function constraint_ohms_yt_to_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::I
 
         _PMs.constraint_ohms_yt_to_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_to, b_to, tr[cnd], ti[cnd], tm, vad_min, vad_max)
     else
-        vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
-        vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
-
-        _PMs.constraint_ohms_yt_to_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_to, b_to, tr[cnd], ti[cnd], tm, vad_min, vad_max)
+        #vad_min = _PMs.ref(pm, nw, :off_angmin, cnd)
+        #vad_max = _PMs.ref(pm, nw, :off_angmax, cnd)
+        #_PMs.constraint_ohms_yt_to_on_off(pm, nw, cnd, i, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_to, b_to, tr[cnd], ti[cnd], tm, vad_min, vad_max)
+        _PMs.constraint_ohms_yt_to(pm, nw, cnd, f_bus, t_bus, f_idx, t_idx, g[cnd,cnd], b[cnd,cnd], g_to, b_to, tr[cnd], ti[cnd], tm)
     end
 end
 
@@ -249,6 +255,8 @@ end
 
 ""
 function constraint_bus_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    # TODO add on/off voltage
+    bus = _PMs.ref(pm, nw, :bus, i)
+
+    constraint_bus_damage(pm, nw, cnd, i, bus["vmin"], bus["vmax"])
 end
 

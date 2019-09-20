@@ -10,7 +10,7 @@ end
 function post_rop(pm::_PMs.AbstractPowerModel)
     for (n, network) in _PMs.nws(pm)
         variable_bus_damage_indicator(pm, nw=n)
-        variable_bus_damage(pm, nw=n)
+        variable_voltage_damage(pm, nw=n)
 
         variable_branch_damage_indicator(pm, nw=n)
         _PMs.variable_branch_flow(pm, nw=n)
@@ -28,7 +28,6 @@ function post_rop(pm::_PMs.AbstractPowerModel)
 
         constraint_restoration_cardinality_ub(pm, nw=n)
 
-        ## TODO Apply on_off constraints on damaged buses only.  apply ordinary bus_voltage constraint to undamaged buses.
         _PMs.constraint_model_voltage_on_off(pm, nw=n)
 
         for i in _PMs.ids(pm, :ref_buses, nw=n)
@@ -77,7 +76,6 @@ function post_rop(pm::_PMs.AbstractPowerModel)
 
     network_ids = sort(collect(_PMs.nw_ids(pm)))
     n_1 = network_ids[1]
-
     for i in _PMs.ids(pm, :storage, nw=n_1)
         _PMs.constraint_storage_state(pm, i, nw=n_1)
     end

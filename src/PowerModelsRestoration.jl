@@ -28,8 +28,10 @@ include("prob/rop.jl")
 include("prob/mrsp.jl")
 
 include("form/shared.jl")
-include("form/wr.jl")
+include("form/acp.jl")
 include("form/apo.jl")
+include("form/dcp.jl")
+include("form/wr.jl")
 
 include("core/export.jl")
 
