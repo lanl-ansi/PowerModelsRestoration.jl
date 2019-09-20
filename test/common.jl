@@ -104,7 +104,12 @@ end
 
 ""
 function storage_power(result, nw_id::String, storage_id::String)
-    return result["solution"]["nw"][nw_id]["storage"][storage_id]["ps"]
+    value = result["solution"]["nw"][nw_id]["storage"][storage_id]["ps"]
+    if isnan(value)
+        return 0.0
+    else
+        return value
+    end 
 end
 
 
