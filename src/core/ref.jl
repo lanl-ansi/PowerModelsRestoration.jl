@@ -12,14 +12,27 @@ end
 ""
 function ref_add_damaged_gens!(pm::_PMs.AbstractPowerModel)
     for (nw, nw_ref) in pm.ref[:nw]
-        nw_ref[:damaged_gen] = Dict(x for x in nw_ref[:gen] if haskey(x.second, "damaged") && x.second["damaged"] == 1 in keys(nw_ref[:gen]))
+        damaged_gen = Dict{Int,Any}()
+        for (i,gen) in nw_ref[:gen]
+            if haskey(gen, "damaged") && gen["damaged"] == 1
+                damaged_gen[i]=gen
+            end
+        end
+        nw_ref[:damaged_gen] = damaged_gen
     end
+    _PMs.ref(pm,:damaged_gen)
 end
 
 ""
 function ref_add_damaged_buses!(pm::_PMs.AbstractPowerModel)
     for (nw, nw_ref) in pm.ref[:nw]
-        nw_ref[:damaged_bus] = Dict(x for x in nw_ref[:bus] if haskey(x.second, "damaged") && x.second["damaged"] == 1 in keys(nw_ref[:bus]))
+        damaged_bus = Dict{Int,Any}()
+        for (i,bus) in nw_ref[:bus]
+            if haskey(bus, "damaged") && bus["damaged"] == 1
+                damaged_bus[i]=bus
+            end
+        end
+        nw_ref[:damaged_bus] = damaged_bus
     end
 end
 
@@ -27,7 +40,13 @@ end
 ""
 function ref_add_damaged_branches!(pm::_PMs.AbstractPowerModel)
     for (nw, nw_ref) in pm.ref[:nw]
-        nw_ref[:damaged_branch] = Dict(x for x in nw_ref[:branch] if haskey(x.second, "damaged") && x.second["damaged"] == 1 in keys(nw_ref[:branch]))
+        damaged_branch = Dict{Int,Any}()
+        for (i,branch) in nw_ref[:branch]
+            if haskey(branch, "damaged") && branch["damaged"] == 1
+                damaged_branch[i]=branch
+            end
+        end
+        nw_ref[:damaged_branch] = damaged_branch
     end
 end
 
@@ -35,6 +54,12 @@ end
 ""
 function ref_add_damaged_storage!(pm::_PMs.AbstractPowerModel)
     for (nw, nw_ref) in pm.ref[:nw]
-        nw_ref[:damaged_storage] = Dict(x for x in nw_ref[:storage] if haskey(x.second, "damaged") && x.second["damaged"] == 1 in keys(nw_ref[:storage]))
+        damaged_storage = Dict{Int,Any}()
+        for (i,storage) in nw_ref[:storage]
+            if haskey(storage, "damaged") && storage["damaged"] == 1
+                damaged_storage[i]=storage
+            end
+        end
+        nw_ref[:damaged_storage] = damaged_storage
     end
 end
