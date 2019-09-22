@@ -132,7 +132,11 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
 
     if count >= total_repairs
         Memento.warn(_PMs._LOGGER, "More restoration steps than damaged components.  Reducing restoration steps to $(total_repairs).")
+<<<<<<< HEAD
         count = trunc(Int,total_repairs)
+=======
+        count = round(Int,total_repairs)
+>>>>>>> Save changes for rebaseing.
     end
 
     mn_data["name"] = "$(count) period restoration of $(name)"
@@ -145,10 +149,15 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
 
     mn_data["nw"]["0"]["repairs"] = 0
     mn_data["nw"]["0"]["repaired_total"] = 0
-    
+
     for n in 1:count
+<<<<<<< HEAD
         if repairs_per_period*(n) < total_repairs 
             mn_data["nw"]["$n"]["repairs"] = round(Int, repairs_per_period*n - mn_data["nw"]["$(n-1)"]["repaired_total"])
+=======
+        if repairs_per_period*(n) < total_repairs
+            mn_data["nw"]["$n"]["repairs"] = trunc(Int,round(repairs_per_period*n - mn_data["nw"]["$(n-1)"]["repaired_total"]))
+>>>>>>> Save changes for rebaseing.
         else
             mn_data["nw"]["$n"]["repairs"] = round(Int, total_repairs - mn_data["nw"]["$(n-1)"]["repaired_total"])
         end
