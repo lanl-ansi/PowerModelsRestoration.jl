@@ -23,11 +23,7 @@ include("core/objective.jl")
 include("util/common.jl")
 include("util/heuristic.jl")
 include("util/forward_restoration.jl")
-<<<<<<< HEAD
 include("util/iterative_restoration.jl")
-=======
-include("util/adapative_restoration_period.jl")
->>>>>>> 7a31abf5b6a06232b1eea6cd6b61195a1a51482c
 
 
 include("prob/rop.jl")
