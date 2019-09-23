@@ -1,41 +1,41 @@
 @testset "Forward Restoration" begin
 
 ## Forward restoration is not currently working with MLD when buses are disabled.
-    # mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=3)
-    # rop_result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
-    # PowerModelsRestoration.clean_solution!(rop_result)
+    mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=3)
+    rop_result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
+    PowerModelsRestoration.clean_solution!(rop_result)
 
-    # @testset "ac forward case" begin
+    @testset "ac forward case" begin
 
-    #     PowerModels.update_data!(mn_data, rop_result["solution"])
-    #     result = PowerModelsRestoration.run_restoration_simulation(mn_data, PowerModels.ACPPowerModel, juniper_solver)
+        PowerModels.update_data!(mn_data, rop_result["solution"])
+        result = PowerModelsRestoration.run_restoration_simulation(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
-    #     @test result["termination_status"] == LOCALLY_SOLVED
-    #     @test isapprox(result["objective"], 8834.38; atol = 1)
+        @test result["termination_status"] == LOCALLY_SOLVED
+        @test isapprox(result["objective"], 8834.38; atol = 1)
 
-    #     @test isapprox(gen_status(result,"1","1"), gen_status(rop_result,"1","1"); atol=1e-6)
-    #     @test isapprox(gen_status(result,"1","4"), gen_status(rop_result,"1","4"); atol=1e-6)
-    #     @test isapprox(gen_status(result,"2","1"), gen_status(rop_result,"2","1"); atol=1e-6)
-    #     @test isapprox(gen_status(result,"2","4"), gen_status(rop_result,"2","4"); atol=1e-6)
-    #     @test isapprox(branch_status(result,"2","2"), branch_status(rop_result,"2","2"); atol=1e-6)
-    #     @test isapprox(branch_status(result,"3","2"), branch_status(rop_result,"3","2"); atol=1e-6)
-    # end
-# 
-    # @testset "soc forward case" begin
+        @test isapprox(gen_status(result,"1","1"), gen_status(rop_result,"1","1"); atol=1e-6)
+        @test isapprox(gen_status(result,"1","4"), gen_status(rop_result,"1","4"); atol=1e-6)
+        @test isapprox(gen_status(result,"2","1"), gen_status(rop_result,"2","1"); atol=1e-6)
+        @test isapprox(gen_status(result,"2","4"), gen_status(rop_result,"2","4"); atol=1e-6)
+        @test isapprox(branch_status(result,"2","2"), branch_status(rop_result,"2","2"); atol=1e-6)
+        @test isapprox(branch_status(result,"3","2"), branch_status(rop_result,"3","2"); atol=1e-6)
+    end
 
-    #     PowerModels.update_data!(mn_data, rop_result["solution"])
-    #     result = PowerModelsRestoration.run_restoration_simulation(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
+    @testset "soc forward case" begin
 
-    #     @test result["termination_status"] == LOCALLY_SOLVED
-    #     @test isapprox(result["objective"], 8834.38; atol = 1e0)
+        PowerModels.update_data!(mn_data, rop_result["solution"])
+        result = PowerModelsRestoration.run_restoration_simulation(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
 
-    #     @test isapprox(gen_status(result,"1","1"), gen_status(rop_result,"1","1"); atol=1e-6)
-    #     @test isapprox(gen_status(result,"1","4"), gen_status(rop_result,"1","4"); atol=1e-6)
-    #     @test isapprox(gen_status(result,"2","1"), gen_status(rop_result,"2","1"); atol=1e-6)
-    #     @test isapprox(gen_status(result,"2","4"), gen_status(rop_result,"2","4"); atol=1e-6)
-    #     @test isapprox(branch_status(result,"2","2"), branch_status(rop_result,"2","2"); atol=1e-6)
-    #     @test isapprox(branch_status(result,"3","2"), branch_status(rop_result,"3","2"); atol=1e-6)
-    # end
+        @test result["termination_status"] == LOCALLY_SOLVED
+        @test isapprox(result["objective"], 8834.38; atol = 1e0)
+
+        @test isapprox(gen_status(result,"1","1"), gen_status(rop_result,"1","1"); atol=1e-6)
+        @test isapprox(gen_status(result,"1","4"), gen_status(rop_result,"1","4"); atol=1e-6)
+        @test isapprox(gen_status(result,"2","1"), gen_status(rop_result,"2","1"); atol=1e-6)
+        @test isapprox(gen_status(result,"2","4"), gen_status(rop_result,"2","4"); atol=1e-6)
+        @test isapprox(branch_status(result,"2","2"), branch_status(rop_result,"2","2"); atol=1e-6)
+        @test isapprox(branch_status(result,"3","2"), branch_status(rop_result,"3","2"); atol=1e-6)
+    end
 
     mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=3)
     rop_result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
