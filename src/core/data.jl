@@ -98,6 +98,7 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
         Memento.error(_PMs._LOGGER, "replicate_restoration_network can only be used on single networks")
     end
 
+    clean_status!(sn_data)
     propagate_damage_status!(sn_data)
 
     name = get(sn_data, "name", "anonymous")
@@ -118,14 +119,15 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
         delete!(sn_data_tmp, k)
     end
 
-    item_dict = Dict("gen"=>"gen_status", "branch"=>"br_status", "storage"=>"status", "bus"=>"bus_type")
+    damage_comps = ["gen", "branch", "storage", "bus"]
     total_repairs = 0
-    for (j, st) in item_dict
-        for (i,item) in sn_data[j]
-            if j=="bus"
-                total_repairs += (get(item,"damaged",0)==1 && get(item,st,1 )!= 4) ? 1 : 0
-            else
-                total_repairs += get(item,"damaged",0)*get(item,st,0)
+    for comp_type in damage_comps
+        comp_status_name = _PMs.pm_component_status[comp_type]
+        comp_status_inactive_value = _PMs.pm_component_status_inactive[comp_type]
+
+        for (i,comp) in sn_data[comp_type]
+            if comp[comp_status_name] != comp_status_inactive_value
+                total_repairs += get(comp, "damaged", 0)
             end
         end
     end
