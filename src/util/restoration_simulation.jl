@@ -34,7 +34,8 @@
 
 "Simulation a restoration sequence power flow"
 function run_restoration_simulation(file, model_type::Type, optimizer; kwargs...)
-    return _PMs.run_model(file, model_type, optimizer, post_restoration_simulation; multinetwork=true, solution_builder = solution_rop, kwargs...)
+    return _PMs.run_model(file, model_type, optimizer, post_restoration_simulation;
+                    multinetwork=true, solution_builder = solution_rop, kwargs...)
 end
 
 ""
