@@ -23,6 +23,8 @@ include("core/objective.jl")
 include("util/common.jl")
 include("util/heuristic.jl")
 include("util/forward_restoration.jl")
+include("util/iterative_restoration.jl")
+
 
 include("prob/rop.jl")
 include("prob/mrsp.jl")

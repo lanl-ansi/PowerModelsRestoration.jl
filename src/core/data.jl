@@ -145,9 +145,9 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
 
     mn_data["nw"]["0"]["repairs"] = 0
     mn_data["nw"]["0"]["repaired_total"] = 0
-    
+
     for n in 1:count
-        if repairs_per_period*(n) < total_repairs 
+        if repairs_per_period*(n) < total_repairs
             mn_data["nw"]["$n"]["repairs"] = round(Int, repairs_per_period*n - mn_data["nw"]["$(n-1)"]["repaired_total"])
         else
             mn_data["nw"]["$n"]["repairs"] = round(Int, total_repairs - mn_data["nw"]["$(n-1)"]["repaired_total"])
