@@ -53,7 +53,7 @@ function run_iterative_restoration(network_data, model_constructor, optimizer; r
             temp_solution = run_rop(temp_data_mn, model_constructor, optimizer, kwargs...)
             clean_status!(temp_solution["solution"])
             _PMs.update_data!(temp_data_mn, temp_solution)
-
+            cumulative_solution_data!(solution, temp_solution)
             # collect results into complete restoration network.
             max_net_id = maximum(parse.(Int,collect(keys(final_restoration["nw"]))))
             for (net_id, net) in temp_data_mn["nw"]
