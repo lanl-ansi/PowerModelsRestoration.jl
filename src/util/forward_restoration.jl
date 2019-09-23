@@ -48,12 +48,15 @@ function post_restoration_simulation(pm::_PMs.AbstractPowerModel)
 
         _PMs.constraint_model_voltage(pm, nw=n)
 
+        _MLD.variable_demand_factor(pm, nw=n, relax=true)
+        _MLD.variable_shunt_factor(pm, nw=n, relax=true)
+
         for i in _PMs.ids(pm, :ref_buses, nw=n)
             _PMs.constraint_theta_ref(pm, i, nw=n)
         end
 
         for i in _PMs.ids(pm, :bus, nw=n)
-            _PMs.constraint_power_balance(pm, i, nw=n)
+            _MLD.constraint_power_balance_shed(pm, i, nw=n)
         end
 
         for i in _PMs.ids(pm, :storage, nw=n)
