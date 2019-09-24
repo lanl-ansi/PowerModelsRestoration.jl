@@ -1,6 +1,3 @@
-"All functions neccessary because z is sometimes an integer instead of variable_ref"
-function Base.isinteger(z::JuMP.VariableRef) return false end
-
 ""
 function variable_voltage_damage(pm::_PMs.AbstractWRModel; kwargs...)
     variable_voltage_magnitude_sqr_on_off(pm; kwargs...)
