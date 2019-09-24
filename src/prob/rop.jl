@@ -28,7 +28,7 @@ function post_rop(pm::_PMs.AbstractPowerModel)
 
         constraint_restoration_cardinality_ub(pm, nw=n)
 
-        _PMs.constraint_model_voltage_on_off(pm, nw=n)
+        constraint_model_voltage_damage(pm, nw=n)
 
         for i in _PMs.ids(pm, :ref_buses, nw=n)
             _PMs.constraint_theta_ref(pm, i, nw=n)

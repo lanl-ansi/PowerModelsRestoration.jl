@@ -220,7 +220,7 @@ prints a summary of a restoration solution
 """
 function summary_restoration(io::IO, data::Dict{String,<:Any})
     if !_IMs.ismultinetwork(data)
-        Memento.error(_LOGGER, "summary_restoration requires multinetwork data")
+        Memento.error(_PMs._LOGGER, "summary_restoration requires multinetwork data")
     end
 
     networks = sort(collect(keys(data["nw"])), by=x -> parse(Int, x))

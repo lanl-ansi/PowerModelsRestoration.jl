@@ -5,7 +5,7 @@
         data = PowerModels.parse_file("../test/data/case5_restoration_min_damage.m")
         @testset "5-bus case" begin
             result = PowerModelsRestoration.run_iterative_restoration(data, PowerModels.SOCWRPowerModel, juniper_solver, repair_periods=2)
-            @show keys(result["solution"]["nw"])
+            #@show keys(result["solution"]["nw"])
             @test result["termination_status"] == LOCALLY_SOLVED
             @test isapprox(result["objective"], 132.27; atol = 1e0)
 
