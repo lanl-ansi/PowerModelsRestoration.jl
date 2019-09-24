@@ -1,5 +1,5 @@
-#function constraint_model_voltage_damage(pm::_PMs.AbstractDCPModel, n::Int, c::Int)
-#end
+function constraint_model_voltage_damage(pm::_PMs.AbstractDCPModel, n::Int, c::Int)
+end
 
 ""
 function variable_voltage_damage(pm::_PMs.AbstractDCPModel; kwargs...)
