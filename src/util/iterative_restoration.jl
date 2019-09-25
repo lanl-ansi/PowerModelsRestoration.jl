@@ -48,17 +48,19 @@ function run_iterative_restoration(network_data, model_constructor, optimizer; r
                 end
             end
 
-            # Repair replications is number of damaged componets.
-            temp_data_mn = replicate_restoration_network(temp_data, count=repair_count)
-            temp_solution = run_rop(temp_data_mn, model_constructor, optimizer, kwargs...)
-            clean_status!(temp_solution["solution"])
-            _PMs.update_data!(temp_data_mn, temp_solution)
-            cumulative_solution_data!(solution, temp_solution)
-            # collect results into complete restoration network.
-            max_net_id = maximum(parse.(Int,collect(keys(final_restoration["nw"]))))
-            for (net_id, net) in temp_data_mn["nw"]
-                if net_id!="0"
-                    final_restoration["nw"]["$(parse(Int,net_id) + max_net_id)"] = net
+            if repair_count !=0
+                # Repair replications is number of damaged componets.
+                temp_data_mn = replicate_restoration_network(temp_data, count=repair_count)
+                temp_solution = run_rop(temp_data_mn, model_constructor, optimizer, kwargs...)
+                clean_status!(temp_solution["solution"])
+                _PMs.update_data!(temp_data_mn, temp_solution)
+                cumulative_solution_data!(solution, temp_solution)
+                # collect results into complete restoration network.
+                max_net_id = maximum(parse.(Int,collect(keys(final_restoration["nw"]))))
+                for (net_id, net) in temp_data_mn["nw"]
+                    if net_id!="0"
+                        final_restoration["nw"]["$(parse(Int,net_id) + max_net_id)"] = net
+                    end
                 end
             end
         end
