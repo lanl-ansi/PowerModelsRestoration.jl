@@ -128,7 +128,7 @@
             @test isapprox(bus_status(result,"3","4"), 1; atol=1e-2)
             @test isapprox(bus_status(result,"3","10"), 1; atol=1e-2)
 
-            
+
             @test isapprox(gen_status(result,"0","1"), 0; atol=1e-6)
             @test isapprox(gen_status(result,"0","2"), 0; atol=1e-6)
             @test isapprox(gen_status(result,"0","3"), 1; atol=1e-6)
@@ -173,7 +173,7 @@
 
             @test isapprox(gen_power(result, "0",["1","2","3","4","5"])+storage_power(result, "0",["1","2"]), 3.00; atol=1e-2)
             @test isapprox(gen_power(result, "1",["1","2","3","4","5"])+storage_power(result, "1",["1","2"]), 9.20; atol=1e-2)
-            @test isapprox(gen_power(result, "2",["1","2","3","4","5"])+storage_power(result, "2",["1","2"]), 10.00; atol=1e-2)
+            @test isapprox(gen_power(result, "2",["1","2","3","4","5"])+storage_power(result, "2",["1","2"]), 9.16; atol=1e-2)
             @test isapprox(gen_power(result, "3",["1","2","3","4","5"])+storage_power(result, "3",["1","2"]), 10.00; atol=1e-2)
         end
     end
