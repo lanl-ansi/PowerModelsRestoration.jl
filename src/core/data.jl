@@ -16,6 +16,25 @@ function damaged_items!(nw_data::Dict{String, Any}, damaged_items::Dict{String, 
     end
 end
 
+function clear_damage_indicator!(data::Dict{String, Any})
+    if InfrastructureModels.ismultinetwork(data)
+        for (i, nw_data) in data["nw"]
+            _clear_damage_indicator!(nw_data)
+        end
+    else
+        _clear_damage_indicator!(data)
+    end
+end
+
+function _clear_damage_indicator!(network::Dict{String,Any})
+    for (comp_name, status_key) in _PMs.pm_component_status
+        for (i, comp) in get(network, comp_name, Dict())
+            if haskey(comp, "damaged")
+                comp["damaged"] = 0
+            end
+        end
+    end
+end
 
 "Replace NaN and Nothing with 0 in multinetwork solutions"
 function clean_solution!(solution)

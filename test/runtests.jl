@@ -29,8 +29,8 @@ include("common.jl")
 include("mrsp.jl")
 include("rop.jl")
 include("hueristic.jl")
-include("util.jl")
 include("iterative.jl")
+include("restoration_simulation.jl")
 
 end
 

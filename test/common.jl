@@ -92,7 +92,14 @@ end
 
 ""
 function load_power(result, nw_id::String, load_id::String)
-    return result["solution"]["nw"][nw_id]["load"][load_id]["pd"]
+    net = get(result["solution"]["nw"],nw_id, 0)
+    if net != 0
+        load = get(net["load"],load_id, 0)
+        if load != 0 && load["pd"] !==NaN
+            return load["pd"]
+        end
+    end
+    return 0
 end
 
 
@@ -109,7 +116,7 @@ function storage_power(result, nw_id::String, storage_id::String)
         return 0.0
     else
         return value
-    end 
+    end
 end
 
 
