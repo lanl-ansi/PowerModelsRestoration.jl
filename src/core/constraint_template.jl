@@ -14,7 +14,7 @@ function constraint_restoration_cardinality_lb(pm::_PMs.AbstractPowerModel; nw::
     constraint_restoration_cardinality_lb(pm, nw, cumulative_repairs)
 end
 
-#  
+#
 # "Require all items restored in final time-step"
 # function constraint_restore_all_items(pm::_PMs.AbstractPowerModel; nw::Int=maximum(_PMs.nw_ids(pm)))
 #     constraint_restore_all_items(pm, nw)
@@ -42,31 +42,28 @@ end
 
 ""
 function constraint_load_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    load = _PMs.ref(pm, nw, :load, i)
+    if haskey(_PMs.ref(pm, nw, :load), i)
+        load = _PMs.ref(pm, nw, :load, i)
 
-    bus_damaged = haskey(_PMs.ref(pm, nw, :damaged_bus), load["load_bus"])
+        bus_damaged = haskey(_PMs.ref(pm, nw, :damaged_bus), load["load_bus"])
 
-    if bus_damaged
-        constraint_load_bus_connection(pm, nw, i, load["load_bus"])
+        if bus_damaged
+            constraint_load_bus_connection(pm, nw, i, load["load_bus"])
+        end
     end
-    #if bus_damaged && !load_damaged
-    #    Memento.error(_PMs._LOGGER, "non-damaged load $(i) connected to damaged bus $(load["load_bus"])")
-    #end
 end
 
 
 ""
 function constraint_shunt_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    shunt = _PMs.ref(pm, nw, :shunt, i)
+    if haskey(_PMs.ref(pm, nw, :shunt), i)
+        shunt = _PMs.ref(pm, nw, :shunt, i)
+        bus_damaged = haskey(_PMs.ref(pm, nw, :damaged_bus), shunt["shunt_bus"])
 
-    bus_damaged = haskey(_PMs.ref(pm, nw, :damaged_bus), shunt["shunt_bus"])
-
-    if bus_damaged
-        constraint_shunt_bus_connection(pm, nw, i, shunt["shunt_bus"])
+        if bus_damaged
+            constraint_shunt_bus_connection(pm, nw, i, shunt["shunt_bus"])
+        end
     end
-    #if bus_damaged && !shunt_damaged
-    #    Memento.error(_PMs._LOGGER, "non-damaged shunt $(i) connected to damaged bus $(shunt["shunt_bus"])")
-    #end
 end
 
 
