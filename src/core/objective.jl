@@ -7,7 +7,7 @@ function objective_max_load_delivered(pm::_PMs.AbstractPowerModel)
     time_elapsed = Dict(n => get(_PMs.ref(pm, n), :time_elapsed, 1.0) for n in nws)
 
     load_weight = Dict(n =>
-        Dict(i => get(load, "weight", 1.0) for (i,load) in _PMs.ref(pm, n, :load)) 
+        Dict(i => get(load, "weight", 1.0) for (i,load) in _PMs.ref(pm, n, :load))
     for n in nws)
 
     return JuMP.@objective(pm.model, Max,
@@ -30,10 +30,17 @@ function objective_max_load_delivered(pm::_PMs.AbstractACPModel)
     time_elapsed = Dict(n => get(_PMs.ref(pm, n), :time_elapsed, 1.0) for n in nws)
 
     load_weight = Dict(n =>
-        Dict(i => get(load, "weight", 1.0) for (i,load) in _PMs.ref(pm, n, :load)) 
+        Dict(i => get(load, "weight", 1.0) for (i,load) in _PMs.ref(pm, n, :load))
     for n in nws)
 
-    M = Dict(n => 10*maximum(abs.(values(load_weight[n]))) for n in nws)
+    M = Dict()
+    for n in nws
+        if !isempty(load_weight[n])
+            M[n] = 10*maximum(abs.(values(load_weight[n])))
+        else
+            M[n]= 10
+        end
+    end
 
     return JuMP.@objective(pm.model, Max,
         sum(
@@ -55,10 +62,17 @@ function objective_max_load_delivered(pm::_PMs.AbstractWRModel)
     time_elapsed = Dict(n => get(_PMs.ref(pm, n), :time_elapsed, 1.0) for n in nws)
 
     load_weight = Dict(n =>
-        Dict(i => get(load, "weight", 1.0) for (i,load) in _PMs.ref(pm, n, :load)) 
+        Dict(i => get(load, "weight", 1.0) for (i,load) in _PMs.ref(pm, n, :load))
     for n in nws)
 
-    M = Dict(n => 10*maximum(abs.(values(load_weight[n]))) for n in nws)
+        M = Dict()
+        for n in nws
+            if !isempty(load_weight[n])
+                M[n] = 10*maximum(abs.(values(load_weight[n])))
+            else
+                M[n]= 10
+            end
+        end
 
     return JuMP.@objective(pm.model, Max,
         sum(
