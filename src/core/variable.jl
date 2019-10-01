@@ -11,17 +11,6 @@ function variable_voltage_magnitude_on_off(pm::_PMs.AbstractPowerModel; nw::Int=
     )
 end
 
-"variable: `v[i]` for `i` in `bus`es"
-function variable_voltage_magnitude_violation(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    _PMs.var(pm, nw, cnd)[:vm_vio] = JuMP.@variable(pm.model,
-        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_$(cnd)_vm_vio",
-        lower_bound = 0.0,
-        upper_bound = _PMs.ref(pm, nw, :bus, i, "vmin", cnd),
-        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "vm_vio_start", cnd, 0.0)
-    )
-end
-
-
 "variable: `0 <= damage_gen[l] <= 1` for `l` in `gen`es"
 function variable_generation_damage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, relax=false)
 
