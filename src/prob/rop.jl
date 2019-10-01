@@ -127,3 +127,10 @@ end
 function add_setpoint_bus_status!(sol, pm::_PMs.AbstractPowerModel)
     _PMs.add_setpoint!(sol, pm, "bus", "status", :z_bus, status_name="bus_type", inactive_status_value = 4, conductorless=true, default_value = (item) -> if item["bus_type"] == 4 0 else 1 end)
 end
+
+# this is a slightly more numerically robust version of this for cases when :w is slightly negative due to numerical precision issues
+function _PMs.add_setpoint_bus_voltage!(sol, pm::_PMs.AbstractWModels)
+    _PMs.add_setpoint!(sol, pm, "bus", "vm", :w, status_name=_PMs.pm_component_status["bus"], inactive_status_value = _PMs.pm_component_status_inactive["bus"], scale = (x,item,cnd) -> sqrt(max(0.0,x)))
+    # What should the default value be?
+    _PMs.add_setpoint!(sol, pm, "bus", "va", :va, status_name=_PMs.pm_component_status["bus"], inactive_status_value = _PMs.pm_component_status_inactive["bus"])
+end

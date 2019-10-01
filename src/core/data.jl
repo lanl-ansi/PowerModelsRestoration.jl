@@ -66,6 +66,84 @@ function clean_solution!(solution)
 end
 
 
+"updates status in the data model with values from a sparse solution dict"
+function update_status!(data::Dict{String, Any}, solution::Dict{String, Any})
+    @assert InfrastructureModels.ismultinetwork(data) == InfrastructureModels.ismultinetwork(solution)
+
+    if InfrastructureModels.ismultinetwork(solution)
+        for (i, nw_sol) in solution["nw"]
+            nw_data = data["nw"][i]
+            _update_status!(nw_data, nw_sol)
+        end
+    else
+        _update_status!(data, solution)
+    end
+end
+
+function _update_status!(network::Dict{String,Any}, solution::Dict{String, Any})
+    for (comp_name, status_key) in _PMs.pm_component_status
+        if haskey(solution, comp_name) && haskey(network, comp_name)
+            nw_comps = network[comp_name]
+            for (i, sol_comp) in solution[comp_name]
+                nw_comp = nw_comps[i]
+                nw_comp[status_key] = sol_comp[status_key]
+            end
+        else
+            #TODO throw warning
+        end
+    end
+end
+
+
+#=
+"updates load and shunt demands, assumes these are continuous control parameters"
+function update_demand!(data::Dict{String, Any}, solution::Dict{String, Any})
+    @assert InfrastructureModels.ismultinetwork(data) == InfrastructureModels.ismultinetwork(solution)
+
+    if InfrastructureModels.ismultinetwork(solution)
+        for (i, nw_sol) in solution["nw"]
+            nw_data = data["nw"][i]
+            _update_demand!(nw_data, nw_sol)
+        end
+    else
+        _update_demand!(data, solution)
+    end
+end
+
+function _update_demand!(network::Dict{String,Any}, solution::Dict{String, Any})
+    if haskey(solution, "load") && haskey(network, "load")
+        nw_loads = network["load"]
+        for (i, sol_load) in solution["load"]
+            nw_load = nw_loads[i]
+            if !isnan(sol_load["pd"])
+                nw_load["pd"] = sol_load["pd"]
+            end
+            if !isnan(sol_load["qd"])
+                nw_load["qd"] = sol_load["qd"]
+            end
+        end
+    else
+        #TODO throw warning
+    end
+
+    if haskey(solution, "shunt") && haskey(network, "shunt")
+        nw_shunts = network["shunt"]
+        for (i, sol_shunt) in solution["shunt"]
+            nw_shunt = nw_shunts[i]
+            if !isnan(sol_shunt["gs"])
+                nw_shunt["gs"] = sol_shunt["gs"]
+            end
+            if !isnan(sol_shunt["bs"])
+                nw_shunt["bs"] = sol_shunt["bs"]
+            end
+        end
+    else
+        #TODO throw warning
+    end
+end
+=#
+
+
 # Required because PowerModels assumes integral status values
 "Replace non-integer status codes for devices, maps bus status to bus_type"
 function clean_status!(data)
@@ -85,8 +163,11 @@ function _clean_status!(network)
             if status == 0
                 bus["bus_type"] = 4
             elseif status == 1
-                if get(bus, "bus_type", -1) == 4
+                bt = get(bus, "bus_type", 5)
+                if bt == 4
                     Memento.warn(_PMs._LOGGER, "bus $(i) given status 1 but the bus_type is 4")
+                else
+                    bus["bus_type"] = bt
                 end
             else
                 @assert false
@@ -263,8 +344,8 @@ function summary_restoration(io::IO, data::Dict{String,<:Any})
 
         summary_data = Any[nw]
 
-        load_pd = sum(load["pd"] for (i,load) in network["load"])
-        load_qd = sum(load["qd"] for (i,load) in network["load"])
+        load_pd = sum(isnan(load["pd"]) ? 0.0 : load["pd"] for (i,load) in network["load"] )
+        load_qd = sum(isnan(load["qd"]) ? 0.0 : load["qd"] for (i,load) in network["load"])
         push!(summary_data, trunc(load_pd, sigdigits=5))
         push!(summary_data, trunc(load_qd, sigdigits=5))
 
