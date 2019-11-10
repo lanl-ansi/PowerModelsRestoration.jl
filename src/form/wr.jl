@@ -8,6 +8,29 @@ function variable_voltage_damage(pm::_PMs.AbstractWRModel; kwargs...)
     _PMs.variable_voltage_product_on_off(pm; kwargs...)
 end
 
+"this is the same as non-damaged version becouse ccms includes zero"
+function variable_current_storage_damage(pm::_PMs.AbstractWRModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    _PMs.variable_current_storage(pm, nw=nw, cnd=cnd)
+    # buses = _PMs.ref(pm, nw, :bus)
+    # ub = Dict()
+    # for (i, storage) in _PMs.ref(pm, nw, :storage)
+    #     if haskey(storage, "thermal_rating")
+    #         bus = buses[storage["storage_bus"]]
+    #         ub[i] = (storage["thermal_rating"][cnd]/bus["vmin"][cnd])^2
+    #     else
+    #         ub[i] = Inf
+    #     end
+    # end
+
+    # _PMs.var(pm, nw, cnd)[:ccms] = JuMP.@variable(pm.model,
+    #     [i in _PMs.ids(pm, nw, :storage)], base_name="$(nw)_$(cnd)_ccms",
+    #     lower_bound = 0.0,
+    #     upper_bound = ub[i],
+    #     start = _PMs.variable_current_storage_damagecomp_start_value(_PMs.ref(pm, nw, :storage, i), "ccms_start", cnd)
+    # )
+end
+
+
 ""
 function variable_voltage_magnitude_sqr_on_off(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     _PMs.var(pm, nw, cnd)[:w] = JuMP.@variable(pm.model,

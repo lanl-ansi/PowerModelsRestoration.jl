@@ -160,12 +160,17 @@ end
 function variable_storage_mi_damage(pm::_PMs.AbstractPowerModel; kwargs...)
     variable_active_storage_damage(pm; kwargs...)
     variable_reactive_storage_damage(pm; kwargs...)
+    variable_current_storage_damage(pm; kwargs...)
     _PMs.variable_storage_energy(pm; kwargs...)
     _PMs.variable_storage_charge(pm; kwargs...)
     _PMs.variable_storage_discharge(pm; kwargs...)
     _PMs.variable_storage_complementary_indicator(pm; kwargs...)
 end
 
+
+"do nothing by default but some formulations require this"
+function variable_current_storage_damage(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+end
 
 ""
 function variable_active_storage_damage(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
