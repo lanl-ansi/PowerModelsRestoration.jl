@@ -45,6 +45,10 @@ function bus_status(result, bus_id)
     return result["solution"]["bus"][bus_id]["status"]
 end
 
+""
+function bus_status(result, bus_id)
+    return result["solution"]["bus"][bus_id]["status"]
+end
 
 ""
 function branch_status(result, nw_id, branch_id)
@@ -88,7 +92,14 @@ end
 
 ""
 function load_power(result, nw_id::String, load_id::String)
-    return result["solution"]["nw"][nw_id]["load"][load_id]["pd"]
+    net = get(result["solution"]["nw"],nw_id, 0)
+    if net != 0
+        load = get(net["load"],load_id, 0)
+        if load != 0 && load["pd"] !==NaN
+            return load["pd"]
+        end
+    end
+    return 0
 end
 
 
@@ -100,7 +111,12 @@ end
 
 ""
 function storage_power(result, nw_id::String, storage_id::String)
-    return result["solution"]["nw"][nw_id]["storage"][storage_id]["ps"]
+    value = result["solution"]["nw"][nw_id]["storage"][storage_id]["ps"]
+    if isnan(value)
+        return 0.0
+    else
+        return value
+    end
 end
 
 
