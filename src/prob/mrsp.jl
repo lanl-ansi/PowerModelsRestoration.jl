@@ -7,9 +7,9 @@ end
 
 
 ""
-function post_mrsp(pm::_PMs.GenericPowerModel)
-    _MLD.variable_bus_voltage_indicator(pm)
-    _MLD.variable_bus_voltage_on_off(pm)
+function post_mrsp(pm::_PMs.AbstractPowerModel)
+    variable_bus_damage_indicator(pm)
+    variable_voltage_damage(pm)
 
     variable_branch_damage_indicator(pm)
     _PMs.variable_branch_flow(pm)
@@ -22,21 +22,23 @@ function post_mrsp(pm::_PMs.GenericPowerModel)
     variable_generation_damage_indicator(pm)
     variable_generation_damage(pm)
 
-    _MLD.constraint_bus_voltage_on_off(pm)
+    _PMs.constraint_model_voltage_on_off(pm)
 
     for i in _PMs.ids(pm, :ref_buses)
         _PMs.constraint_theta_ref(pm, i)
     end
 
     for i in _PMs.ids(pm, :bus)
-        _PMs.constraint_power_balance_shunt_storage(pm, i)
+        constraint_bus_damage(pm, i)
+        _PMs.constraint_power_balance(pm, i)
     end
 
-    for i in _PMs.ids(pm, :gen_damaged)
+    for i in _PMs.ids(pm, :gen)
         constraint_generation_damage(pm, i)
     end
 
     for i in _PMs.ids(pm, :branch)
+        constraint_branch_damage(pm, i)
         constraint_ohms_yt_from_damage(pm, i)
         constraint_ohms_yt_to_damage(pm, i)
 
@@ -62,23 +64,25 @@ end
 
 
 ""
-function objective_min_restoration(pm::_PMs.GenericPowerModel)
+function objective_min_restoration(pm::_PMs.AbstractPowerModel)
     @assert !_PMs.ismultinetwork(pm)
     z_storage = _PMs.var(pm, pm.cnw, :z_storage)
     z_gen = _PMs.var(pm, pm.cnw, :z_gen)
-    z_branch = _PMs.var(pm, pm.cnw, pm.ccnd, :branch_z)
+    z_branch = _PMs.var(pm, pm.cnw, :z_branch)
+    z_bus = _PMs.var(pm, pm.cnw, :z_bus)
 
     JuMP.@objective(pm.model, Min,
-        sum(z_branch[i] for (i,branch) in _PMs.ref(pm, :branch_damaged))
-        + sum(z_gen[i] for (i,gen) in _PMs.ref(pm, :gen_damaged))
-        + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, :storage_damaged))
+        sum(z_branch[i] for (i,branch) in _PMs.ref(pm, :damaged_branch))
+        + sum(z_gen[i] for (i,gen) in _PMs.ref(pm, :damaged_gen))
+        + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, :damaged_storage))
+        + sum(z_bus[i] for (i,bus) in _PMs.ref(pm, :damaged_bus))
     )
 end
 
 
 "report minimal restoration set solution"
-function solution_mrsp(pm::_PMs.GenericPowerModel, sol::Dict{String,Any})
-    _MLD.add_setpoint_bus_status!(sol,pm)
+function solution_mrsp(pm::_PMs.AbstractPowerModel, sol::Dict{String,Any})
+    add_setpoint_bus_status!(sol,pm)
     _PMs.add_setpoint_bus_voltage!(sol, pm)
     _PMs.add_setpoint_generator_status!(sol, pm)
     _PMs.add_setpoint_generator_power!(sol, pm)

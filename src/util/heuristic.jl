@@ -1,7 +1,7 @@
 "solve restoration using a heuristic"
 function run_rop_heuristic(network_data, model_constructor, optimizer; heuristic=random_repair, kwargs...)
     heuristic(network_data)
-    return run_forward_restoration(network_data, model_constructor, optimizer; kwargs...)
+    return run_restoration_simulation(network_data, model_constructor, optimizer; kwargs...)
 end
 
 "repair network with random repair of items"

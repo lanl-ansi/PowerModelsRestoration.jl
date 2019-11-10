@@ -3,13 +3,13 @@
 ""
 function build_mn_data(base_data::String; replicates::Int=2)
     mp_data = PowerModels.parse_file(base_data)
-    return replicate_restoration_network(mp_data, replicates, Set(["baseMVA", "per_unit"]))
+    return replicate_restoration_network(mp_data, count=replicates)
 end
 
 
 ""
 function build_mn_data(mp_data::Dict{String,Any}; replicates::Int=2)
-    return replicate_restoration_network(mp_data, replicates, Set(["baseMVA", "per_unit"]))
+    return replicate_restoration_network(mp_data, count=replicates)
 end
 
 
@@ -45,6 +45,10 @@ function bus_status(result, bus_id)
     return result["solution"]["bus"][bus_id]["status"]
 end
 
+""
+function bus_status(result, bus_id)
+    return result["solution"]["bus"][bus_id]["status"]
+end
 
 ""
 function branch_status(result, nw_id, branch_id)
@@ -71,7 +75,12 @@ end
 
 ""
 function gen_power(result, nw_id::String, gen_id::String)
-    return result["solution"]["nw"][nw_id]["gen"][gen_id]["pg"]
+    value = result["solution"]["nw"][nw_id]["gen"][gen_id]["pg"]
+    if isnan(value)
+        return 0.0
+    else
+        return value
+    end
 end
 
 
@@ -83,7 +92,14 @@ end
 
 ""
 function load_power(result, nw_id::String, load_id::String)
-    return result["solution"]["nw"][nw_id]["load"][load_id]["pd"]
+    net = get(result["solution"]["nw"],nw_id, 0)
+    if net != 0
+        load = get(net["load"],load_id, 0)
+        if load != 0 && load["pd"] !==NaN
+            return load["pd"]
+        end
+    end
+    return 0
 end
 
 
@@ -95,7 +111,12 @@ end
 
 ""
 function storage_power(result, nw_id::String, storage_id::String)
-    return result["solution"]["nw"][nw_id]["storage"][storage_id]["ps"]
+    value = result["solution"]["nw"][nw_id]["storage"][storage_id]["ps"]
+    if isnan(value)
+        return 0.0
+    else
+        return value
+    end
 end
 
 
@@ -103,8 +124,3 @@ end
 function storage_power(result, nw_id::String, storage_ids::Array{String,1})
     return sum(storage_power(result, nw_id, storage_id) for storage_id in storage_ids)
 end
-
-
-# parse test cases
-case5_restoration = PowerModels.parse_file("../test/data/case5_restoration.m")
-case5_restoration_strg = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
