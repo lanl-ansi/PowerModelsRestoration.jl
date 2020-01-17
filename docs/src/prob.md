@@ -8,7 +8,7 @@ run_rop_uc
 ```
 # Shared Functions
 ```@docs
-solution_rop
+solution_rop!
 ```
 
 # All functions

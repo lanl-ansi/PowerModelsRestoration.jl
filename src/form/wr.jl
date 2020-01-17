@@ -118,7 +118,7 @@ end
 
 
 ""
-function constraint_bus_damage(pm::_PMs.AbstractWRModel, n::Int, c::Int, i::Int, vm_min, vm_max)
+function constraint_bus_voltage_violation_damage(pm::_PMs.AbstractWRModel, n::Int, c::Int, i::Int, vm_min, vm_max)
     w = _PMs.var(pm, n, c, :w, i)
     w_vio = _PMs.var(pm, n, c, :w_vio, i)
     z = _PMs.var(pm, n, :z_bus, i)
@@ -127,6 +127,14 @@ function constraint_bus_damage(pm::_PMs.AbstractWRModel, n::Int, c::Int, i::Int,
     JuMP.@constraint(pm.model, w >= z*vm_min^2 - w_vio)
 end
 
+""
+function constraint_bus_voltage_violation(pm::_PMs.AbstractWRModel, n::Int, c::Int, i::Int, vm_min, vm_max)
+    w = _PMs.var(pm, n, c, :w, i)
+    w_vio = _PMs.var(pm, n, c, :w_vio, i)
+
+    JuMP.@constraint(pm.model, w <= vm_max^2)
+    JuMP.@constraint(pm.model, w >= vm_min^2 - w_vio)
+end
 
 "`p[arc_from]^2 + q[arc_from]^2 <= w[f_bus]/tm*ccm[i]`"
 function _PMs.constraint_power_magnitude_sqr_on_off(pm::_PMs.AbstractQCWRModel, n::Int, c::Int, i, f_bus, arc_from, tm)
