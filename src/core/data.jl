@@ -91,7 +91,6 @@ function count_damaged_items(network::Dict{String, Any})
     return damage_count
 end
 
-
 "Clear damage indicator and replace with status=0"
 function clear_damage_indicator!(data::Dict{String, Any})
     if InfrastructureModels.ismultinetwork(data)
