@@ -10,7 +10,7 @@ function variable_voltage_damage(pm::_PMs.AbstractACPModel; kwargs...)
 end
 
 ""
-function constraint_bus_damage(pm::_PMs.AbstractACPModel, n::Int, c::Int, i::Int, vm_min, vm_max)
+function constraint_bus_voltage_violation_damage(pm::_PMs.AbstractACPModel, n::Int, c::Int, i::Int, vm_min, vm_max)
     vm = _PMs.var(pm, n, c, :vm, i)
     vm_vio = _PMs.var(pm, n, c, :vm_vio, i)
     z = _PMs.var(pm, n, :z_bus, i)
@@ -18,3 +18,13 @@ function constraint_bus_damage(pm::_PMs.AbstractACPModel, n::Int, c::Int, i::Int
     JuMP.@constraint(pm.model, vm <= z*vm_max)
     JuMP.@constraint(pm.model, vm >= z*vm_min - vm_vio)
 end
+
+""
+function constraint_bus_voltage_violation(pm::_PMs.AbstractACPModel, n::Int, c::Int, i::Int, vm_min, vm_max)
+    vm = _PMs.var(pm, n, c, :vm, i)
+    vm_vio = _PMs.var(pm, n, c, :vm_vio, i)
+
+    JuMP.@constraint(pm.model, vm <= vm_max)
+    JuMP.@constraint(pm.model, vm >= vm_min - vm_vio)
+end
+

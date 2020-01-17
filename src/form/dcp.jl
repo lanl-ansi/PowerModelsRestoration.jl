@@ -7,5 +7,9 @@ function variable_voltage_damage(pm::_PMs.AbstractDCPModel; kwargs...)
 end
 
 "no vm values to turn off"
-function constraint_bus_damage(pm::_PMs.AbstractDCPModel, n::Int, c::Int, i::Int, vm_min, vm_max)
+function constraint_bus_voltage_violation_damage(pm::_PMs.AbstractDCPModel, n::Int, c::Int, i::Int, vm_min, vm_max)
+end
+
+"no vm values to turn off"
+function constraint_bus_voltage_violation(pm::_PMs.AbstractDCPModel, n::Int, c::Int, i::Int, vm_min, vm_max)
 end
