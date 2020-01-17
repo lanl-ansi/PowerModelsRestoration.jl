@@ -130,7 +130,7 @@ function add_setpoint_bus_status!(sol, pm::_PMs.AbstractPowerModel)
 end
 
 function add_setpoint_bus_voltage_violation!(sol, pm::_PMs.AbstractPowerModel)
-    _PMs.add_setpoint!(sol, pm, "bus", "voltage_violation", :vm_vio)
+    _PMs.add_setpoint!(sol, pm, "bus", "voltage_violation", :vm_vio, status_name=_PMs.pm_component_status["bus"], inactive_status_value = _PMs.pm_component_status_inactive["bus"])
 end
 
 function add_setpoint_bus_voltage_violation!(sol, pm::_PMs.AbstractWModels)
