@@ -16,6 +16,7 @@ function damaged_items!(nw_data::Dict{String, Any}, damaged_items::Dict{String, 
     end
 end
 
+"Clear damage indicator and replace with status=0"
 function clear_damage_indicator!(data::Dict{String, Any})
     if InfrastructureModels.ismultinetwork(data)
         for (i, nw_data) in data["nw"]
@@ -178,7 +179,12 @@ function _clean_status!(network)
     for (comp_name, status_key) in _PMs.pm_component_status
         for (i, comp) in get(network, comp_name, Dict())
             if haskey(comp, status_key)
-                comp[status_key] = round(Int, comp[status_key])
+                if isapprox(comp[status_key], _PMs.pm_component_status_inactive[comp_name], atol=1e-4)
+                    # i.e. status= 1.05e-9, then set status=0
+                    # instead of rounding, which would cause a load with status "0.2" (80% of load shed)
+                    # to be set to status 0 instead.
+                    comp[status_key] = _PMs.pm_component_status_inactive[comp_name]
+                end
             end
         end
     end

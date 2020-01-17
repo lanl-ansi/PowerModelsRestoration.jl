@@ -10,3 +10,7 @@ docs/site/
 docs/.documenter
 .project
 .tags
+<<<<<<< HEAD
+=======
+Manifest.toml
+>>>>>>> Update restoration_simulation to avoid mixed integers
