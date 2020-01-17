@@ -2,7 +2,7 @@
 function run_rop(file, model_constructor, optimizer; kwargs...)
     return _PMs.run_model(file, model_constructor, optimizer, build_rop; multinetwork=true,
         ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!],
-        solution_builder = solution_rop, kwargs...)
+        solution_builder = solution_rop!, kwargs...)
 end
 
 
@@ -35,7 +35,7 @@ function build_rop(pm::_PMs.AbstractPowerModel)
         end
 
         for i in _PMs.ids(pm, :bus, nw=n)
-            constraint_bus_damage(pm, i, nw=n)
+            constraint_bus_voltage_violation_damage(pm, i, nw=n)
             _MLD.constraint_power_balance_shed(pm, i, nw=n)
         end
 
@@ -110,8 +110,9 @@ end
 
 
 "report restoration solution"
-function solution_rop(pm::_PMs.AbstractPowerModel, sol::Dict{String,Any})
+function solution_rop!(pm::_PMs.AbstractPowerModel, sol::Dict{String,Any})
     add_setpoint_bus_status!(sol,pm)
+    add_setpoint_bus_voltage_violation!(sol,pm)
     _PMs.add_setpoint_bus_voltage!(sol, pm)
     _PMs.add_setpoint_generator_status!(sol, pm)
     _PMs.add_setpoint_generator_power!(sol, pm)
@@ -126,6 +127,14 @@ end
 
 function add_setpoint_bus_status!(sol, pm::_PMs.AbstractPowerModel)
     _PMs.add_setpoint!(sol, pm, "bus", "status", :z_bus, status_name="bus_type", inactive_status_value = 4, conductorless=true, default_value = (item) -> if item["bus_type"] == 4 0 else 1 end)
+end
+
+function add_setpoint_bus_voltage_violation!(sol, pm::_PMs.AbstractPowerModel)
+    _PMs.add_setpoint!(sol, pm, "bus", "voltage_violation", :vm_vio)
+end
+
+function add_setpoint_bus_voltage_violation!(sol, pm::_PMs.AbstractWModels)
+    _PMs.add_setpoint!(sol, pm, "bus", "w_voltage_violation", :w_vio, status_name=_PMs.pm_component_status["bus"], inactive_status_value = _PMs.pm_component_status_inactive["bus"], scale = (x,item,cnd) -> sqrt(x))
 end
 
 # this is a slightly more numerically robust version of this for cases when :w is slightly negative due to numerical precision issues
