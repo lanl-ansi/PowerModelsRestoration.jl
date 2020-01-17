@@ -246,7 +246,7 @@ function constraint_storage_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=
         end
     end
     if bus_damaged && !storage_damaged
-        Memento.error(_PMs._LOGGER, "non-damaged storage $(i) connected to damaged bus $(gen["storage_bus"])")
+        Memento.error(_PMs._LOGGER, "non-damaged storage $(i) connected to damaged bus $(storage["storage_bus"])")
     end
 end
 
@@ -263,7 +263,6 @@ function constraint_bus_voltage_violation(pm::_PMs.AbstractPowerModel, i::Int; n
 
     constraint_bus_voltage_violation(pm, nw, cnd, i, bus["vmin"], bus["vmax"])
 end
-
 
 
 ""

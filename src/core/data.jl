@@ -91,7 +91,6 @@ function count_damaged_items(network::Dict{String, Any})
     return damage_count
 end
 
-
 "Clear damage indicator and replace with status=0"
 function clear_damage_indicator!(data::Dict{String, Any})
     if InfrastructureModels.ismultinetwork(data)
@@ -502,7 +501,7 @@ end
 
 function add_load_weights!(data::Dict{String,<:Any})
     if !haskey(data, "source_type") || data["source_type"] != "pti"
-        warn(_PMs._LOGGER, "add_load_weights! currently only supports networks from pti files")
+        Memento.warn(_PMs._LOGGER, "add_load_weights! currently only supports networks from pti files")
         return
     end
 
