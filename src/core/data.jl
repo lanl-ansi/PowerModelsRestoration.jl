@@ -103,6 +103,7 @@ function clear_damage_indicator!(data::Dict{String, Any})
     end
 end
 
+
 function _clear_damage_indicator!(network::Dict{String,Any})
     for (comp_name, status_key) in _PMs.pm_component_status
         for (i, comp) in get(network, comp_name, Dict())
