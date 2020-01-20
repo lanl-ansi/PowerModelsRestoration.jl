@@ -1,5 +1,5 @@
 ```@docs
-process_network
+<!-- process_network -->
 run_restoration_simulation
 run_rop_heuristic
 random_repair

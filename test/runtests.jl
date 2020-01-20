@@ -26,6 +26,7 @@ include("common.jl")
 
 @testset "PowerModelsRestoration" begin
 
+include("data.jl")
 include("mrsp.jl")
 include("rop.jl")
 include("hueristic.jl")
