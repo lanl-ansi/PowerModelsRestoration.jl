@@ -114,6 +114,7 @@ function _clear_damage_indicator!(network::Dict{String,Any})
     end
 end
 
+
 "Replace NaN and Nothing with 0 in multinetwork solutions"
 function clean_solution!(solution::Dict{String,Any})
     for item_type in ["gen", "storage", "branch","load","shunt"]
