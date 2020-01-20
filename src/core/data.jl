@@ -1,19 +1,39 @@
 "Set damage status for damaged_items in nw_data"
-function damaged_items!(nw_data::Dict{String, Any}, damaged_items::Dict{String, Any})
-
-    for id in keys(damaged_items)
-        if haskey(nw_data, "nw")
-            for network in nw_data["nw"]
-                for i in damaged_items[id]
-                    nw_data[id][i]["damaged"] = 1
-                end
+function damage_items!(nw_data::Dict{String,<:Any}, damage_items::Dict{String,<:Any})
+    for (comp_name, comp_id) in damage_items
+        if haskey(nw_data, "multinetwork") && nw_data["multinetwork"] == true
+            for (nw, network) in nw_data["nw"]
+                network[comp_name][comp_id]["damaged"] = 1
             end
         else
-            for i in damaged_items[id]
-                nw_data[id][i]["damaged"] = 1
+            nw_data[comp_name][comp_id]["damaged"] = 1
+        end
+    end
+end
+
+function count_damaged_items(network::Dict{String, Any})
+    if haskey(network, "multinetwork") && network["multinetwork"] == true
+        Memento.warn(_PMs._LOGGER, "count_damaged_items supports single networks.  Attempting to select network 0.")
+        if haskey(network["nw"],"0")
+            Memento.info(_PMs._LOGGER, "Network 0 found.")
+            nw = network["nw"]["0"]
+        else
+            Memento.error(_PMs._LOGGER, "Network 0 not found.")
+        end
+    else
+        nw = network
+    end
+
+    damage_count = 0
+    for (comp_name, status_key) in _PMs.pm_component_status
+        for (i, comp) in get(nw, comp_name, Dict())
+            if haskey(comp, "damaged")
+                damage_count += comp["damaged"] == 1 ? 1 : 0
             end
         end
     end
+    
+    return damage_count
 end
 
 "Clear damage indicator and replace with status=0"
@@ -38,7 +58,7 @@ function _clear_damage_indicator!(network::Dict{String,Any})
 end
 
 "Replace NaN and Nothing with 0 in multinetwork solutions"
-function clean_solution!(solution)
+function clean_solution!(solution::Dict{String,Any})
     for item_type in ["gen", "storage", "branch","load","shunt"]
         if haskey(solution["solution"], "nw")
             for (n, net) in solution["solution"]["nw"]
@@ -147,7 +167,7 @@ end
 
 # Required because PowerModels assumes integral status values
 "Replace non-integer status codes for devices, maps bus status to bus_type"
-function clean_status!(data)
+function clean_status!(data::Dict{String,Any})
     if InfrastructureModels.ismultinetwork(data)
         for (i, nw_data) in data["nw"]
             _clean_status!(nw_data)
@@ -157,7 +177,7 @@ function clean_status!(data)
     end
 end
 
-function _clean_status!(network)
+function _clean_status!(network::Dict{String,Any})
     for (i, bus) in get(network, "bus", Dict())
         if haskey(bus, "status")
             status = bus["status"] = round(Int, bus["status"])
@@ -238,7 +258,7 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
         end
     end
 
-    if count >= total_repairs
+    if count > total_repairs
         Memento.warn(_PMs._LOGGER, "More restoration steps than damaged components.  Reducing restoration steps to $(total_repairs).")
         count = trunc(Int,total_repairs)
     end
@@ -297,16 +317,22 @@ function _propagate_damage_status!(data::Dict{String,<:Any})
     for (i,bus) in buses
         if haskey(bus, "damaged") && bus["damaged"] == 1
             for gen in incident_gen[i]
-                Memento.info(_PMs._LOGGER, "damaging generator $(gen["index"]) due to damaged bus $(i)")
-                gen["damaged"] = 1
+                if !(haskey(gen, "damaged") && gen["damaged"] == 1)
+                    Memento.info(_PMs._LOGGER, "damaging generator $(gen["index"]) due to damaged bus $(i)")
+                    gen["damaged"] = 1
+                end
             end
             for storage in incident_storage[i]
-                Memento.info(_PMs._LOGGER, "damaging storage $(storage["index"]) due to damaged bus $(i)")
-                storage["damaged"] = 1
+                if !(haskey(storage, "damaged") && storage["damaged"] == 1)
+                    Memento.info(_PMs._LOGGER, "damaging storage $(storage["index"]) due to damaged bus $(i)")
+                    storage["damaged"] = 1
+                end
             end
             for branch in incident_branch[i]
-                Memento.info(_PMs._LOGGER, "damaging branch $(branch["index"]) due to damaged bus $(i)")
-                branch["damaged"] = 1
+                if !(haskey(branch, "damaged") && branch["damaged"] == 1)
+                    Memento.info(_PMs._LOGGER, "damaging branch $(branch["index"]) due to damaged bus $(i)")
+                    branch["damaged"] = 1
+                end
             end
         end
     end
