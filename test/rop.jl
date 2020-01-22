@@ -91,8 +91,8 @@
             @test isapprox(branch_status(result,"0","2"), 0; atol=1e-6)
             @test isapprox(branch_status(result,"0","4"), 1; atol=1e-6)
 
-            @test isapprox(branch_status(result,"1","1"), 1; atol=1e-6)
-            @test isapprox(branch_status(result,"1","2"), 0; atol=1e-6)
+            @test isapprox(branch_status(result,"1","1"), 0; atol=1e-6)
+            @test isapprox(branch_status(result,"1","2"), 1; atol=1e-6)
             @test isapprox(branch_status(result,"1","4"), 1; atol=1e-6)
 
             @test isapprox(branch_status(result,"2","1"), 1; atol=1e-6)
