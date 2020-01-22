@@ -1,7 +1,7 @@
 "Set damage status for damaged_items in nw_data"
 function damage_items!(nw_data::Dict{String,<:Any}, damage_items::Dict{String,<:Any})
     for (comp_name, comp_id) in damage_items
-        if haskey(nw_data, "multinetwork") && nw_data["multinetwork"] == true
+        if _IMs.ismultinetwork(nw_data)
             for (nw, network) in nw_data["nw"]
                 network[comp_name][comp_id]["damaged"] = 1
             end
@@ -12,7 +12,7 @@ function damage_items!(nw_data::Dict{String,<:Any}, damage_items::Dict{String,<:
 end
 
 function count_damaged_items(network::Dict{String, Any})
-    if haskey(network, "multinetwork") && network["multinetwork"] == true
+    if _IMs.ismultinetwork(network)
         Memento.warn(_PMs._LOGGER, "count_damaged_items supports single networks.  Attempting to select network 0.")
         if haskey(network["nw"],"0")
             Memento.info(_PMs._LOGGER, "Network 0 found.")
@@ -339,6 +339,46 @@ function _propagate_damage_status!(data::Dict{String,<:Any})
 
 end
 
+
+"Progate bus status to loads and shunts.  
+When running a restoration sequence, some buses may be set to inactive in a 
+result dictionary but the associated loads are still active."
+function propagate_bus_status(data::Dict{String,<:Any})
+    ## Propogate bus status to loads and shunts
+    buses = Dict(bus["bus_i"] => bus for (i,bus) in data["bus"])
+
+    incident_load = PowerModels.bus_load_lookup(data["load"],data["bus"])
+    incident_active_load = Dict()
+    for (i, load_list) in incident_load
+        incident_active_load[i] = [load for load in load_list if load["status"] != 0]
+    end
+
+    incident_shunt = PowerModels.bus_shunt_lookup(data["shunt"], data["bus"])
+    incident_active_shunt = Dict()
+    for (i, shunt_list) in incident_shunt
+        incident_active_shunt[i] = [shunt for shunt in shunt_list if shunt["status"] != 0]
+    end
+
+    for (i,bus) in buses
+        if bus["bus_type"] == 4
+            for load in incident_active_load[i]
+                if load["status"] != 0
+                    Memento.info(_PMs._LOGGER, "deactivating load $(load["index"]) due to inactive bus $(i)")
+                    load["status"] = 0
+                    updated = true
+                end
+            end
+
+            for shunt in incident_active_shunt[i]
+                if shunt["status"] != 0
+                    Memento.info(_PMs._LOGGER, "deactivating shunt $(shunt["index"]) due to inactive bus $(i)")
+                    shunt["status"] = 0
+                    updated = true
+                end
+            end
+        end
+    end
+end
 
 """
 prints a summary of a restoration solution to the terminal

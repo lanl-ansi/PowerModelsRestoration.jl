@@ -40,12 +40,12 @@ function constraint_restore_all_items(pm, n)
     z_branch = _PMs.var(pm, n, :z_branch)
     z_bus = _PMs.var(pm, n, :z_bus)
 
-    for (i,load) in  _PMs.ref(pm, n, :load)
-        JuMP.@constraint(pm.model, z_demand[i] == 1)
-    end
-    for (i,shunt) in  _PMs.ref(pm, n, :shunt)
-        JuMP.@constraint(pm.model, z_shunt[i] == 1)
-    end
+    # for (i,load) in  _PMs.ref(pm, n, :load)
+    #     JuMP.@constraint(pm.model, z_demand[i] == 1)
+    # end
+    # for (i,shunt) in  _PMs.ref(pm, n, :shunt)
+    #     JuMP.@constraint(pm.model, z_shunt[i] == 1)
+    # end
 
     for (i,storage) in  _PMs.ref(pm, n, :damaged_storage)
         JuMP.@constraint(pm.model, z_storage[i] == 1)
