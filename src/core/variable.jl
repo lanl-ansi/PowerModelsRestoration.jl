@@ -41,9 +41,6 @@ function variable_generation_damage_indicator(pm::_PMs.AbstractPowerModel; nw::I
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :gen, l), "gen_damage_start", 1, 0.0)
         )
     end
-    # @show nw
-    # @show z_gen_vars
-    # @show _PMs.ids(pm, nw, :damaged_gen)
     z_gen = Dict(i => haskey(gen, "damaged") && gen["damaged"] == 1 && gen["gen_status"]==1 ? z_gen_vars[i] : gen["gen_status"] for (i,gen) in _PMs.ref(pm, nw, :gen))
     _PMs.var(pm, nw)[:z_gen] = z_gen
 end
