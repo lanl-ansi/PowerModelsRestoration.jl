@@ -11,22 +11,11 @@
 
 
 
+# "solve restoration using iterative period length"
+# function run_iterative_restoration(network, model_constructor::Type, optimizer; repair_periods=10, kwargs...)
 
-# "Simulate a restoration sequence power flow"
-# function _run_rop_bounded_restoration(data::Dict{String,Any}, model_type::Type, optimizer; kwargs...)
-#     clear_damage_indicator!(data)
-#     return _PMs.run_model(data, model_type, optimizer, build_rop_bounded_restoration; multinetwork=true,
-#     ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!],
-#     solution_builder = solution_rop!, kwargs...)
 # end
 
-# ""
-# function build_rop_bounded_restoration(pm::_PMs.AbstractPowerModel)
-#     pm = _PMs.instantiate_model(data, DCPPowerModel, build_opf_ptdf; ref_extensions=ref_extensions)
-#     # result = optimize_model!(pm, optimizer=optimizer, solution_builder=solution_opf_ptdf!)    for (n, network) in _PMs.nws(pm)
-  
-#     # end
-# end
 
 "solve restoration using iterative period length"
 function run_iterative_restoration(network, model_constructor, optimizer; repair_periods=2, kwargs...)
