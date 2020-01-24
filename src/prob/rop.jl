@@ -1,13 +1,13 @@
 ""
 function run_rop(file, model_constructor, optimizer; kwargs...)
-    return _PMs.run_model(file, model_constructor, optimizer, post_rop; multinetwork=true,
+    return _PMs.run_model(file, model_constructor, optimizer, build_rop; multinetwork=true,
         ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!],
         solution_builder = solution_rop, kwargs...)
 end
 
 
 ""
-function post_rop(pm::_PMs.AbstractPowerModel)
+function build_rop(pm::_PMs.AbstractPowerModel)
     for (n, network) in _PMs.nws(pm)
         variable_bus_damage_indicator(pm, nw=n)
         variable_voltage_damage(pm, nw=n)

@@ -1,13 +1,13 @@
 ""
 function run_mrsp(file, model_constructor, optimizer; kwargs...)
-    return _PMs.run_model(file, model_constructor, optimizer, post_mrsp;
+    return _PMs.run_model(file, model_constructor, optimizer, build_mrsp;
         ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!],
         solution_builder = solution_mrsp, kwargs...)
 end
 
 
 ""
-function post_mrsp(pm::_PMs.AbstractPowerModel)
+function build_mrsp(pm::_PMs.AbstractPowerModel)
     variable_bus_damage_indicator(pm)
     variable_voltage_damage(pm)
 

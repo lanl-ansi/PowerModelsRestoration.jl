@@ -9,7 +9,7 @@
 #         network = _network_data["nw"]["$n"]
 #         network["per_unit"] = _network_data["per_unit"]
 
-#         result = _PMs.run_model(network, model_constructor, optimizer, _MLD.post_mld_strg; solution_builder=solution_rop, kwargs...)
+#         result = _PMs.run_model(network, model_constructor, optimizer, _MLD.build_mld_strg; solution_builder=solution_rop, kwargs...)
 #         _network_data["nw"]["$n"]["solution"] = result
 #         network_forward = get(_network_data["nw"],"$(n+1)", Dict())
 
@@ -45,7 +45,7 @@ function run_restoration_simulation(data::Dict{String,Any}, model_type::Type, op
 end
 
 # ""
-# function post_restoration_simulation(pm::_PMs.AbstractPowerModel)
+# function build_restoration_simulation(pm::_PMs.AbstractPowerModel)
 #     for (n, network) in _PMs.nws(pm)
 #         _PMs.variable_voltage(pm, nw=n)
 #         _PMs.variable_generation(pm, nw=n)
