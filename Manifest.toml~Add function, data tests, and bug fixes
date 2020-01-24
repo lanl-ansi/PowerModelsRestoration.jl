@@ -169,7 +169,7 @@ version = "0.13.0"
 
 [[PowerModelsMLD]]
 deps = ["InfrastructureModels", "JuMP", "Memento", "PowerModels"]
-git-tree-sha1 = "a8259937d9ba7fbc810dce2bf37f69344977649b"
+git-tree-sha1 = "0063b02e1bfefc4b3d39fd46e691eb9f968963f3"
 repo-rev = "master"
 repo-url = "https://github.com/lanl-ansi/PowerModelsMLD.jl.git"
 uuid = "b04da1f8-93b0-5a19-8500-8b2903949876"
