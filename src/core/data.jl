@@ -1,3 +1,56 @@
+function count_repairable_items(network::Dict{String, Any})
+    if _IMs.ismultinetwork(network)
+        Memento.warn(_PMs._LOGGER, "count_repairable_items supports single networks.  Attempting to select network 0.")
+        if haskey(network["nw"],"0")
+            Memento.info(_PMs._LOGGER, "Network 0 found.")
+            nw = network["nw"]["0"]
+        else
+            Memento.error(_PMs._LOGGER, "Network 0 not found.")
+        end
+    else
+        nw = network
+    end
+
+    repairable_count = 0
+    for (comp_name, status_key) in _PMs.pm_component_status
+        for (i, comp) in get(nw, comp_name, Dict())
+            if haskey(comp, status_key) && comp[status_key] != _PMs.pm_component_status_inactive[comp_name] && haskey(comp, "damaged") && comp["damaged"] == 1
+                repairable_count += 1
+            end
+        end
+    end
+    
+    return repairable_count
+end
+
+
+"Count the number of items that have an active status value in a network"
+function count_active_items(network::Dict{String, Any})
+    if _IMs.ismultinetwork(network)
+        Memento.warn(_PMs._LOGGER, "count_active_items supports single networks.  Attempting to select network 0.")
+        if haskey(network["nw"],"0")
+            Memento.info(_PMs._LOGGER, "Network 0 found.")
+            nw = network["nw"]["0"]
+        else
+            Memento.error(_PMs._LOGGER, "Network 0 not found.")
+        end
+    else
+        nw = network
+    end
+
+    active_count = 0
+    for (comp_name, status_key) in _PMs.pm_component_status
+        for (comp_id, comp) in nw[comp_name]
+            if comp[status_key] !==_PMs.pm_component_status_inactive[comp_name]
+                active_count += 1
+            end
+        end
+    end
+        
+    return active_count
+end
+
+
 "Set damage status for damaged_items in nw_data"
 function damage_items!(nw_data::Dict{String,<:Any}, damage_items::Dict{String,<:Any})
     for (comp_name, comp_id) in damage_items
@@ -11,6 +64,8 @@ function damage_items!(nw_data::Dict{String,<:Any}, damage_items::Dict{String,<:
     end
 end
 
+
+"Count the number of items with a key \"damaged\" == 1 in a network"
 function count_damaged_items(network::Dict{String, Any})
     if _IMs.ismultinetwork(network)
         Memento.warn(_PMs._LOGGER, "count_damaged_items supports single networks.  Attempting to select network 0.")
@@ -35,6 +90,7 @@ function count_damaged_items(network::Dict{String, Any})
     
     return damage_count
 end
+
 
 "Clear damage indicator and replace with status=0"
 function clear_damage_indicator!(data::Dict{String, Any})
