@@ -8,13 +8,21 @@ end
 "Simulate a restoration sequence power flow"
 function run_restoration_simulation(data::Dict{String,Any}, model_type::Type, optimizer; kwargs...)
     clear_damage_indicator!(data)
+<<<<<<< HEAD
     return _PMs.run_model(data, model_type, optimizer, build_restoration_simulation; multinetwork=true,
+=======
+    return _PMs.run_model(data, model_type, optimizer, post_restoration_simulation; multinetwork=true,
+>>>>>>> b073839f0c803b76a982fa1107139d849978c7f9
     ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!],
     solution_builder = solution_rop!, kwargs...)
 end
 
 ""
+<<<<<<< HEAD
 function build_restoration_simulation(pm::_PMs.AbstractPowerModel)
+=======
+function post_restoration_simulation(pm::_PMs.AbstractPowerModel)
+>>>>>>> b073839f0c803b76a982fa1107139d849978c7f9
     for (n, network) in _PMs.nws(pm)
         _PMs.variable_voltage(pm, nw=n)
         variable_voltage_magnitude_violation(pm; nw=n)

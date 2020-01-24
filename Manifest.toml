@@ -72,6 +72,7 @@ version = "1.1.0"
 [[ForwardDiff]]
 deps = ["CommonSubexpressions", "DiffResults", "DiffRules", "NaNMath", "Random", "SpecialFunctions", "StaticArrays"]
 <<<<<<< HEAD
+<<<<<<< HEAD
 git-tree-sha1 = "88b082d492be6b63f967b6c96b352e25ced1a34c"
 uuid = "f6369f11-7733-5829-9624-2563aa707210"
 version = "0.10.9"
@@ -86,6 +87,11 @@ git-tree-sha1 = "da46ac97b17793eba44ff366dc6cb70f1238a738"
 uuid = "f6369f11-7733-5829-9624-2563aa707210"
 version = "0.10.7"
 >>>>>>> Add function, data tests, and bug fixes.
+=======
+git-tree-sha1 = "da46ac97b17793eba44ff366dc6cb70f1238a738"
+uuid = "f6369f11-7733-5829-9624-2563aa707210"
+version = "0.10.7"
+>>>>>>> b073839f0c803b76a982fa1107139d849978c7f9
 
 [[InfrastructureModels]]
 deps = ["JuMP", "Memento"]
@@ -137,6 +143,7 @@ deps = ["BenchmarkTools", "LinearAlgebra", "OrderedCollections", "SparseArrays",
 git-tree-sha1 = "78427dcc212e0c0ad9658049bc56a50303ad9737"
 uuid = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 <<<<<<< HEAD
+<<<<<<< HEAD
 version = "0.9.9"
 
 [[MbedTLS]]
@@ -147,6 +154,9 @@ version = "0.7.0"
 =======
 version = "0.9.7"
 >>>>>>> Add function, data tests, and bug fixes.
+=======
+version = "0.9.7"
+>>>>>>> b073839f0c803b76a982fa1107139d849978c7f9
 
 [[Memento]]
 deps = ["Dates", "Distributed", "JSON", "Serialization", "Sockets", "Syslogs", "Test", "TimeZones", "UUIDs"]
@@ -163,6 +173,7 @@ uuid = "78c3b35d-d492-501b-9361-3d52fe80e533"
 version = "0.7.0"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 [[MutableArithmetics]]
 deps = ["LinearAlgebra", "SparseArrays", "Test"]
 git-tree-sha1 = "aceb69c03688ec90a31ecad9d4fb60db8d472856"
@@ -171,6 +182,8 @@ version = "0.2.1"
 
 =======
 >>>>>>> Add function, data tests, and bug fixes.
+=======
+>>>>>>> b073839f0c803b76a982fa1107139d849978c7f9
 [[NaNMath]]
 git-tree-sha1 = "928b8ca9b2791081dc71a51c55347c27c618760f"
 uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
@@ -201,6 +214,7 @@ uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 [[PowerModels]]
 deps = ["InfrastructureModels", "JSON", "JuMP", "LinearAlgebra", "MathOptInterface", "Memento", "SparseArrays"]
 <<<<<<< HEAD
+<<<<<<< HEAD
 git-tree-sha1 = "50d657d19ddfd85cb4fca3dd84d3670b86453026"
 uuid = "c36e90e8-916a-50a6-bd94-075b64ef4655"
 version = "0.14.0"
@@ -209,6 +223,11 @@ git-tree-sha1 = "d2a698cbd94097a8c1660421d37b27dcf4b56b76"
 uuid = "c36e90e8-916a-50a6-bd94-075b64ef4655"
 version = "0.13.0"
 >>>>>>> Add function, data tests, and bug fixes.
+=======
+git-tree-sha1 = "d2a698cbd94097a8c1660421d37b27dcf4b56b76"
+uuid = "c36e90e8-916a-50a6-bd94-075b64ef4655"
+version = "0.13.0"
+>>>>>>> b073839f0c803b76a982fa1107139d849978c7f9
 
 [[PowerModelsMLD]]
 deps = ["InfrastructureModels", "JuMP", "Memento", "PowerModels"]
@@ -280,12 +299,15 @@ uuid = "f269a46b-ccf7-5d73-abea-4c690281aa53"
 version = "0.11.0"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 [[TranscodingStreams]]
 deps = ["Random", "Test"]
 git-tree-sha1 = "7c53c35547de1c5b9d46a4797cf6d8253807108c"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
 version = "0.9.5"
 =======
+=======
+>>>>>>> b073839f0c803b76a982fa1107139d849978c7f9
 [[URIParser]]
 deps = ["Test", "Unicode"]
 git-tree-sha1 = "6ddf8244220dfda2f17539fa8c9de20d6c575b69"
