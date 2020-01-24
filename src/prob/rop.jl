@@ -27,6 +27,7 @@ function build_rop(pm::_PMs.AbstractPowerModel)
         variable_shunt_factor(pm, nw=n, relax=true)
 
         constraint_restoration_cardinality_ub(pm, nw=n)
+        # constraint_restoration_cardinality_lb(pm, nw=n)   
 
         constraint_model_voltage_damage(pm, nw=n)
 
