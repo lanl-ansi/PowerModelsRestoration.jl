@@ -23,8 +23,8 @@ function build_rop(pm::_PMs.AbstractPowerModel)
         variable_generation_damage_indicator(pm, nw=n)
         variable_generation_damage(pm, nw=n)
 
-        _MLD.variable_demand_factor(pm, nw=n, relax=true)
-        _MLD.variable_shunt_factor(pm, nw=n, relax=true)
+        variable_demand_factor(pm, nw=n, relax=true)
+        variable_shunt_factor(pm, nw=n, relax=true)
 
         constraint_restoration_cardinality_ub(pm, nw=n)
 
@@ -36,7 +36,7 @@ function build_rop(pm::_PMs.AbstractPowerModel)
 
         for i in _PMs.ids(pm, :bus, nw=n)
             constraint_bus_damage(pm, i, nw=n)
-            _MLD.constraint_power_balance_shed(pm, i, nw=n)
+            constraint_power_balance_shed(pm, i, nw=n)
         end
 
         for i in _PMs.ids(pm, :gen, nw=n)
@@ -120,8 +120,8 @@ function solution_rop(pm::_PMs.AbstractPowerModel, sol::Dict{String,Any})
     _PMs.add_setpoint_dcline_flow!(sol, pm)
     _PMs.add_setpoint_storage_status!(sol, pm)
     _PMs.add_setpoint_storage!(sol, pm)
-    _MLD.add_setpoint_load!(sol,pm)
-    _MLD.add_setpoint_shunt!(sol,pm)
+    add_setpoint_load!(sol,pm)
+    add_setpoint_shunt!(sol,pm)
 end
 
 function add_setpoint_bus_status!(sol, pm::_PMs.AbstractPowerModel)
