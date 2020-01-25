@@ -46,11 +46,6 @@ function bus_status(result, bus_id)
 end
 
 ""
-function bus_status(result, bus_id)
-    return result["solution"]["bus"][bus_id]["status"]
-end
-
-""
 function branch_status(result, nw_id, branch_id)
     return result["solution"]["nw"][nw_id]["branch"][branch_id]["br_status"]
 end
@@ -60,17 +55,26 @@ function branch_status(result, branch_id)
     return result["solution"]["branch"][branch_id]["br_status"]
 end
 
-
 ""
 function load_status(result, nw_id, load_id)
     return result["solution"]["nw"][nw_id]["load"][load_id]["status"]
 end
 
+""
+function load_status(result, load_id)
+    return result["solution"]["load"][load_id]["status"]
+end
 
 ""
 function shunt_status(result, nw_id, shunt_id)
     return result["solution"]["nw"][nw_id]["shunt"][shunt_id]["status"]
 end
+
+""
+function shunt_status(result, shunt_id)
+    return result["solution"]["shunt"][shunt_id]["status"]
+end
+
 
 
 ""
@@ -123,4 +127,23 @@ end
 ""
 function storage_power(result, nw_id::String, storage_ids::Array{String,1})
     return sum(storage_power(result, nw_id, storage_id) for storage_id in storage_ids)
+end
+
+
+function all_gens_on(result)
+    #println([gen["gen_status"] for (i,gen) in result["solution"]["gen"]])
+    #println(minimum([gen["gen_status"] for (i,gen) in result["solution"]["gen"]]))
+    # tolerance of 1e-5 is needed for SCS tests to pass
+    return minimum([gen["gen_status"] for (i,gen) in result["solution"]["gen"]]) >= 1.0 - 1e-5
+end
+
+function active_power_served(result)
+    #println([bus["pd"] for (i,bus) in result["solution"]["bus"]])
+    #println(sum([bus["pd"] for (i,bus) in result["solution"]["bus"]]))
+    return sum([load["pd"] for (i,load) in result["solution"]["load"]])
+end
+
+function all_voltages_on(result)
+    #println([bus["status"] for (i,bus) in result["solution"]["bus"]])
+    return return minimum([bus["status"] for (i,bus) in result["solution"]["bus"]]) >= 1.0 - 1e-3 #(note, non-SCS solvers are more accurate)
 end
