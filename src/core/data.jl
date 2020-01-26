@@ -58,6 +58,20 @@ function damage_items!(nw_data::Dict{String,<:Any}, damage_items::Dict{String,<:
             for (nw, network) in nw_data["nw"]
                 network[comp_name][comp_id]["damaged"] = 1
             end
+        end
+    end
+    
+    return repairable_count
+end
+
+
+"Count the number of items that have an active status value in a network"
+function count_active_items(network::Dict{String, Any})
+    if _IMs.ismultinetwork(network)
+        Memento.warn(_PMs._LOGGER, "count_active_items supports single networks.  Attempting to select network 0.")
+        if haskey(network["nw"],"0")
+            Memento.info(_PMs._LOGGER, "Network 0 found.")
+            nw = network["nw"]["0"]
         else
             nw_data[comp_name][comp_id]["damaged"] = 1
         end
