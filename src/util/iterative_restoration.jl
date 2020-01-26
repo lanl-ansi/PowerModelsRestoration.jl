@@ -115,11 +115,13 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
     restoration_network = replicate_restoration_network(network, count=repair_periods)
 
     ## Run ROP problem with lower bound on restoration cardinality
-    pm = _PMs.instantiate_model(network, model_constructor, build_rop)
+    pm = _PMs.instantiate_model(network, model_constructor, build_rop; multinetwork=true,
+    ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!], kwargs... )
+
     for (n, network) in _PMs.nws(pm)
         constraint_restoration_cardinality_lb(pm, nw=n)   
     end
-    restoration_solution = _PMs.optimize_model!(pm, optimizer=optimizer)
+    restoration_solution = _PMs.optimize_model!(pm, optimizer=optimizer, solution_builder = solution_rop!, kwargs...)
 
     # restoration_solution = run_rop(restoration_network, model_constructor, optimizer; kwargs...)
 
@@ -137,6 +139,9 @@ end
 
 "Merge solution dictionaries and accumulate solvetime and objective"
 function merge_solution!(solution1, solution2)
+    if solution2["termination_status"] == 2
+        println("networks $(keys(solution2["solution"]["nw"])) failed" )
+    end
     solution1["termination_status"] = max(solution1["termination_status"],solution2["termination_status"])
     solution1["primal_status"] = max(solution1["primal_status"],solution2["primal_status"])
     solution1["dual_status"] = max(solution1["dual_status"],solution2["dual_status"])
