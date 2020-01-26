@@ -14,10 +14,10 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 [compat]
 InfrastructureModels = "~0.3"
 JuMP = "~0.19.1, ~0.20"
+Juniper = ">= 0.4"
 MathOptInterface = "~0.8, ~0.9"
 Memento = "~0.10, ~0.11, ~0.12"
 PowerModels = "~0.13, ~0.14"
-Juniper = ">= 0.4"
 SCS = ">= 0.6"
 julia = "^1"
 
