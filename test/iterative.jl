@@ -39,11 +39,11 @@
             @test isapprox(length(keys(result["solution"]["nw"])), 5; atol=1e0)    
 
             #there should be a new active item in each time period
-            @test isapprox(count_active_items(result["solution"]["nw"]["0"]), 15, atol=1e0)
-            @test isapprox(count_active_items(result["solution"]["nw"]["1"]), 16, atol=1e0)
-            @test isapprox(count_active_items(result["solution"]["nw"]["2"]), 17, atol=1e0)
-            @test isapprox(count_active_items(result["solution"]["nw"]["3"]), 18, atol=1e0)
-            @test isapprox(count_active_items(result["solution"]["nw"]["4"]), 19, atol=1e0)
+            @test isapprox(count_active_items( result["solution"]["nw"]["0"] ), 15, atol=1e0)
+            @test isapprox(count_active_items( result["solution"]["nw"]["1"]), 16, atol=1e0)
+            @test isapprox(count_active_items( result["solution"]["nw"]["2"]), 17, atol=1e0)
+            @test isapprox(count_active_items( result["solution"]["nw"]["3"]), 18, atol=1e0)
+            @test isapprox(count_active_items( result["solution"]["nw"]["4"]), 19, atol=1e0)
             
             # @test isapprox(gen_status(result,"0","1"), 0; atol=1e-2)
             # @test isapprox(gen_status(result,"0","2"), 0; atol=1e-2)
