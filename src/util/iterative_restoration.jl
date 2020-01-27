@@ -62,7 +62,7 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
     for nw_id in 1:repair_periods #will need to add to solutio["nw"] dict in nw_id order with current implementation
         network=restoration_network["nw"]["$(nw_id)"]
         if count_damaged_items(network) > 1
-            Memento.info(_PMs._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(network)) damaged items and XX repairable items")
+            Memento.info(_PMs._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(network)) damaged items and $(count_repairable_items(network)) repairable items")
             Memento.info(_PMs._LOGGER, "Start sub_network restoration")
 
 
@@ -89,7 +89,7 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
             merge_solution!(solution, restoration_solution)
 
         else
-            Memento.info(_PMs._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(network)) damaged items and XX repairable items")
+            Memento.info(_PMs._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(network)) damaged items and $(count_repairable_items(network)) repairable items")
             Memento.info(_PMs._LOGGER, "sub_network does not need restoration sequencing")
         end
     end
@@ -104,16 +104,13 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
     restoration_network = replicate_restoration_network(network, count=repair_periods)
 
     ## Run ROP problem with lower bound on restoration cardinality
-    pm = _PMs.instantiate_model(network, model_constructor, build_rop; multinetwork=true,
+    pm = _PMs.instantiate_model(restoration_network, model_constructor, build_rop; multinetwork=true,
     ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!], kwargs... )
 
     for (n, network) in _PMs.nws(pm)
         constraint_restoration_cardinality_lb(pm, nw=n)   
     end
     restoration_solution = _PMs.optimize_model!(pm, optimizer=optimizer, solution_builder = solution_rop!, kwargs...)
-
-    # restoration_solution = run_rop(restoration_network, model_constructor, optimizer; kwargs...)
-
     clean_status!(restoration_solution["solution"])
     _PMs.update_data!(restoration_network, restoration_solution["solution"]) # will update, loads, storage, etc....
     Memento.info(_PMs._LOGGER, "completed first rop solution")
@@ -128,9 +125,8 @@ end
 
 "Merge solution dictionaries and accumulate solvetime and objective"
 function merge_solution!(solution1, solution2)
-    if solution2["termination_status"] == 2
-        println("networks $(keys(solution2["solution"]["nw"])) failed" )
-    end
+    println("networks $(keys(solution2["solution"]["nw"])) finished with status $(solution2["termination_status"])")
+
     solution1["termination_status"] = max(solution1["termination_status"],solution2["termination_status"])
     solution1["primal_status"] = max(solution1["primal_status"],solution2["primal_status"])
     solution1["dual_status"] = max(solution1["dual_status"],solution2["dual_status"])

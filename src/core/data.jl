@@ -52,7 +52,19 @@ end
 
 
 "Set damage status for damaged_items in nw_data"
-function damage_items!(nw_data::Dict{String,<:Any}, damage_items::Dict{String,<:Any})
+function damage_items!(network::Dict{String,<:Any}, damage_items::Dict{String,<:Any})
+    if _IMs.ismultinetwork(network)
+        Memento.warn(_PMs._LOGGER, "count_active_items supports single networks.  Attempting to select network 0.")
+        if haskey(network["nw"],"0")
+            Memento.info(_PMs._LOGGER, "Network 0 found.")
+            nw_data = network["nw"]["0"]
+        else
+            Memento.error(_PMs._LOGGER, "Network 0 not found.")
+        end  
+    else
+        nw_data = network       
+    end
+
     for (comp_name, comp_id) in damage_items
         if haskey(nw_data, "multinetwork") && nw_data["multinetwork"] == true
             for (nw, network) in nw_data["nw"]
@@ -303,18 +315,7 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
         delete!(sn_data_tmp, k)
     end
 
-    damage_comps = ["gen", "branch", "storage", "bus"]
-    total_repairs = 0
-    for comp_type in damage_comps
-        comp_status_name = _PMs.pm_component_status[comp_type]
-        comp_status_inactive_value = _PMs.pm_component_status_inactive[comp_type]
-
-        for (i,comp) in sn_data[comp_type]
-            if comp[comp_status_name] != comp_status_inactive_value
-                total_repairs += get(comp, "damaged", 0)
-            end
-        end
-    end
+    total_repairs = count_repairable_items(sn_data)
 
     if count > total_repairs
         Memento.warn(_PMs._LOGGER, "More restoration steps than damaged components.  Reducing restoration steps to $(total_repairs).")

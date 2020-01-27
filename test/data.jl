@@ -8,9 +8,9 @@
         @test isapprox(network["gen"]["5"]["damaged"], 1, atol=1e-4)
 
         network_mn = replicate_restoration_network(network, count=2)
-        @test isapprox(network_mn["nw"]["1"]["bus"]["10"]["damaged"], 0, atol=1e-4)
+        @test isapprox(network_mn["nw"]["0"]["bus"]["10"]["damaged"], 0, atol=1e-4)
         damage_items!(network_mn, Dict("bus" => "10"))
-        @test isapprox(network_mn["nw"]["1"]["bus"]["10"]["damaged"], 1, atol=1e-4)
+        @test isapprox(network_mn["nw"]["0"]["bus"]["10"]["damaged"], 1, atol=1e-4)
     end
 
 
