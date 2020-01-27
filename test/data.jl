@@ -1,12 +1,14 @@
 ## Test data processing functions
 @testset "Data" begin
 
-    @testset "propagate_damage_status" begin
+    @testset "damage items" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
+        @test isapprox(network["gen"]["5"]["damaged"], 0, atol=1e-4)
         damage_items!(network, Dict("gen" => "5"))
         @test isapprox(network["gen"]["5"]["damaged"], 1, atol=1e-4)
 
         network_mn = replicate_restoration_network(network, count=2)
+        @test isapprox(network_mn["nw"]["1"]["bus"]["10"]["damaged"], 0, atol=1e-4)
         damage_items!(network_mn, Dict("bus" => "10"))
         @test isapprox(network_mn["nw"]["1"]["bus"]["10"]["damaged"], 1, atol=1e-4)
     end

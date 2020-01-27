@@ -8,29 +8,13 @@ end
 "Simulate a restoration sequence power flow"
 function run_restoration_simulation(data::Dict{String,Any}, model_type::Type, optimizer; kwargs...)
     clear_damage_indicator!(data)
-<<<<<<< HEAD
     return _PMs.run_model(data, model_type, optimizer, build_restoration_simulation; multinetwork=true,
-=======
-<<<<<<< HEAD
-    return _PMs.run_model(data, model_type, optimizer, build_restoration_simulation; multinetwork=true,
-=======
-    return _PMs.run_model(data, model_type, optimizer, post_restoration_simulation; multinetwork=true,
->>>>>>> b073839f0c803b76a982fa1107139d849978c7f9
->>>>>>> 07fbe1aa7013044f196fe452688c10069e79f24d
     ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!],
     solution_builder = solution_rop!, kwargs...)
 end
 
 ""
-<<<<<<< HEAD
 function build_restoration_simulation(pm::_PMs.AbstractPowerModel)
-=======
-<<<<<<< HEAD
-function build_restoration_simulation(pm::_PMs.AbstractPowerModel)
-=======
-function post_restoration_simulation(pm::_PMs.AbstractPowerModel)
->>>>>>> b073839f0c803b76a982fa1107139d849978c7f9
->>>>>>> 07fbe1aa7013044f196fe452688c10069e79f24d
     for (n, network) in _PMs.nws(pm)
         _PMs.variable_voltage(pm, nw=n)
         variable_voltage_magnitude_violation(pm; nw=n)
@@ -40,13 +24,8 @@ function post_restoration_simulation(pm::_PMs.AbstractPowerModel)
         _PMs.variable_branch_flow(pm, nw=n)
         _PMs.variable_dcline_flow(pm, nw=n)
 
-<<<<<<< HEAD
         variable_demand_factor(pm, nw=n, relax=true)
         variable_shunt_factor(pm, nw=n, relax=true)
-=======
-        _MLD.variable_demand_factor(pm, nw=n, relax=true)
-        _MLD.variable_shunt_factor(pm, nw=n, relax=true)
->>>>>>> 07fbe1aa7013044f196fe452688c10069e79f24d
 
         _PMs.constraint_model_voltage(pm, nw=n)
 
@@ -56,11 +35,7 @@ function post_restoration_simulation(pm::_PMs.AbstractPowerModel)
 
         for i in _PMs.ids(pm, :bus, nw=n)
             constraint_bus_voltage_violation(pm, i, nw=n)
-<<<<<<< HEAD
             constraint_power_balance_shed(pm, i, nw=n)
-=======
-            _MLD.constraint_power_balance_shed(pm, i, nw=n)
->>>>>>> 07fbe1aa7013044f196fe452688c10069e79f24d
         end
 
         for i in _PMs.ids(pm, :storage, nw=n)

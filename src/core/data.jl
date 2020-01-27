@@ -54,14 +54,14 @@ end
 "Set damage status for damaged_items in nw_data"
 function damage_items!(nw_data::Dict{String,<:Any}, damage_items::Dict{String,<:Any})
     for (comp_name, comp_id) in damage_items
-        if _IMs.ismultinetwork(nw_data)
+        if haskey(nw_data, "multinetwork") && nw_data["multinetwork"] == true
             for (nw, network) in nw_data["nw"]
                 network[comp_name][comp_id]["damaged"] = 1
             end
+        else
+            nw_data[comp_name][comp_id]["damaged"] = 1
         end
     end
-    
-    return repairable_count
 end
 
 
