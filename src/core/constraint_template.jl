@@ -226,9 +226,6 @@ function constraint_storage_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=
     storage_damaged = haskey(_PMs.ref(pm, nw, :damaged_storage), i)
     bus_damaged = haskey(_PMs.ref(pm, nw, :damaged_bus), storage["storage_bus"])
 
-    for storage_id in _PMs.ref(pm, nw, :bus_storage, i)
-        constraint_storage_bus_connection(pm, nw, storage_id, i)
-    end
 
     if storage_damaged
         charge_ub = storage["charge_rating"]
