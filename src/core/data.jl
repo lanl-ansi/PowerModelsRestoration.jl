@@ -23,10 +23,41 @@ function count_repairable_items(network::Dict{String, Any})
     return repairable_count
 end
 
+# function get_repaired_items(network::Dict{String, Any})
+#     repairs = Dict{String,Any}()
+#     for (nw, net) in network["nw"]
+#         for (comp_name, status_key) in _PMs.pm_component_status
+#             for (comp_id, comp) in get(net, comp_name, Dict())
+#                 if haskey(comp, status_key) && comp[status_key] != _PMs.pm_component_status_inactive[comp_name] && haskey(comp, "damaged") && comp["damaged"] == 1
+#                     if ~haskey(repairs,"$(comp_name)_$(comp_id)")
+#                         repairs["$(comp_name)_$(comp_id)"] = nw
+#                     end
+#                 end
+#             end
+#         end
+#     end
+#     return repairs
+# end
+
+
+# function get_repairable_items(network::Dict{String, Any})
+
+#     repairable = Dict{String,Any}()
+#     for (comp_name, status_key) in _PMs.pm_component_status
+#         for (comp_id, comp) in get(network, comp_name, Dict())
+#             if haskey(comp, status_key) && comp[status_key] != _PMs.pm_component_status_inactive[comp_name] && haskey(comp, "damaged") && comp["damaged"] == 1
+#                 repairable["$(comp_name)_$(comp_id)"] = true
+#             end
+#         end
+#     end
+    
+#     return repairable
+# end
 
 "Count the number of items that have an active status value in a network"
 function count_active_items(network::Dict{String, Any})
     if _IMs.ismultinetwork(network)
+        network["multinetwork"]
         Memento.warn(_PMs._LOGGER, "count_active_items supports single networks.  Attempting to select network 0.")
         if haskey(network["nw"],"0")
             Memento.info(_PMs._LOGGER, "Network 0 found.")
