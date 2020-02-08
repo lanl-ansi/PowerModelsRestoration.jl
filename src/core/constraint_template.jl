@@ -254,6 +254,7 @@ function constraint_bus_voltage_violation_damage(pm::_PMs.AbstractPowerModel, i:
     constraint_bus_voltage_violation_damage(pm, nw, cnd, i, bus["vmin"], bus["vmax"])
 end
 
+
 ""
 function constraint_bus_voltage_violation(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     bus = _PMs.ref(pm, nw, :bus, i)

@@ -90,8 +90,36 @@ function damage_items!(nw_data::Dict{String,<:Any}, comp_list::Array{Tuple{Strin
             end
         else
             nw_data[comp_name][comp_id]["damaged"] = 1
-        end 
+        end
     end
+end
+
+
+""
+function get_repairable_items(network::Dict{String, Any})
+    if haskey(network, "multinetwork") && network["multinetwork"] == true
+        repairs = Dict{String,Any}("nw"=>Dict{String,Any}())
+        for (nw, net) in network["nw"]
+            repairs["nw"][nw] = _get_repairable_items(net)
+        end
+    else
+        repairs =  _get_repairable_items(network)
+    end
+    return repairs
+end
+
+
+""
+function _get_repairable_items(network::Dict{String,Any})
+    repairs = Array{Tuple{String,String},1}()
+    for (comp_name, status_key) in _PMs.pm_component_status
+        for (comp_id, comp) in get(network, comp_name, Dict())
+            if haskey(comp, status_key) && comp[status_key] != _PMs.pm_component_status_inactive[comp_name] && haskey(comp, "damaged") && comp["damaged"] == 1
+                push!(repairs, (comp_name, comp_id))
+            end
+        end
+    end
+    return repairs
 end
 
 
@@ -112,8 +140,8 @@ function count_damaged_items(network::Dict{String, Any})
     damage_count = 0
     for (comp_name, status_key) in _PMs.pm_component_status
         for (i, comp) in get(nw, comp_name, Dict())
-            if haskey(comp, "damaged")
-                damage_count += comp["damaged"] == 1 ? 1 : 0
+            if haskey(comp, "damaged") && comp["damaged"] == 1
+                damage_count += 1
             end
         end
     end
@@ -124,7 +152,7 @@ end
 
 ""
 function get_damaged_items(data::Dict{String,Any})
-    if InfrastructureModels.ismultinetwork(data)
+    if _IMs.ismultinetwork(data)
         comp_list = Dict{String,Any}("nw" => Dict{String,Any}())
         for (i, nw_data) in data["nw"]
             comp_list["nw"][i] = _get_damaged_items(nw_data)
@@ -149,9 +177,10 @@ function _get_damaged_items(network::Dict{String,Any})
     return comp_list
 end
 
+
 ""
 function get_isolated_load(data::Dict{String,Any})
-    if InfrastructureModels.ismultinetwork(data)
+    if _IMs.ismultinetwork(data)
         load_list = Dict{String,Any}("nw" => Dict{String,Any}())
         for (i, nw_data) in data["nw"]
             load_list["nw"][i] = _get_isolated_load(nw_data)
@@ -185,7 +214,7 @@ end
 
 ""
 function set_component_inactive!(data::Dict{String,Any}, comp_list::Array{Tuple{String,String},1})
-    if InfrastructureModels.ismultinetwork(data)
+    if _IMs.ismultinetwork(data)
         items = Dict{String,Any}("nw" => Dict{String,Any}())
         for (i, nw_data) in data["nw"]
             _set_component_inactive!(nw_data, comp_list)
@@ -193,6 +222,7 @@ function set_component_inactive!(data::Dict{String,Any}, comp_list::Array{Tuple{
     else
         _set_component_inactive!(data, comp_list)
     end
+    return comp_list
 end
 
 
@@ -206,7 +236,7 @@ end
 
 "Clear damage indicator and replace with status=0"
 function clear_damage_indicator!(data::Dict{String, Any})
-    if InfrastructureModels.ismultinetwork(data)
+    if _IMs.ismultinetwork(data)
         for (i, nw_data) in data["nw"]
             _clear_damage_indicator!(nw_data)
         end
@@ -259,9 +289,9 @@ end
 
 "updates status in the data model with values from a sparse solution dict"
 function update_status!(data::Dict{String, Any}, solution::Dict{String, Any})
-    @assert InfrastructureModels.ismultinetwork(data) == InfrastructureModels.ismultinetwork(solution)
+    @assert _IMs.ismultinetwork(data) == _IMs.ismultinetwork(solution)
 
-    if InfrastructureModels.ismultinetwork(solution)
+    if _IMs.ismultinetwork(solution)
         for (i, nw_sol) in solution["nw"]
             nw_data = data["nw"][i]
             _update_status!(nw_data, nw_sol)
@@ -338,7 +368,7 @@ end
 # Required because PowerModels assumes integral status values
 "Replace non-integer status codes for devices, maps bus status to bus_type"
 function clean_status!(data::Dict{String,Any})
-    if InfrastructureModels.ismultinetwork(data)
+    if _IMs.ismultinetwork(data)
         for (i, nw_data) in data["nw"]
             _clean_status!(nw_data)
         end
@@ -452,7 +482,7 @@ end
 
 ""
 function propagate_damage_status!(data::Dict{String,<:Any})
-    if InfrastructureModels.ismultinetwork(data)
+    if _IMs.ismultinetwork(data)
         for (i,nw_data) in data["nw"]
             _propagate_damage_status!(nw_data)
         end
