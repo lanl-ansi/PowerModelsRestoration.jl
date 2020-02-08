@@ -33,13 +33,30 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
         "data" => replicate_restoration_network(network, count=count_damaged_items(network))
     )
 
-    ## Run initial ROP problem
-    # - do I just do a MLD on network "0", then use the iterative version requirsively from there?
-    Memento.info(_PMs._LOGGER, "start iterative  solution")
+    Memento.info(_PMs._LOGGER, "Iterative Restoration Algorithm starting...")
+    ## Run initial MLD problem
+    Memento.info(_PMs._LOGGER, "begin baseline Maximum Load Delivery")
+    
+    network_mld = deepcopy(network)
+    propagate_damage_status!(network_mld)
+    set_component_inactive!(network_mld, get_damaged_items(network_mld))
+    _PMs.propagate_topology_status!(network_mld)
 
-    iterative_solution = _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
+    solution_mld = run_mld_strg(network_mld, model_constructor, optimizer, kwargs...)
+    clean_status!(solution_mld["solution"])
+    _PMs.update_data!(network_mld, solution_mld["solution"])
 
-    return iterative_solution
+    ## Turn network into multinetwork solution to merge with solution_iterative
+    mn_network_mld = _PMs.replicate(network_mld,1)
+    mn_network_mld["nw"]["0"] = mn_network_mld["nw"]["1"]
+    delete!(mn_network_mld["nw"],"1")
+    solution_mld["solution"] = mn_network_mld
+
+    Memento.info(_PMs._LOGGER, "begin Iterative Restoration")
+    solution_iterative = _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
+    merge_solution!(solution_iterative, solution_mld)
+
+    return solution_iterative
 end
 
 
@@ -57,16 +74,10 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
     end
 
     restoration_solution = _PMs.optimize_model!(pm, optimizer=optimizer, solution_builder = solution_rop!, kwargs...)
-    # @show restoration_solution["termination_status"]
-
-    # if ~haskey(restoration_solution["solution"], "nw")
-    #     @show restoration_network
-    # end
 
     clean_status!(restoration_solution["solution"])
     _PMs.update_data!(restoration_network, restoration_solution["solution"]) # will update, loads, storage, etc....
-
-    update_damage_status!(restoration_network)
+    update_damage_status!(restoration_network) #set status of items before/after repairs
     delete!(restoration_network["nw"],"0")
 
     subnet_solution_set = deepcopy(restoration_solution)
@@ -84,23 +95,22 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
                 network["multinetwork"] = false
             end
 
-            # Memento.info(_PMs._LOGGER, "Start recursive call")
+            Memento.info(_PMs._LOGGER, "Start recursive call")
             subnet_solution = _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
 
             ##  Rename solution nw_ids appropriately
             last_network = isempty(subnet_solution_set["solution"]["nw"]) ? 0 : maximum(parse.(Int,keys(subnet_solution_set["solution"]["nw"])))
             temp_solution = deepcopy(subnet_solution)
             temp_solution["solution"]["nw"] = Dict{String,Any}()
-
             for (id, net) in subnet_solution["solution"]["nw"]
                 if id != "0"
                     temp_solution["solution"]["nw"]["$(last_network+parse(Int,id))"] = net
                 end
             end
-            # @show keys(temp_solution["solution"]["nw"])
-
             merge_solution!(subnet_solution_set, temp_solution)
+            
         else
+
             last_network = isempty(subnet_solution_set["solution"]["nw"]) ? 0 : maximum(parse.(Int,keys(subnet_solution_set["solution"]["nw"])))
             subnet_solution_set["solution"]["nw"]["$(last_network+1)"] = network
 
@@ -109,7 +119,6 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
         end
     end
 
-    # @show keys(subnet_solution_set["solution"]["nw"])
     return subnet_solution_set
 end
 
