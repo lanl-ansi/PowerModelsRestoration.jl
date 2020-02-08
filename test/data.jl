@@ -1,16 +1,16 @@
 ## Test data processing functions
 @testset "Data" begin
 
-    @testset "damage items" begin
+    @testset "damage_items" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         @test isapprox(network["gen"]["5"]["damaged"], 0, atol=1e-4)
-        damage_items!(network, Dict("gen" => "5"))
+        damage_items!(network, [("gen","5")])
         @test isapprox(network["gen"]["5"]["damaged"], 1, atol=1e-4)
 
         network_mn = replicate_restoration_network(network, count=2)
         @test isapprox(network_mn["nw"]["0"]["bus"]["10"]["damaged"], 0, atol=1e-4)
-        damage_items!(network_mn, Dict("bus" => "10"))
-        @test isapprox(network_mn["nw"]["0"]["bus"]["10"]["damaged"], 1, atol=1e-4)
+        damage_items!(network_mn, [("bus", "10")])
+        @test isapprox(network_mn["nw"]["0"]["bus"]["10"]["damaged"], 1, atol=1e-4)        
     end
 
 
@@ -36,7 +36,7 @@
 
     end
 
-    @testset "counting damaged items" begin
+    @testset "count_damaged_items" begin
 
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         propagate_damage_status!(network)
@@ -50,6 +50,75 @@
         @test isapprox(count, 12, atol=1e-4)
 
     end
+
+    @testset "get_damaged_items" begin
+        network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
+        propagate_damage_status!(network)
+        comp_set = get_damaged_items(network)
+
+        @test (("gen","1") in comp_set)
+        @test (("bus","4") in comp_set)
+        @test (("branch","6") in comp_set)
+        @test ~(("storage","2") in comp_set)
+    end
+
+    @testset "get_isolated_load" begin
+        network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
+        set_component_inactive!(network, [("bus","4")])
+
+        load_set = get_isolated_load(network)
+
+        @test (("load","3") in load_set)
+        @test ~(("load","2") in load_set)
+    end
+
+    @testset "count_repairable_items" begin
+        network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
+        propagate_damage_status!(network)
+        @test isapprox(count_repairable_items(network), 12, atol=1e-6)
+        set_component_inactive!(network, [("branch","1")])
+        @test isapprox(count_repairable_items(network), 11, atol=1e-6)
+    end
+
+    @testset "get_repairable_items" begin
+        network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
+        propagate_damage_status!(network)
+        repairable_set = get_repairable_items(network)
+
+        @test ("gen","1") in repairable_set
+        @test ("branch","1") in repairable_set
+
+        ## set status to 0, should not longer be repairable
+        set_component_inactive!(network, [("branch","1")])
+        repairable_set = get_repairable_items(network)
+        @test (("gen","1") in repairable_set)
+        @test ~(("branch","1") in repairable_set)
+        
+    end
+
+    @testset "count_active_items" begin
+    network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
+
+    @test isapprox(count_active_items(network), 22, atol=1e-2)
+
+    set_component_inactive!(network, [("bus","1")])
+    set_component_inactive!(network, [("gen","2")])
+    set_component_inactive!(network, [("branch","3")])
+    set_component_inactive!(network, [("storage","1")])
+
+    @test isapprox(count_active_items(network), 18, atol=1e-2)
+    end
+
+    @testset "clear_damage_indicator!" begin
+        network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
+        propagate_damage_status!(network)
+
+        @test isapprox(count_damaged_items(network), 12, atol=1e-2)
+
+        clear_damage_indicator!(network)
+        @test isapprox(count_damaged_items(network), 0, atol=1e-2)
+    end
+
 end
 
 

@@ -125,7 +125,7 @@ end
 
 "Merge solution dictionaries and accumulate solvetime and objective"
 function merge_solution!(solution1, solution2)
-    println("networks $(keys(solution2["solution"]["nw"])) finished with status $(solution2["termination_status"])")
+    Memento.info(_PMs._LOGGER, "networks $(keys(solution2["solution"]["nw"])) finished with status $(solution2["termination_status"])")
 
     solution1["termination_status"] = max(solution1["termination_status"],solution2["termination_status"])
     solution1["primal_status"] = max(solution1["primal_status"],solution2["primal_status"])

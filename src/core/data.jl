@@ -23,36 +23,35 @@ function count_repairable_items(network::Dict{String, Any})
     return repairable_count
 end
 
-# function get_repaired_items(network::Dict{String, Any})
-#     repairs = Dict{String,Any}()
-#     for (nw, net) in network["nw"]
-#         for (comp_name, status_key) in _PMs.pm_component_status
-#             for (comp_id, comp) in get(net, comp_name, Dict())
-#                 if haskey(comp, status_key) && comp[status_key] != _PMs.pm_component_status_inactive[comp_name] && haskey(comp, "damaged") && comp["damaged"] == 1
-#                     if ~haskey(repairs,"$(comp_name)_$(comp_id)")
-#                         repairs["$(comp_name)_$(comp_id)"] = nw
-#                     end
-#                 end
-#             end
-#         end
-#     end
-#     return repairs
-# end
+
+""
+function get_repairable_items(network::Dict{String, Any})
+    ## TODO verify functionality
+    if haskey(network, "multinetwork") && network["multinetwork"] == true
+        repairs = Dict{String,Any}("nw"=>Dict{String,Any}())
+        for (nw, net) in network["nw"]
+            repairs["nw"][nw] = _get_repairable_items(net)
+        end
+    else
+        repairs =  _get_repairable_items(network)
+    end
+    return repairs
+end
 
 
-# function get_repairable_items(network::Dict{String, Any})
+""
+function _get_repairable_items(network::Dict{String,Any})
+    repairs = Array{Tuple{String,String},1}()
+    for (comp_name, status_key) in _PMs.pm_component_status
+        for (comp_id, comp) in get(network, comp_name, Dict())
+            if haskey(comp, status_key) && comp[status_key] != _PMs.pm_component_status_inactive[comp_name] && haskey(comp, "damaged") && comp["damaged"] == 1
+                push!(repairs, (comp_name, comp_id))
+            end
+        end
+    end
+    return repairs
+end
 
-#     repairable = Dict{String,Any}()
-#     for (comp_name, status_key) in _PMs.pm_component_status
-#         for (comp_id, comp) in get(network, comp_name, Dict())
-#             if haskey(comp, status_key) && comp[status_key] != _PMs.pm_component_status_inactive[comp_name] && haskey(comp, "damaged") && comp["damaged"] == 1
-#                 repairable["$(comp_name)_$(comp_id)"] = true
-#             end
-#         end
-#     end
-    
-#     return repairable
-# end
 
 "Count the number of items that have an active status value in a network"
 function count_active_items(network::Dict{String, Any})
@@ -83,8 +82,8 @@ end
 
 
 "Set damage status for damaged_items in nw_data"
-function damage_items!(nw_data::Dict{String,<:Any}, damage_items::Dict{String,<:Any})
-    for (comp_name, comp_id) in damage_items
+function damage_items!(nw_data::Dict{String,<:Any}, comp_list::Array{Tuple{String,String},1})
+    for (comp_name, comp_id) in comp_list
         if haskey(nw_data, "multinetwork") && nw_data["multinetwork"] == true
             for (nw, network) in nw_data["nw"]
                 network[comp_name][comp_id]["damaged"] = 1
@@ -120,6 +119,88 @@ function count_damaged_items(network::Dict{String, Any})
     end
     
     return damage_count
+end
+
+
+""
+function get_damaged_items(data::Dict{String,Any})
+    if InfrastructureModels.ismultinetwork(data)
+        comp_list = Dict{String,Any}("nw" => Dict{String,Any}())
+        for (i, nw_data) in data["nw"]
+            comp_list["nw"][i] = _get_damaged_items(nw_data)
+        end
+    else
+        comp_list = _get_damaged_items(data)
+    end
+    return comp_list
+end
+
+
+""
+function _get_damaged_items(network::Dict{String,Any})
+    comp_list = Array{Tuple{String,String},1}()
+    for (comp_type, comp_status) in _PMs.pm_component_status
+        for (comp_id, comp) in network[comp_type]
+            if haskey(comp, "damaged") && comp["damaged"] == 1
+                push!(comp_list, (comp_type,comp_id))
+            end
+        end
+    end
+    return comp_list
+end
+
+""
+function get_isolated_load(data::Dict{String,Any})
+    if InfrastructureModels.ismultinetwork(data)
+        load_list = Dict{String,Any}("nw" => Dict{String,Any}())
+        for (i, nw_data) in data["nw"]
+            load_list["nw"][i] = _get_isolated_load(nw_data)
+        end
+    else
+        load_list = _get_isolated_load(data)
+    end
+    return load_list
+end
+
+
+""
+function _get_isolated_load(network::Dict{String,Any})
+    load_list = Array{Tuple{String,String},1}()
+
+    bus_status =  _PMs.pm_component_status["bus"]
+    bus_inactive = _PMs.pm_component_status_inactive["bus"]
+
+    load_status = _PMs.pm_component_status["load"]
+    load_inactive = _PMs.pm_component_status_inactive["load"]
+
+        for (load_id, load) in network["load"]
+            if haskey(network["bus"]["$(load["load_bus"])"], bus_status) &&  network["bus"]["$(load["load_bus"])"][bus_status] == bus_inactive
+                push!(load_list, ("load", load_id))
+            end
+        end   
+    
+    return load_list
+end
+
+
+""
+function set_component_inactive!(data::Dict{String,Any}, comp_list::Array{Tuple{String,String},1})
+    if InfrastructureModels.ismultinetwork(data)
+        items = Dict{String,Any}("nw" => Dict{String,Any}())
+        for (i, nw_data) in data["nw"]
+            _set_component_inactive!(nw_data, comp_list)
+        end
+    else
+        _set_component_inactive!(data, comp_list)
+    end
+end
+
+
+""
+function _set_component_inactive!(network::Dict{String,Any}, comp_list::Array{Tuple{String,String},1})
+    for (comp_type, comp_id) in comp_list
+        network[comp_type][comp_id][_PMs.pm_component_status[comp_type]] = _PMs.pm_component_status_inactive[comp_type]
+    end   
 end
 
 
@@ -293,6 +374,8 @@ function _clean_status!(network::Dict{String,Any})
                     # instead of rounding, which would cause a load with status "0.2" (80% of load shed)
                     # to be set to status 0 instead.
                     comp[status_key] = _PMs.pm_component_status_inactive[comp_name]
+                elseif isapprox(comp[status_key], 1, atol=1e-4)
+                    comp[status_key] = 1
                 end
             end
         end
