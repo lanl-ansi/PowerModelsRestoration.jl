@@ -86,8 +86,8 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
     for(nw_id, network) in sort(Dict{Int,Any}([(parse(Int, k), v) for (k,v) in restoration_network["nw"]]))
         if count_repairable_items(network) > 1
             Memento.info(_PMs._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(network)) damaged items and $(count_repairable_items(network)) repairable items")
-            # Memento.info(_PMs._LOGGER, "Start sub_network restoration")
-
+            
+            Memento.info(_PMs._LOGGER, "Starting sub network restoration")
             for k in keys(restoration_network)
                 if k != "nw"
                     network[k] = restoration_network[k]
@@ -108,7 +108,7 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
                 end
             end
             merge_solution!(subnet_solution_set, temp_solution)
-            
+
         else
 
             last_network = isempty(subnet_solution_set["solution"]["nw"]) ? 0 : maximum(parse.(Int,keys(subnet_solution_set["solution"]["nw"])))
