@@ -26,7 +26,6 @@ end
 
 ""
 function get_repairable_items(network::Dict{String, Any})
-    ## TODO verify functionality
     if haskey(network, "multinetwork") && network["multinetwork"] == true
         repairs = Dict{String,Any}("nw"=>Dict{String,Any}())
         for (nw, net) in network["nw"]
@@ -41,11 +40,12 @@ end
 
 ""
 function _get_repairable_items(network::Dict{String,Any})
-    repairs = Array{Tuple{String,String},1}()
+    repairs = Dict{String, Array{String}}()
     for (comp_name, status_key) in _PMs.pm_component_status
+        repairs[comp_name] = []
         for (comp_id, comp) in get(network, comp_name, Dict())
             if haskey(comp, status_key) && comp[status_key] != _PMs.pm_component_status_inactive[comp_name] && haskey(comp, "damaged") && comp["damaged"] == 1
-                push!(repairs, (comp_name, comp_id))
+                push!(repairs[comp_name], comp_id)
             end
         end
     end
@@ -82,14 +82,16 @@ end
 
 
 "Set damage status for damaged_items in nw_data"
-function damage_items!(nw_data::Dict{String,<:Any}, comp_list::Array{Tuple{String,String},1})
-    for (comp_name, comp_id) in comp_list
-        if haskey(nw_data, "multinetwork") && nw_data["multinetwork"] == true
-            for (nw, network) in nw_data["nw"]
-                network[comp_name][comp_id]["damaged"] = 1
+function damage_items!(nw_data::Dict{String,<:Any}, comp_list::Dict{String, Array{String,1}})
+    for (comp_name, comp_ids) in comp_list
+        for comp_id in comp_ids
+            if haskey(nw_data, "multinetwork") && nw_data["multinetwork"] == true
+                for (nw, network) in nw_data["nw"]
+                    network[comp_name][comp_id]["damaged"] = 1
+                end
+            else
+                nw_data[comp_name][comp_id]["damaged"] = 1
             end
-        else
-            nw_data[comp_name][comp_id]["damaged"] = 1
         end
     end
 end
@@ -138,11 +140,12 @@ end
 
 ""
 function _get_damaged_items(network::Dict{String,Any})
-    comp_list = Array{Tuple{String,String},1}()
+    comp_list = Dict{String, Array{String,1}}()
     for (comp_type, comp_status) in _PMs.pm_component_status
+        comp_list[comp_type] = []
         for (comp_id, comp) in network[comp_type]
             if haskey(comp, "damaged") && comp["damaged"] == 1
-                push!(comp_list, (comp_type,comp_id))
+                push!(comp_list[comp_type], comp_id)
             end
         end
     end
@@ -166,7 +169,7 @@ end
 
 ""
 function _get_isolated_load(network::Dict{String,Any})
-    load_list = Array{Tuple{String,String},1}()
+    load_list =  Dict{String, Array{String,1}}()
 
     bus_status =  _PMs.pm_component_status["bus"]
     bus_inactive = _PMs.pm_component_status_inactive["bus"]
@@ -175,8 +178,9 @@ function _get_isolated_load(network::Dict{String,Any})
     load_inactive = _PMs.pm_component_status_inactive["load"]
 
         for (load_id, load) in network["load"]
+            load_list["load"] = []
             if haskey(network["bus"]["$(load["load_bus"])"], bus_status) &&  network["bus"]["$(load["load_bus"])"][bus_status] == bus_inactive
-                push!(load_list, ("load", load_id))
+                push!(load_list["load"], load_id)
             end
         end   
     
@@ -185,7 +189,7 @@ end
 
 
 ""
-function set_component_inactive!(data::Dict{String,Any}, comp_list::Array{Tuple{String,String},1})
+function set_component_inactive!(data::Dict{String,Any}, comp_list::Dict{String, Array{String,1}})
     if _IMs.ismultinetwork(data)
         items = Dict{String,Any}("nw" => Dict{String,Any}())
         for (i, nw_data) in data["nw"]
@@ -199,9 +203,11 @@ end
 
 
 ""
-function _set_component_inactive!(network::Dict{String,Any}, comp_list::Array{Tuple{String,String},1})
-    for (comp_type, comp_id) in comp_list
-        network[comp_type][comp_id][_PMs.pm_component_status[comp_type]] = _PMs.pm_component_status_inactive[comp_type]
+function _set_component_inactive!(network::Dict{String,Any}, comp_list::Dict{String, Array{String,1}})
+    for (comp_type, comp_ids) in comp_list
+        for comp_id in comp_ids
+            network[comp_type][comp_id][_PMs.pm_component_status[comp_type]] = _PMs.pm_component_status_inactive[comp_type]
+        end
     end   
 end
 
