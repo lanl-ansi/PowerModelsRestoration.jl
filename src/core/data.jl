@@ -95,34 +95,6 @@ function damage_items!(nw_data::Dict{String,<:Any}, comp_list::Array{Tuple{Strin
 end
 
 
-""
-function get_repairable_items(network::Dict{String, Any})
-    if haskey(network, "multinetwork") && network["multinetwork"] == true
-        repairs = Dict{String,Any}("nw"=>Dict{String,Any}())
-        for (nw, net) in network["nw"]
-            repairs["nw"][nw] = _get_repairable_items(net)
-        end
-    else
-        repairs =  _get_repairable_items(network)
-    end
-    return repairs
-end
-
-
-""
-function _get_repairable_items(network::Dict{String,Any})
-    repairs = Array{Tuple{String,String},1}()
-    for (comp_name, status_key) in _PMs.pm_component_status
-        for (comp_id, comp) in get(network, comp_name, Dict())
-            if haskey(comp, status_key) && comp[status_key] != _PMs.pm_component_status_inactive[comp_name] && haskey(comp, "damaged") && comp["damaged"] == 1
-                push!(repairs, (comp_name, comp_id))
-            end
-        end
-    end
-    return repairs
-end
-
-
 "Count the number of items with a key \"damaged\" == 1 in a network"
 function count_damaged_items(network::Dict{String, Any})
     if _IMs.ismultinetwork(network)
