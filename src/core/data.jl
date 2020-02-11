@@ -11,16 +11,8 @@ function count_repairable_items(network::Dict{String, Any})
         nw = network
     end
 
-    repairable_count = 0
-    for (comp_name, status_key) in _PMs.pm_component_status
-        for (i, comp) in get(nw, comp_name, Dict())
-            if haskey(comp, status_key) && comp[status_key] != _PMs.pm_component_status_inactive[comp_name] && haskey(comp, "damaged") && comp["damaged"] == 1
-                repairable_count += 1
-            end
-        end
-    end
-    
-    return repairable_count
+    repairable_set = get_repairable_items(nw)
+    return repairable_count = sum(length(comp_ids) for (comp_type,comp_ids) in repairable_set)    
 end
 
 
@@ -111,16 +103,8 @@ function count_damaged_items(network::Dict{String, Any})
         nw = network
     end
 
-    damage_count = 0
-    for (comp_name, status_key) in _PMs.pm_component_status
-        for (i, comp) in get(nw, comp_name, Dict())
-            if haskey(comp, "damaged") && comp["damaged"] == 1
-                damage_count += 1
-            end
-        end
-    end
-    
-    return damage_count
+    damaged_set = get_damaged_items(nw)
+    return damaged_count = sum(length(comp_ids) for (comp_type,comp_ids) in damaged_set)    
 end
 
 
