@@ -24,7 +24,7 @@ data = PowerModels.parse_file("../test/data/case5_restoration_min_damage.m")
 
             @test isapprox(gen_status(result,"1","3"), 1; atol=1e-2)
 
-            @test isapprox(gen_status(result,"2","2"), 1; atol=1e-2)
+            @test isapprox(gen_status(result,"2","1"), 1; atol=1e-2)
             @test isapprox(gen_status(result,"2","3"), 1; atol=1e-2)
 
             @test isapprox(gen_status(result,"3","1"), 1; atol=1e-2)
