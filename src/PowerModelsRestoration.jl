@@ -30,7 +30,6 @@ include("form/dcp.jl")
 include("form/wr.jl")
 include("form/wrm.jl")
 
-include("util/heuristic.jl")
 include("util/restoration_simulation.jl")
 include("util/iterative_restoration.jl")
 include("util/ac-mld-uc.jl")
