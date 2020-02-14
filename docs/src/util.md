@@ -1,6 +1,6 @@
 ```@docs
 <!-- process_network -->
-run_restoration_simulation
+run_restoration_redispatch
 run_rop_heuristic
 random_repair
 ```

@@ -1,20 +1,20 @@
 
 "Simulate a restoration sequence power flow"
-function run_restoration_simulation(file::String, model_type::Type, optimizer; kwargs...)
+function run_restoration_redispatch(file::String, model_type::Type, optimizer; kwargs...)
     data = _PMs.parse_file(file)
-    return run_restoration_simulation(data, model_type, optimizer; kwargs...)
+    return run_restoration_redispatch(data, model_type, optimizer; kwargs...)
 end
 
 "Simulate a restoration sequence power flow"
-function run_restoration_simulation(data::Dict{String,Any}, model_type::Type, optimizer; kwargs...)
+function run_restoration_redispatch(data::Dict{String,Any}, model_type::Type, optimizer; kwargs...)
     clear_damage_indicator!(data)
-    return _PMs.run_model(data, model_type, optimizer, build_restoration_simulation; multinetwork=true,
+    return _PMs.run_model(data, model_type, optimizer, build_restoration_redispatch; multinetwork=true,
     ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!],
     solution_builder = solution_rop!, kwargs...)
 end
 
 ""
-function build_restoration_simulation(pm::_PMs.AbstractPowerModel)
+function build_restoration_redispatch(pm::_PMs.AbstractPowerModel)
     for (n, network) in _PMs.nws(pm)
         _PMs.variable_voltage(pm, nw=n)
         variable_voltage_magnitude_violation(pm; nw=n)

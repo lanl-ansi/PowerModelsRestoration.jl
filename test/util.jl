@@ -88,7 +88,7 @@ end
     @testset "ac forward case" begin
 
         PowerModels.update_data!(mn_data, rop_result["solution"])
-        result = PowerModelsRestoration.run_restoration_simulation(mn_data, PowerModels.ACPPowerModel, juniper_solver)
+        result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 8834.38; atol = 1)
@@ -104,7 +104,7 @@ end
     @testset "soc forward case" begin
 
         PowerModels.update_data!(mn_data, rop_result["solution"])
-        result = PowerModelsRestoration.run_restoration_simulation(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
+        result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
 
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 8834.38; atol = 1e0)
@@ -124,7 +124,7 @@ end
     @testset "ac forward case" begin
 
         PowerModels.update_data!(mn_data, rop_result["solution"])
-        result = PowerModelsRestoration.run_restoration_simulation(mn_data, PowerModels.ACPPowerModel, juniper_solver)
+        result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
         @test result["termination_status"] == LOCALLY_SOLVED
         ## Not stable on mac
@@ -141,7 +141,7 @@ end
     @testset "soc forward case" begin
 
         PowerModels.update_data!(mn_data, rop_result["solution"])
-        result = PowerModelsRestoration.run_restoration_simulation(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
+        result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
 
         @test result["termination_status"] == LOCALLY_SOLVED
         ## Not stable on mac
@@ -159,7 +159,7 @@ end
     # @testset "qc forward case" begin
 
     #     PowerModels.update_data!(mn_data, rop_result["solution"])
-    #     result = PowerModelsRestoration.run_restoration_simulation(mn_data, PowerModels.QCWRPowerModel, juniper_solver)
+    #     result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.QCWRPowerModel, juniper_solver)
 
     #     @test result["termination_status"] == LOCALLY_SOLVED
     #     @test isapprox(result["objective"], 6168.399; atol = 1e-2)

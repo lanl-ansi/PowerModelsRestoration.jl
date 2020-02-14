@@ -1,9 +1,9 @@
-### Restoration Simulation Tests
+### Restoration Redispatch Tests
 
 
-@testset "Restoration Simulation" begin
+@testset "Restoration Redispatcj" begin
 
-    @testset "test ac simulation" begin
+    @testset "test ac redispatcj" begin
         mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=2)
         result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
@@ -11,7 +11,7 @@
         clean_status!(result_rop["solution"])
         update_status!(mn_data, result_rop["solution"])
 
-        result_sim = PowerModelsRestoration.run_restoration_simulation(mn_data, PowerModels.ACPPowerModel, ipopt_solver)
+        result_sim = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, ipopt_solver)
         @test result_sim["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result_sim["objective"], 53.14; atol = 1)
 
@@ -32,7 +32,7 @@
     end
 
 
-    @testset "test dc simulation" begin
+    @testset "test dc redispatch" begin
         mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=2)
         result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
 
@@ -40,7 +40,7 @@
         clean_status!(result_rop["solution"])
         update_status!(mn_data, result_rop["solution"])
 
-        result_sim = PowerModelsRestoration.run_restoration_simulation(mn_data, PowerModels.ACPPowerModel, ipopt_solver)
+        result_sim = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, ipopt_solver)
         @test result_sim["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result_sim["objective"], 53.09; atol = 1)
 
@@ -60,7 +60,7 @@
         @test isapprox(gen_power(result_sim, "1",["1","2","3","4","5"]), 9.87; atol=1)
     end
 
-    @testset "test soc simulation" begin
+    @testset "test soc redispatch" begin
         mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=2)
         result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
 
@@ -68,7 +68,7 @@
         clean_status!(result_rop["solution"])
         update_status!(mn_data, result_rop["solution"])
 
-        result_sim = PowerModelsRestoration.run_restoration_simulation(mn_data, PowerModels.ACPPowerModel, ipopt_solver)
+        result_sim = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, ipopt_solver)
         @test result_sim["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result_sim["objective"], 53.15; atol = 1)
 
