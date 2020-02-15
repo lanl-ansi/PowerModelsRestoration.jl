@@ -1,18 +1,13 @@
 function count_repairable_items(network::Dict{String, Any})
     if _IMs.ismultinetwork(network)
-        Memento.warn(_PMs._LOGGER, "count_repairable_items supports single networks.  Attempting to select network 0.")
-        if haskey(network["nw"],"0")
-            Memento.info(_PMs._LOGGER, "Network 0 found.")
-            nw = network["nw"]["0"]
-        else
-            Memento.error(_PMs._LOGGER, "Network 0 not found.")
-        end
+        repairable_count = Dict{String,Any}("nw" => Dict{String,Any}())
+        repairable_set = get_repairable_items(network)
+        repairable_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_type,comp_ids) in repariable_network) for (nw, repariable_network) in repairable_set["nw"] )
     else
-        nw = network
+        repairable_set = get_repairable_items(network)
+        return repairable_count = sum(length(comp_ids) for (comp_type,comp_ids) in repairable_set)
     end
-
-    repairable_set = get_repairable_items(nw)
-    return repairable_count = sum(length(comp_ids) for (comp_type,comp_ids) in repairable_set)    
+    return repairable_count
 end
 
 
@@ -48,30 +43,44 @@ end
 "Count the number of items that have an active status value in a network"
 function count_active_items(network::Dict{String, Any})
     if _IMs.ismultinetwork(network)
-        network["multinetwork"]
-        Memento.warn(_PMs._LOGGER, "count_active_items supports single networks.  Attempting to select network 0.")
-        if haskey(network["nw"],"0")
-            Memento.info(_PMs._LOGGER, "Network 0 found.")
-            nw = network["nw"]["0"]
-        else
-            Memento.error(_PMs._LOGGER, "Network 0 not found.")
-        end
+        active_count = Dict{String,Any}("nw" => Dict{String,Any}())
+        active_set = get_active_items(network)
+        active_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_type,comp_ids) in repariable_network) for (nw, repariable_network) in active_set["nw"] )
     else
-        nw = network
+        active_set = get_active_items(network)
+        return active_count = sum(length(comp_ids) for (comp_type,comp_ids) in active_set)
     end
-
-    active_count = 0
-    for (comp_name, status_key) in _PMs.pm_component_status
-        for (comp_id, comp) in nw[comp_name]
-            if comp[status_key] !==_PMs.pm_component_status_inactive[comp_name]
-                active_count += 1
-            end
-        end
-    end
-        
     return active_count
 end
 
+
+""
+function get_active_items(network::Dict{String, Any})
+    if haskey(network, "multinetwork") && network["multinetwork"] == true
+        active = Dict{String,Any}("nw"=>Dict{String,Any}())
+        for (nw, net) in network["nw"]
+            active["nw"][nw] = _get_active_items(net)
+        end
+    else
+        active =  _get_active_items(network)
+    end
+    return active
+end
+
+
+""
+function _get_active_items(network::Dict{String,Any})
+    active = Dict{String, Array{String}}()
+    for (comp_name, status_key) in _PMs.pm_component_status
+        active[comp_name] = []
+        for (comp_id, comp) in get(network, comp_name, Dict())
+            if haskey(comp, status_key) && comp[status_key] != _PMs.pm_component_status_inactive[comp_name]
+                push!(active[comp_name], comp_id)
+            end
+        end
+    end
+    return active
+end
 
 "Set damage status for damaged_items in nw_data"
 function damage_items!(nw_data::Dict{String,<:Any}, comp_list::Dict{String, Array{String,1}})
@@ -92,19 +101,14 @@ end
 "Count the number of items with a key \"damaged\" == 1 in a network"
 function count_damaged_items(network::Dict{String, Any})
     if _IMs.ismultinetwork(network)
-        Memento.warn(_PMs._LOGGER, "count_damaged_items supports single networks.  Attempting to select network 0.")
-        if haskey(network["nw"],"0")
-            Memento.info(_PMs._LOGGER, "Network 0 found.")
-            nw = network["nw"]["0"]
-        else
-            Memento.error(_PMs._LOGGER, "Network 0 not found.")
-        end
+        damaged_count = Dict{String,Any}("nw" => Dict{String,Any}())
+        damaged_set = get_damaged_items(network)
+        damaged_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_type,comp_ids) in damage_network) for (nw, damage_network) in damaged_set["nw"] )
     else
-        nw = network
+        damaged_set = get_damaged_items(network)
+        damaged_count = sum(length(comp_ids) for (comp_type,comp_ids) in damaged_set)
     end
-
-    damaged_set = get_damaged_items(nw)
-    return damaged_count = sum(length(comp_ids) for (comp_type,comp_ids) in damaged_set)    
+    return damaged_count
 end
 
 
@@ -154,6 +158,7 @@ end
 ""
 function _get_isolated_load(network::Dict{String,Any})
     load_list =  Dict{String, Array{String,1}}()
+    load_list["load"] = []
 
     bus_status =  _PMs.pm_component_status["bus"]
     bus_inactive = _PMs.pm_component_status_inactive["bus"]
@@ -161,13 +166,11 @@ function _get_isolated_load(network::Dict{String,Any})
     load_status = _PMs.pm_component_status["load"]
     load_inactive = _PMs.pm_component_status_inactive["load"]
 
-        for (load_id, load) in network["load"]
-            load_list["load"] = []
-            if haskey(network["bus"]["$(load["load_bus"])"], bus_status) &&  network["bus"]["$(load["load_bus"])"][bus_status] == bus_inactive
-                push!(load_list["load"], load_id)
-            end
-        end   
-    
+    for (load_id, load) in network["load"]
+        if haskey(network["bus"]["$(load["load_bus"])"], bus_status) &&  network["bus"]["$(load["load_bus"])"][bus_status] == bus_inactive
+            push!(load_list["load"], load_id)
+        end
+    end
     return load_list
 end
 
@@ -192,7 +195,7 @@ function _set_component_inactive!(network::Dict{String,Any}, comp_list::Dict{Str
         for comp_id in comp_ids
             network[comp_type][comp_id][_PMs.pm_component_status[comp_type]] = _PMs.pm_component_status_inactive[comp_type]
         end
-    end   
+    end
 end
 
 

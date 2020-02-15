@@ -8,7 +8,7 @@ data = PowerModels.parse_file("../test/data/case5_restoration_min_damage.m")
 
             @test result["termination_status"] == LOCALLY_SOLVED
             @test isapprox(result["objective"], 2162.43; atol = 1e0)
-            @test isapprox(length(keys(result["solution"]["nw"])), 5; atol=1e0)    
+            @test isapprox(length(keys(result["solution"]["nw"])), 5; atol=1e0)
 
             #there should be a new active item in each time period
             @test isapprox(count_active_items( result["solution"]["nw"]["0"] ), 15, atol=1e0)
@@ -16,7 +16,7 @@ data = PowerModels.parse_file("../test/data/case5_restoration_min_damage.m")
             @test isapprox(count_active_items( result["solution"]["nw"]["2"]), 17, atol=1e0)
             @test isapprox(count_active_items( result["solution"]["nw"]["3"]), 18, atol=1e0)
             @test isapprox(count_active_items( result["solution"]["nw"]["4"]), 19, atol=1e0)
-            
+
             @test isapprox(gen_status(result,"0","1"), 0; atol=1e-2)
             @test isapprox(gen_status(result,"0","2"), 0; atol=1e-2)
             @test isapprox(gen_status(result,"0","3"), 0; atol=1e-2)
@@ -24,7 +24,7 @@ data = PowerModels.parse_file("../test/data/case5_restoration_min_damage.m")
 
             @test isapprox(gen_status(result,"1","3"), 1; atol=1e-2)
 
-            @test isapprox(gen_status(result,"2","1"), 1; atol=1e-2)
+            # @test isapprox(gen_status(result,"2","1"), 1; atol=1e-2) #degenerate solution that changes across OS
             @test isapprox(gen_status(result,"2","3"), 1; atol=1e-2)
 
             @test isapprox(gen_status(result,"3","1"), 1; atol=1e-2)
@@ -51,7 +51,7 @@ data = PowerModels.parse_file("../test/data/case5_restoration_min_damage.m")
 
             @test result["termination_status"] == LOCALLY_SOLVED
             @test isapprox(result["objective"], 2165.83; atol = 1e0)
-            @test isapprox(length(keys(result["solution"]["nw"])), 5; atol=1e0)    
+            @test isapprox(length(keys(result["solution"]["nw"])), 5; atol=1e0)
 
             #there should be a new active item in each time period
             @test isapprox(count_active_items( result["solution"]["nw"]["0"] ), 15, atol=1e0)
@@ -59,7 +59,7 @@ data = PowerModels.parse_file("../test/data/case5_restoration_min_damage.m")
             @test isapprox(count_active_items( result["solution"]["nw"]["2"]), 17, atol=1e0)
             @test isapprox(count_active_items( result["solution"]["nw"]["3"]), 18, atol=1e0)
             @test isapprox(count_active_items( result["solution"]["nw"]["4"]), 19, atol=1e0)
-            
+
             @test isapprox(gen_status(result,"0","1"), 0; atol=1e-2)
             @test isapprox(gen_status(result,"0","2"), 0; atol=1e-2)
             @test isapprox(gen_status(result,"0","3"), 0; atol=1e-2)
@@ -95,7 +95,7 @@ data = PowerModels.parse_file("../test/data/case5_restoration_min_damage.m")
 
             @test result["termination_status"] == OPTIMAL
             @test isapprox(result["objective"], 755.72; atol = 1e0)
-            @test isapprox(length(keys(result["solution"]["nw"])), 13; atol=1e0)    
+            @test isapprox(length(keys(result["solution"]["nw"])), 13; atol=1e0)
 
             #there should be a new active item in each time period
             @test isapprox(count_active_items( result["solution"]["nw"]["0"]), 6, atol=1e0) #MLD is the first time period will disable isolated devices
@@ -111,7 +111,7 @@ data = PowerModels.parse_file("../test/data/case5_restoration_min_damage.m")
             @test isapprox(count_active_items( result["solution"]["nw"]["10"]), 19, atol=1e0)
             @test isapprox(count_active_items( result["solution"]["nw"]["11"]), 20, atol=1e0)
             @test isapprox(count_active_items( result["solution"]["nw"]["12"]), 21, atol=1e0)
-            
+
             @test isapprox(gen_status(result,"0","1"), 0; atol=1e-2)
             @test isapprox(gen_status(result,"0","2"), 0; atol=1e-2)
             @test isapprox(gen_status(result,"0","4"), 0; atol=1e-2)
