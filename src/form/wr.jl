@@ -32,16 +32,6 @@ end
 
 
 ""
-function variable_voltage_magnitude_sqr_on_off(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    _PMs.var(pm, nw, cnd)[:w] = JuMP.@variable(pm.model,
-        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_$(cnd)_w",
-        lower_bound = 0.0,
-        upper_bound = _PMs.ref(pm, nw, :bus, i, "vmax", cnd)^2,
-        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "w_start", cnd, 1.001)
-    )
-end
-
-""
 function variable_voltage_magnitude_sqr_violation(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     _PMs.var(pm, nw, cnd)[:w_vio] = JuMP.@variable(pm.model,
         [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_$(cnd)_w_vio",

@@ -57,19 +57,19 @@ function objective_max_loadability(pm::_PMs.AbstractDCPModel)
     time_elapsed = Dict(n => get(_PMs.ref(pm, n), :time_elapsed, 1) for n in nws)
 
     load_weight = Dict(n =>
-        Dict(i => get(load, "weight", 1.0) for (i,load) in _PMs.ref(pm, n, :load)) 
+        Dict(i => get(load, "weight", 1.0) for (i,load) in _PMs.ref(pm, n, :load))
     for n in nws)
-	
+
     M = Dict(n => 10*maximum([load_weight[n][i]*abs(load["pd"]) for (i,load) in _PMs.ref(pm, n, :load)]) for n in nws)
 
     return JuMP.@objective(pm.model, Max,
-        sum( 
-            ( 
+        sum(
+            (
                 time_elapsed[n]*(
                  sum(M[n]*z_gen[n][i] for (i,gen) in _PMs.ref(pm, n, :gen)) +
                  sum(M[n]*z_shunt[n][i] for (i,shunt) in _PMs.ref(pm, n, :shunt)) +
                  sum(load_weight[n][i]*abs(load["pd"])*z_demand[n][i] for (i,load) in _PMs.ref(pm, n, :load))
-             ) 
+             )
             )
         for n in nws)
     )
@@ -88,20 +88,20 @@ function objective_max_loadability_strg(pm::_PMs.AbstractDCPModel)
     time_elapsed = Dict(n => get(_PMs.ref(pm, n), :time_elapsed, 1) for n in nws)
 
     load_weight = Dict(n =>
-        Dict(i => get(load, "weight", 1.0) for (i,load) in _PMs.ref(pm, n, :load)) 
+        Dict(i => get(load, "weight", 1.0) for (i,load) in _PMs.ref(pm, n, :load))
     for n in nws)
-	
+
     M = Dict(n => 10*maximum([load_weight[n][i]*abs(load["pd"]) for (i,load) in _PMs.ref(pm, n, :load)]) for n in nws)
 
     return JuMP.@objective(pm.model, Max,
-        sum( 
-            ( 
+        sum(
+            (
                 time_elapsed[n]*(
                  sum(M[n]*z_gen[n][i] for (i,gen) in _PMs.ref(pm, n, :gen)) +
                  sum(M[n]*z_storage[n][i] for (i,storage) in _PMs.ref(pm, n, :storage)) +
                  sum(M[n]*z_shunt[n][i] for (i,shunt) in _PMs.ref(pm, n, :shunt)) +
                  sum(load_weight[n][i]*abs(load["pd"])*z_demand[n][i] for (i,load) in _PMs.ref(pm, n, :load))
-             ) 
+             )
             )
         for n in nws)
     )
@@ -122,14 +122,6 @@ function add_setpoint_shunt!(sol, pm::_PMs.AbstractDCPModel)
     _PMs.add_setpoint!(sol, pm, "shunt", "status", :z_shunt; conductorless=true, default_value = (item) -> if (item["status"] == 0) 0 else 1 end)
 end
 
-#=
-function add_setpoint_bus_status!(sol, pm::_PMs.AbstractDCPModel)
-    _PMs.add_setpoint_fixed!(sol, pm, "bus", "status")
-end
-=#
-
-function constraint_bus_voltage_violation_damage(pm::_PMs.AbstractDCPModel, n::Int, c::Int, i::Int, vm_min, vm_max)
-end
 
 "no vm values to turn off"
 function constraint_bus_voltage_violation_damage(pm::_PMs.AbstractDCPModel, n::Int, c::Int, i::Int, vm_min, vm_max)
