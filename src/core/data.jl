@@ -27,7 +27,7 @@ end
 
 ""
 function _get_repairable_items(network::Dict{String,Any})
-    repairs = Dict{String, Array{String}}()
+    repairs = Dict{String, Vector{String}}()
     for (comp_name, status_key) in _PMs.pm_component_status
         repairs[comp_name] = []
         for (comp_id, comp) in get(network, comp_name, Dict())

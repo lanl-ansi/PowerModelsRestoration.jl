@@ -1,9 +1,9 @@
 ### Restoration Redispatch Tests
 
 
-@testset "Restoration Redispatcj" begin
+@testset "Restoration Redispatch" begin
 
-    @testset "test ac redispatcj" begin
+    @testset "test ac redispatch" begin
         mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=2)
         result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 

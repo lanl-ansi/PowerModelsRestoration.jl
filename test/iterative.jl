@@ -132,27 +132,29 @@ data = PowerModels.parse_file("../test/data/case5_restoration_min_damage.m")
             @test isapprox(bus_status(result,"1","1"), 1; atol=1e-2)
             @test isapprox(bus_status(result,"1","2"), 1; atol=1e-2)
 
-            @test isapprox(bus_status(result,"2","4"), 1; atol=1e-2)
+            # degenerate solutions are inconsistent across OS's.  The check for active item
+            # should be enough to demonstrate that only one repair happens in each time period.
+            # @test isapprox(bus_status(result,"2","4"), 1; atol=1e-2)
 
-            @test isapprox(branch_status(result,"3","2"), 1; atol=1e-2)
+            # @test isapprox(branch_status(result,"3","2"), 1; atol=1e-2)
 
-            @test isapprox(branch_status(result,"4","3"), 1; atol=1e-2)
+            # @test isapprox(branch_status(result,"4","3"), 1; atol=1e-2)
 
-            @test isapprox(branch_status(result,"5","1"), 1; atol=1e-2)
+            # @test isapprox(branch_status(result,"5","1"), 1; atol=1e-2)
 
-            @test isapprox(gen_status(result,"6","4"), 1; atol=1e-2)
+            # @test isapprox(gen_status(result,"6","4"), 1; atol=1e-2)
 
-            @test isapprox(gen_status(result,"7","1"), 1; atol=1e-2)
+            # @test isapprox(gen_status(result,"7","1"), 1; atol=1e-2)
 
-            @test isapprox(branch_status(result,"8","5"), 1; atol=1e-2)
+            # @test isapprox(branch_status(result,"8","5"), 1; atol=1e-2)
 
-            @test isapprox(gen_status(result,"9","2"), 1; atol=1e-2)
+            # @test isapprox(gen_status(result,"9","2"), 1; atol=1e-2)
 
-            @test isapprox(storage_status(result,"10","1"), 1; atol=1e-2)
+            # @test isapprox(storage_status(result,"10","1"), 1; atol=1e-2)
 
-            @test isapprox(branch_status(result,"11","7"), 1; atol=1e-2)
+            # @test isapprox(branch_status(result,"11","7"), 1; atol=1e-2)
 
-            @test isapprox(branch_status(result,"12","6"), 1; atol=1e-2)
+            # @test isapprox(branch_status(result,"12","6"), 1; atol=1e-2)
 
 
             @test isapprox(load_power(result, "0",["1","2","3"]), 3.0; atol=1e-1)
