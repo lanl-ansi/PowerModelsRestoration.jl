@@ -226,9 +226,6 @@ function constraint_storage_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=
     storage_damaged = haskey(_PMs.ref(pm, nw, :damaged_storage), i)
     bus_damaged = haskey(_PMs.ref(pm, nw, :damaged_bus), storage["storage_bus"])
 
-    for storage_id in _PMs.ref(pm, nw, :bus_storage, i)
-        constraint_storage_bus_connection(pm, nw, storage_id, i)
-    end
 
     if storage_damaged
         charge_ub = storage["charge_rating"]
@@ -246,17 +243,24 @@ function constraint_storage_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=
         end
     end
     if bus_damaged && !storage_damaged
-        Memento.error(_PMs._LOGGER, "non-damaged storage $(i) connected to damaged bus $(gen["storage_bus"])")
+        Memento.error(_PMs._LOGGER, "non-damaged storage $(i) connected to damaged bus $(storage["storage_bus"])")
     end
 end
 
 ""
-function constraint_bus_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+function constraint_bus_voltage_violation_damage(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     bus = _PMs.ref(pm, nw, :bus, i)
 
-    constraint_bus_damage(pm, nw, cnd, i, bus["vmin"], bus["vmax"])
+    constraint_bus_voltage_violation_damage(pm, nw, cnd, i, bus["vmin"], bus["vmax"])
 end
 
+
+""
+function constraint_bus_voltage_violation(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
+    bus = _PMs.ref(pm, nw, :bus, i)
+
+    constraint_bus_voltage_violation(pm, nw, cnd, i, bus["vmin"], bus["vmax"])
+end
 
 
 ""

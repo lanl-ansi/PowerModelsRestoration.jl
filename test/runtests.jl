@@ -53,11 +53,11 @@ include("mld_uc.jl")
 include("mld_smpl.jl")
 include("mld_strg.jl")
 
+include("data.jl")
 include("mrsp.jl")
 include("rop.jl")
-include("hueristic.jl")
 include("iterative.jl")
-include("restoration_simulation.jl")
+include("restoration_redispatch.jl")
 
 include("util.jl")
 

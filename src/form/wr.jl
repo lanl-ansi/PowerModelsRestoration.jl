@@ -32,16 +32,6 @@ end
 
 
 ""
-function variable_voltage_magnitude_sqr_on_off(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    _PMs.var(pm, nw, cnd)[:w] = JuMP.@variable(pm.model,
-        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_$(cnd)_w",
-        lower_bound = 0.0,
-        upper_bound = _PMs.ref(pm, nw, :bus, i, "vmax", cnd)^2,
-        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "w_start", cnd, 1.001)
-    )
-end
-
-""
 function variable_voltage_magnitude_sqr_violation(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     _PMs.var(pm, nw, cnd)[:w_vio] = JuMP.@variable(pm.model,
         [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_$(cnd)_w_vio",
@@ -118,7 +108,7 @@ end
 
 
 ""
-function constraint_bus_damage(pm::_PMs.AbstractWRModel, n::Int, c::Int, i::Int, vm_min, vm_max)
+function constraint_bus_voltage_violation_damage(pm::_PMs.AbstractWRModel, n::Int, c::Int, i::Int, vm_min, vm_max)
     w = _PMs.var(pm, n, c, :w, i)
     w_vio = _PMs.var(pm, n, c, :w_vio, i)
     z = _PMs.var(pm, n, :z_bus, i)
@@ -127,6 +117,14 @@ function constraint_bus_damage(pm::_PMs.AbstractWRModel, n::Int, c::Int, i::Int,
     JuMP.@constraint(pm.model, w >= z*vm_min^2 - w_vio)
 end
 
+""
+function constraint_bus_voltage_violation(pm::_PMs.AbstractWRModel, n::Int, c::Int, i::Int, vm_min, vm_max)
+    w = _PMs.var(pm, n, c, :w, i)
+    w_vio = _PMs.var(pm, n, c, :w_vio, i)
+
+    JuMP.@constraint(pm.model, w <= vm_max^2)
+    JuMP.@constraint(pm.model, w >= vm_min^2 - w_vio)
+end
 
 "`p[arc_from]^2 + q[arc_from]^2 <= w[f_bus]/tm*ccm[i]`"
 function _PMs.constraint_power_magnitude_sqr_on_off(pm::_PMs.AbstractQCWRModel, n::Int, c::Int, i, f_bus, arc_from, tm)

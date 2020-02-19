@@ -41,9 +41,6 @@ function variable_generation_damage_indicator(pm::_PMs.AbstractPowerModel; nw::I
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :gen, l), "gen_damage_start", 1, 0.0)
         )
     end
-    # @show nw
-    # @show z_gen_vars
-    # @show _PMs.ids(pm, nw, :damaged_gen)
     z_gen = Dict(i => haskey(gen, "damaged") && gen["damaged"] == 1 && gen["gen_status"]==1 ? z_gen_vars[i] : gen["gen_status"] for (i,gen) in _PMs.ref(pm, nw, :gen))
     _PMs.var(pm, nw)[:z_gen] = z_gen
 end
@@ -242,14 +239,14 @@ end
 function variable_demand_factor(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, relax = false)
     if relax == true
         _PMs.var(pm, nw)[:z_demand] = JuMP.@variable(pm.model,
-            [i in _PMs.ids(pm, nw, :load)], base_name="$(nw)_z_demand", 
-            upper_bound = 1, 
+            [i in _PMs.ids(pm, nw, :load)], base_name="$(nw)_z_demand",
+            upper_bound = 1,
             lower_bound = 0,
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, i), "z_demand_on_start", cnd, 1.0)
         )
     else
         _PMs.var(pm, nw)[:z_demand] = JuMP.@variable(pm.model,
-        [i in _PMs.ids(pm, nw, :load)], base_name="$(nw)_z_demand", 
+        [i in _PMs.ids(pm, nw, :load)], base_name="$(nw)_z_demand",
         binary = true,
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, i), "z_demand_on_start", cnd, 1.0)
     )
@@ -261,14 +258,14 @@ end
 function variable_shunt_factor(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, relax = false)
     if relax == true
         _PMs.var(pm, nw)[:z_shunt] = JuMP.@variable(pm.model,
-            [i in _PMs.ids(pm, nw, :shunt)], base_name="$(nw)_z_shunt", 
-            upper_bound = 1, 
+            [i in _PMs.ids(pm, nw, :shunt)], base_name="$(nw)_z_shunt",
+            upper_bound = 1,
             lower_bound = 0,
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :shunt, i), "z_shunt_on_start", cnd, 1.0)
         )
     else
         _PMs.var(pm, nw)[:z_shunt] = JuMP.@variable(pm.model,
-            [i in _PMs.ids(pm, nw, :shunt)], base_name="$(nw)_z_shunt", 
+            [i in _PMs.ids(pm, nw, :shunt)], base_name="$(nw)_z_shunt",
             binary = true,
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :shunt, i), "z_shunt_on_start", cnd, 1.0)
         )
@@ -293,16 +290,7 @@ function variable_bus_voltage_indicator(pm::_PMs.AbstractPowerModel; nw::Int=pm.
 end
 
 
-function variable_voltage_magnitude_on_off(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
-    _PMs.var(pm, nw, cnd)[:vm] = JuMP.@variable(pm.model,
-        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_$(cnd)_vm",
-        lower_bound = 0,
-        upper_bound = _PMs.ref(pm, nw, :bus, i, "vmax", cnd),
-        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "vm_start", cnd, 1.0)
-    )
-end
-
-
+""
 function variable_voltage_magnitude_sqr_on_off(pm::_PMs.AbstractPowerModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd)
     _PMs.var(pm, nw, cnd)[:w] = JuMP.@variable(pm.model,
         [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_$(cnd)_w",

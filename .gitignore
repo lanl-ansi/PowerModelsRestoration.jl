@@ -1,6 +1,4 @@
 .DS_Store
-Manifest.toml
-
 *.jl.cov
 *.jl.*.cov
 *.jl.mem
@@ -10,3 +8,4 @@ docs/site/
 docs/.documenter
 .project
 .tags
+Manifest.toml

@@ -10,7 +10,7 @@ A PowerModelsRestoration provides extensions to [PowerModels](https://github.com
 
 * Restoration Ordering Problem (rop)
 * Minimum Restoration Set Problem (mrsp)
-* Forward Restoration Simulation
+* Forward Restoration Redispatch
 * Maximum Load Delivery with Discrete Variables (mld_uc)
 * Maximum Load Delivery with Continuous Variables (mld)
 
