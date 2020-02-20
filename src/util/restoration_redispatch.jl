@@ -9,8 +9,7 @@ end
 function run_restoration_redispatch(data::Dict{String,Any}, model_type::Type, optimizer; kwargs...)
     clear_damage_indicator!(data)
     return _PMs.run_model(data, model_type, optimizer, build_restoration_redispatch; multinetwork=true,
-    ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!],
-    solution_builder = solution_rop!, kwargs...)
+    ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!], kwargs...)
 end
 
 ""
@@ -24,8 +23,8 @@ function build_restoration_redispatch(pm::_PMs.AbstractPowerModel)
         _PMs.variable_branch_flow(pm, nw=n)
         _PMs.variable_dcline_flow(pm, nw=n)
 
-        variable_demand_factor(pm, nw=n, relax=true)
-        variable_shunt_factor(pm, nw=n, relax=true)
+        _PMs.variable_demand_factor(pm, nw=n, relax=true)
+        _PMs.variable_shunt_factor(pm, nw=n, relax=true)
 
         _PMs.constraint_model_voltage(pm, nw=n)
 

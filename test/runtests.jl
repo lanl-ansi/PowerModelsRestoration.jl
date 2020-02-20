@@ -16,12 +16,12 @@ import Juniper
 import SCS
 
 # default setup for solvers
-cbc_solver = with_optimizer(Cbc.Optimizer, logLevel=0)
-ipopt_solver = with_optimizer(Ipopt.Optimizer, tol=1e-6, print_level=0)
-#juniper_solver = with_optimizer(Juniper.Optimizer, nl_solver=PowerModels.with_optimizer(Ipopt.Optimizer, tol=1e-4, print_level=0), mip_solver=cbc_solver, log_levels=[])
-juniper_solver = with_optimizer(Juniper.Optimizer, nl_solver=PowerModels.with_optimizer(Ipopt.Optimizer, tol=1e-4, print_level=0), log_levels=[])
-#juniper_solver = with_optimizer(Juniper.Optimizer, nl_solver=PowerModels.with_optimizer(Ipopt.Optimizer, tol=1e-4, print_level=0), branch_strategy=:PseudoCost)
-scs_solver = with_optimizer(SCS.Optimizer, max_iters=100000, eps=1e-5, verbose=0)
+cbc_solver = JuMP.with_optimizer(Cbc.Optimizer, logLevel=0)
+ipopt_solver = JuMP.with_optimizer(Ipopt.Optimizer, tol=1e-6, print_level=0)
+#juniper_solver = JuMP.with_optimizer(Juniper.Optimizer, nl_solver=PowerModels.with_optimizer(Ipopt.Optimizer, tol=1e-4, print_level=0), mip_solver=cbc_solver, log_levels=[])
+juniper_solver = JuMP.with_optimizer(Juniper.Optimizer, nl_solver=PowerModels.with_optimizer(Ipopt.Optimizer, tol=1e-4, print_level=0), log_levels=[])
+#juniper_solver = JuMP.with_optimizer(Juniper.Optimizer, nl_solver=PowerModels.with_optimizer(Ipopt.Optimizer, tol=1e-4, print_level=0), branch_strategy=:PseudoCost)
+scs_solver = JuMP.with_optimizer(SCS.Optimizer, max_iters=100000, eps=1e-5, verbose=0)
 
 case3_mld = PowerModels.parse_file("../test/data/case3_mld.m")
 case3_mld_s = PowerModels.parse_file("../test/data/case3_mld_s.m")

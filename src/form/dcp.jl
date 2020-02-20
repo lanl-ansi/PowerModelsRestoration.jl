@@ -1,4 +1,4 @@
-function constraint_model_voltage_damage(pm::_PMs.AbstractDCPModel, n::Int, c::Int)
+function constraint_model_voltage_damage(pm::_PMs.AbstractDCPModel, n::Int)
 end
 
 ""
@@ -7,32 +7,41 @@ function variable_voltage_damage(pm::_PMs.AbstractDCPModel; kwargs...)
 end
 
 # "no vm values to turn off"
-# function constraint_bus_damage(pm::_PMs.AbstractDCPModel, n::Int, c::Int, i::Int, vm_min, vm_max)
+# function constraint_bus_damage(pm::_PMs.AbstractDCPModel, n::Int, i::Int, vm_min, vm_max)
 # end
 
 
 
 
-function variable_bus_voltage_indicator(pm::_PMs.AbstractDCPModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, kwargs...)
+function variable_bus_voltage_indicator(pm::_PMs.AbstractDCPModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
+    report && _PMs.sol_component_fixed(pm, nw, :bus, :status, _PMs.ids(pm, nw, :bus), 1.0)
 end
 
-variable_bus_voltage_on_off(pm::_PMs.AbstractDCPModel; kwargs...) = _PMs.variable_voltage_angle(pm; kwargs...)
+function variable_bus_voltage_on_off(pm::_PMs.AbstractDCPModel; kwargs...)
+    _PMs.variable_voltage_angle(pm; kwargs...)
+    variable_voltage_magnitude_on_off(pm; kwargs...)
+end
 
-function constraint_bus_voltage_on_off(pm::_PMs.AbstractDCPModel; nw::Int=pm.cnw, cnd::Int=pm.ccnd, kwargs...)
+function variable_voltage_magnitude_on_off(pm::_PMs.AbstractDCPModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
+    report && _PMs.sol_component_fixed(pm, nw, :bus, :vm, _PMs.ids(pm, nw, :bus), 1.0)
+end
+
+
+function constraint_bus_voltage_on_off(pm::_PMs.AbstractDCPModel; nw::Int=pm.cnw, kwargs...)
 end
 
 ""
-function constraint_power_balance_shed(pm::_PMs.AbstractDCPModel, n::Int, c::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
-    p    = get(_PMs.var(pm, n, c),    :p, Dict()); _PMs._check_var_keys(p, bus_arcs, "active power", "branch")
-    pg   = get(_PMs.var(pm, n, c),   :pg, Dict()); _PMs._check_var_keys(pg, bus_gens, "active power", "generator")
-    ps   = get(_PMs.var(pm, n, c),   :ps, Dict()); _PMs._check_var_keys(ps, bus_storage, "active power", "storage")
-    psw  = get(_PMs.var(pm, n, c),  :psw, Dict()); _PMs._check_var_keys(psw, bus_arcs_sw, "active power", "switch")
-    p_dc = get(_PMs.var(pm, n, c), :p_dc, Dict()); _PMs._check_var_keys(p_dc, bus_arcs_dc, "active power", "dcline")
+function constraint_power_balance_shed(pm::_PMs.AbstractDCPModel, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
+    p    = get(_PMs.var(pm, n),    :p, Dict()); _PMs._check_var_keys(p, bus_arcs, "active power", "branch")
+    pg   = get(_PMs.var(pm, n),   :pg, Dict()); _PMs._check_var_keys(pg, bus_gens, "active power", "generator")
+    ps   = get(_PMs.var(pm, n),   :ps, Dict()); _PMs._check_var_keys(ps, bus_storage, "active power", "storage")
+    psw  = get(_PMs.var(pm, n),  :psw, Dict()); _PMs._check_var_keys(psw, bus_arcs_sw, "active power", "switch")
+    p_dc = get(_PMs.var(pm, n), :p_dc, Dict()); _PMs._check_var_keys(p_dc, bus_arcs_dc, "active power", "dcline")
     z_demand = get(_PMs.var(pm, n), :z_demand, Dict()); _PMs._check_var_keys(z_demand, keys(bus_pd), "power factor scale", "load")
     z_shunt = get(_PMs.var(pm, n), :z_shunt, Dict()); _PMs._check_var_keys(z_shunt, keys(bus_gs), "power factor scale", "shunt")
 
 
-    _PMs.con(pm, n, c, :kcl_p)[i] = JuMP.@constraint(pm.model,
+    _PMs.con(pm, n, :kcl_p)[i] = JuMP.@constraint(pm.model,
         sum(p[a] for a in bus_arcs)
         + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
         + sum(psw[a_sw] for a_sw in bus_arcs_sw)
@@ -124,9 +133,9 @@ end
 
 
 "no vm values to turn off"
-function constraint_bus_voltage_violation_damage(pm::_PMs.AbstractDCPModel, n::Int, c::Int, i::Int, vm_min, vm_max)
+function constraint_bus_voltage_violation_damage(pm::_PMs.AbstractDCPModel, n::Int, i::Int, vm_min, vm_max)
 end
 
 "no vm values to turn off"
-function constraint_bus_voltage_violation(pm::_PMs.AbstractDCPModel, n::Int, c::Int, i::Int, vm_min, vm_max)
+function constraint_bus_voltage_violation(pm::_PMs.AbstractDCPModel, n::Int, i::Int, vm_min, vm_max)
 end

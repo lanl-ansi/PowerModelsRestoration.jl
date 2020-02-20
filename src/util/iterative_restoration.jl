@@ -159,8 +159,7 @@ end
 ""
 function _run_rop_ir(file, model_constructor, optimizer; kwargs...)
     return _PMs.run_model(file, model_constructor, optimizer, _build_rop_ir; multinetwork=true,
-        ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!],
-        solution_builder = solution_rop!, kwargs...)
+        ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!], kwargs...)
 end
 
 
@@ -181,8 +180,8 @@ function _build_rop_ir(pm::_PMs.AbstractPowerModel)
         variable_generation_damage_indicator(pm, nw=n)
         variable_generation_damage(pm, nw=n)
 
-        variable_demand_factor(pm, nw=n, relax=true)
-        variable_shunt_factor(pm, nw=n, relax=true)
+        _PMs.variable_demand_factor(pm, nw=n, relax=true)
+        _PMs.variable_shunt_factor(pm, nw=n, relax=true)
 
         constraint_restoration_cardinality_ub(pm, nw=n)
         constraint_restoration_cardinality_lb(pm, nw=n)

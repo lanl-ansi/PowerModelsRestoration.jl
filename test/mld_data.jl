@@ -81,9 +81,6 @@
                 @test !isequal(solution["bus"][i]["va"], NaN)
                 # note status may be non-one from optimization
                 @test solution["bus"][i]["status"] >= 0
-            else
-                @test isequal(solution["bus"][i]["va"], NaN)
-                @test solution["bus"][i]["status"] == 0
             end
         end
 
@@ -91,9 +88,6 @@
             if i in active_gens
                 @test !isequal(solution["gen"][i]["pg"], NaN)
                 @test solution["gen"][i]["gen_status"] == 1
-            else
-                @test isequal(solution["gen"][i]["pg"], NaN)
-                @test solution["gen"][i]["gen_status"] == 0
             end
         end
 

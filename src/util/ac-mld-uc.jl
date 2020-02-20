@@ -71,25 +71,25 @@ function run_ac_mld_uc(case::Dict{String,<:Any}, solver; modifications::Dict{Str
     end
 
     for (i,gen) in case["gen"]
-        sol["gen"][i]["gen_status"] = gen["gen_status"]
-    end
-
-    if haskey(sol, "branch")
-        for (i,branch) in case["branch"]
-            sol["branch"][i]["br_status"] = branch["br_status"]
-
-            # fairly hacky.  Can probably be removed once PTI is supported directly.
-            sol["branch"][i]["f_bus"] = branch["f_bus"]
-            sol["branch"][i]["t_bus"] = branch["t_bus"]
-            sol["branch"][i]["transformer"] = branch["transformer"]
+        if haskey(sol["gen"], i)
+            sol["gen"][i]["gen_status"] = gen["gen_status"]
+        else
+            sol["gen"][i] = Dict("gen_status" => 0)
         end
     end
 
-    active_delivered = sum([if (case["load"][i]["status"] != 0) load["pd"] else 0.0 end for (i,load) in sol["load"]])
-    active_output = sum([if (isequal(gen["pg"], NaN) || gen["gen_status"] == 0) 0.0 else gen["pg"] end for (i,gen) in sol["gen"]])
+    for (i,branch) in case["branch"]
+        if haskey(sol, "branch") && haskey(sol["branch"], i)
+            sol["branch"][i]["br_status"] = branch["br_status"]
+        else
+            sol["branch"][i] = Dict("br_status" => 0)
+        end
+    end
+
+    active_delivered = sum(load["pd"] for (i,load) in sol["load"])
+    active_output = sum(gen["pg"] for (i,gen) in sol["gen"] if haskey(gen, "pg"))
     Memento.info(_PMs._LOGGER, "ac active gen:    $active_output")
     Memento.info(_PMs._LOGGER, "ac active demand: $active_delivered")
-
 
     return result
 end
