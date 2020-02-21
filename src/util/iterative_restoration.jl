@@ -16,28 +16,8 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
         Memento.error(_PMs._LOGGER, "iterative restoration does not support multinetwork starting conditions")
     end
 
-    ## initialize solution dictionary (will be incrementaly updated)
-    result = Dict{String,Any}(
-        "optimizer" => PowerModels._MOI.get(optimizer.constructor(), PowerModels._MOI.SolverName())::String,
-        "termination_status" => PowerModels._MOI.OPTIMIZE_NOT_CALLED::PowerModels._MOI.TerminationStatusCode,
-        "primal_status" => PowerModels._MOI.NO_SOLUTION::PowerModels._MOI.ResultStatusCode,
-        "dual_status" => PowerModels._MOI.NO_SOLUTION::PowerModels._MOI.ResultStatusCode,
-        "objective" => 0.0::Float64,
-        "objective_lb" => 0.0::Float64,
-        "solve_time" => 0.0::Float64,
-        "solution" => Dict{String,Any}(
-            "nw" => Dict{String,Any}(),
-            "multinetwork" => true,
-            "per_unit" => network["per_unit"]
-        ),
-        "machine" => Dict(
-            "cpu" => Sys.cpu_info()[1].model,
-            "memory" => string(Sys.total_memory()/2^30, " Gb")
-            ),
-        "data" => Dict{String,Any}() #skip this for now
-    )
-
     Memento.info(_PMs._LOGGER, "Iterative Restoration Algorithm starting...")
+
     ## Run initial MLD problem
     Memento.info(_PMs._LOGGER, "begin baseline Maximum Load Delivery")
 
@@ -48,7 +28,6 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
 
     result_mld = run_mld_strg(network_mld, model_constructor, optimizer, kwargs...)
     clean_status!(result_mld["solution"])
-    _PMs.update_data!(network_mld, result_mld["solution"])
 
     ## Turn network into multinetwork solution to merge with solution_iterative
     mn_network_mld = _PMs.replicate(result_mld["solution"], 1)
@@ -59,9 +38,8 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
     Memento.info(_PMs._LOGGER, "begin Iterative Restoration")
     result_iterative = _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
     merge_solution!(result_iterative, result_mld)
-    merge_solution!(result, result_iterative)
 
-    return result
+    return result_iterative
 end
 
 
