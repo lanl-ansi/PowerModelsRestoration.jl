@@ -15,7 +15,7 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
     if _IMs.ismultinetwork(network)
         Memento.error(_PMs._LOGGER, "iterative restoration does not support multinetwork starting conditions")
     end
-    
+
     ## initialize solution dictionary (will be incrementaly updated)
     solution = Dict{String,Any}(
         "optimizer" => PowerModels._MOI.get(optimizer.constructor(), PowerModels._MOI.SolverName())::String,
@@ -36,7 +36,7 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
     Memento.info(_PMs._LOGGER, "Iterative Restoration Algorithm starting...")
     ## Run initial MLD problem
     Memento.info(_PMs._LOGGER, "begin baseline Maximum Load Delivery")
-    
+
     network_mld = deepcopy(network)
     propagate_damage_status!(network_mld)
     set_component_inactive!(network_mld, get_damaged_items(network_mld))
@@ -55,8 +55,9 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
     Memento.info(_PMs._LOGGER, "begin Iterative Restoration")
     solution_iterative = _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
     merge_solution!(solution_iterative, solution_mld)
+    merge_solution!(solution, solution_iterative)
 
-    return solution_iterative
+    return solution
 end
 
 
@@ -79,7 +80,7 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
     for(nw_id, network) in sort(Dict{Int,Any}([(parse(Int, k), v) for (k,v) in restoration_network["nw"]]))
         if count_repairable_items(network) > 1
             Memento.info(_PMs._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(network)) damaged items and $(count_repairable_items(network)) repairable items")
-            
+
             Memento.info(_PMs._LOGGER, "Starting sub network restoration")
             for k in keys(restoration_network)
                 if k != "nw"
