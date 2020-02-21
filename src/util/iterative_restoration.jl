@@ -17,21 +17,21 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
     end
     
     ## initialize solution dictionary (will be incrementaly updated)
-    solution = Dict{String,Any}(
-        "optimizer" => PowerModels._MOI.get(optimizer.constructor(), PowerModels._MOI.SolverName())::String,
-        "termination_status" => PowerModels._MOI.OPTIMIZE_NOT_CALLED::PowerModels._MOI.TerminationStatusCode,
-        "primal_status" => PowerModels._MOI.NO_SOLUTION::PowerModels._MOI.ResultStatusCode,
-        "dual_status" => PowerModels._MOI.NO_SOLUTION::PowerModels._MOI.ResultStatusCode,
-        "objective" => 0.0::Float64,
-        "objective_lb" => 0.0::Float64,
-        "solve_time" => 0.0::Float64,
-        "solution" => Dict{String,Any}("nw" => Dict{String,Any}(), "multinetwork" => true),
-        "machine" => Dict(
-            "cpu" => Sys.cpu_info()[1].model,
-            "memory" => string(Sys.total_memory()/2^30, " Gb")
-            ),
-        "data" => replicate_restoration_network(network, count=count_damaged_items(network))
-    )
+    # solution = Dict{String,Any}(
+    #     "optimizer" => PowerModels._MOI.get(optimizer.constructor(), PowerModels._MOI.SolverName())::String,
+    #     "termination_status" => PowerModels._MOI.OPTIMIZE_NOT_CALLED::PowerModels._MOI.TerminationStatusCode,
+    #     "primal_status" => PowerModels._MOI.NO_SOLUTION::PowerModels._MOI.ResultStatusCode,
+    #     "dual_status" => PowerModels._MOI.NO_SOLUTION::PowerModels._MOI.ResultStatusCode,
+    #     "objective" => 0.0::Float64,
+    #     "objective_lb" => 0.0::Float64,
+    #     "solve_time" => 0.0::Float64,
+    #     "solution" => Dict{String,Any}("nw" => Dict{String,Any}(), "multinetwork" => true),
+    #     "machine" => Dict(
+    #         "cpu" => Sys.cpu_info()[1].model,
+    #         "memory" => string(Sys.total_memory()/2^30, " Gb")
+    #         ),
+    #     "data" => replicate_restoration_network(network, count=count_damaged_items(network))
+    # )
 
     Memento.info(_PMs._LOGGER, "Iterative Restoration Algorithm starting...")
     ## Run initial MLD problem
@@ -44,9 +44,11 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
 
     solution_mld = run_mld_strg(network_mld, model_constructor, optimizer, kwargs...)
     clean_status!(solution_mld["solution"])
+
     _PMs.update_data!(network_mld, solution_mld["solution"])
 
     ## Turn network into multinetwork solution to merge with solution_iterative
+    #mn_network_mld = _PMs.replicate(solution_mld["solution"],1)
     mn_network_mld = _PMs.replicate(network_mld,1)
     mn_network_mld["nw"]["0"] = mn_network_mld["nw"]["1"]
     delete!(mn_network_mld["nw"],"1")
@@ -54,6 +56,7 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
 
     Memento.info(_PMs._LOGGER, "begin Iterative Restoration")
     solution_iterative = _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
+
     merge_solution!(solution_iterative, solution_mld)
 
     return solution_iterative

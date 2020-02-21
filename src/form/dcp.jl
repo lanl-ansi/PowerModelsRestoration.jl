@@ -118,20 +118,6 @@ end
 
 
 ### These are needed to overload the default behavior for reactive power ###
-
-function add_setpoint_load!(sol, pm::_PMs.AbstractDCPModel)
-    _PMs.add_setpoint!(sol, pm, "load", "pd", :z_demand; conductorless=true, scale = (x,item,i) -> x*item["pd"][i])
-    _PMs.add_setpoint_fixed!(sol, pm, "load", "qd")
-    _PMs.add_setpoint!(sol, pm, "load", "status", :z_demand; conductorless=true, default_value = (item) -> if (item["status"] == 0) 0 else 1 end)
-end
-
-function add_setpoint_shunt!(sol, pm::_PMs.AbstractDCPModel)
-    _PMs.add_setpoint!(sol, pm, "shunt", "gs", :z_shunt; conductorless=true, scale = (x,item,i) -> x*item["gs"][i])
-    _PMs.add_setpoint_fixed!(sol, pm, "shunt", "bs")
-    _PMs.add_setpoint!(sol, pm, "shunt", "status", :z_shunt; conductorless=true, default_value = (item) -> if (item["status"] == 0) 0 else 1 end)
-end
-
-
 "no vm values to turn off"
 function constraint_bus_voltage_violation_damage(pm::_PMs.AbstractDCPModel, n::Int, i::Int, vm_min, vm_max)
 end

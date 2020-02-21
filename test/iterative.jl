@@ -89,7 +89,7 @@ data = PowerModels.parse_file("../test/data/case5_restoration_min_damage.m")
     end
 
     @testset "test dc Iterative" begin
-    data = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
+        data = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         @testset "5-bus case" begin
             result = PowerModelsRestoration.run_iterative_restoration(data, PowerModels.DCPPowerModel, cbc_solver, repair_periods=3)
 

@@ -78,17 +78,3 @@ function objective_min_restoration(pm::_PMs.AbstractPowerModel)
     )
 end
 
-
-# "report minimal restoration set solution"
-# function solution_mrsp!(pm::_PMs.AbstractPowerModel, sol::Dict{String,Any})
-#     add_setpoint_bus_status!(sol,pm)
-#     _PMs.add_setpoint_bus_voltage!(sol, pm)
-#     _PMs.add_setpoint_generator_status!(sol, pm)
-#     _PMs.add_setpoint_generator_power!(sol, pm)
-#     _PMs.add_setpoint_branch_status!(sol, pm)
-#     _PMs.add_setpoint_branch_flow!(sol, pm)
-#     _PMs.add_setpoint_dcline_flow!(sol, pm)
-#     _PMs.add_setpoint_storage_status!(sol, pm)
-#     _PMs.add_setpoint_storage!(sol, pm)
-# end
-
