@@ -12,13 +12,13 @@ PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
-InfrastructureModels = "~0.3, ~0.4"
+InfrastructureModels = "~0.4"
 JuMP = "~0.19.1, ~0.20, ~0.21"
-Juniper = ">= 0.4"
+Juniper = "~0.4, ~0.5, ~0.6"
 MathOptInterface = "~0.8, ~0.9"
 Memento = "~0.10, ~0.11, ~0.12"
-PowerModels = "~0.14.1, ~0.15"
-SCS = ">= 0.6"
+PowerModels = "~0.15.2"
+SCS = "~0.6"
 julia = "^1"
 
 [extras]
