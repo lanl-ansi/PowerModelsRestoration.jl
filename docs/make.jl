@@ -2,6 +2,7 @@ using Documenter, PowerModelsRestoration
 
 makedocs(
     modules = [PowerModelsRestoration],
+    format = Documenter.HTML(mathengine = Documenter.MathJax()),
     sitename = "PowerModelsRestoration",
     authors = "Noah Rhodes, David Fobes, Carleton Coffrin",
     pages = [
