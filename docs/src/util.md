@@ -2,7 +2,6 @@
 <!-- process_network -->
 run_restoration_redispatch
 run_rop_heuristic
-random_repair
 ```
 ```@autodocs
 Modules = [PowerModelsRestoration]

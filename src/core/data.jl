@@ -48,7 +48,7 @@ function count_active_items(network::Dict{String, Any})
         active_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_type,comp_ids) in repariable_network) for (nw, repariable_network) in active_set["nw"] )
     else
         active_set = get_active_items(network)
-        return active_count = sum(length(comp_ids) for (comp_type,comp_ids) in active_set)
+        active_count = sum(length(comp_ids) for (comp_type,comp_ids) in active_set)
     end
     return active_count
 end

@@ -5,8 +5,6 @@ import InfrastructureModels
 import PowerModels
 import Memento
 
-import Random
-
 const _IMs = InfrastructureModels
 const _PMs = PowerModels
 

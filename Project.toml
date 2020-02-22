@@ -9,16 +9,13 @@ JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 Memento = "f28f55f0-a522-5efc-85c2-fe41dfb9b2d9"
 PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
-Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
 InfrastructureModels = "~0.4"
 JuMP = "~0.19.1, ~0.20, ~0.21"
-Juniper = "~0.4, ~0.5, ~0.6"
 MathOptInterface = "~0.8, ~0.9"
 Memento = "~0.10, ~0.11, ~0.12"
 PowerModels = "~0.15.2"
-SCS = "~0.6"
 julia = "^1"
 
 [extras]

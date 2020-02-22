@@ -27,20 +27,77 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
     _PMs.propagate_topology_status!(network_mld)
 
     result_mld = run_mld_strg(network_mld, model_constructor, optimizer, kwargs...)
+
     clean_status!(result_mld["solution"])
 
     ## Turn network into multinetwork solution to merge with solution_iterative
     mn_network_mld = _PMs.replicate(result_mld["solution"], 1)
     mn_network_mld["nw"]["0"] = mn_network_mld["nw"]["1"]
-    delete!(mn_network_mld["nw"],"1")
+    delete!(mn_network_mld["nw"], "1")
     result_mld["solution"] = mn_network_mld
 
     Memento.info(_PMs._LOGGER, "begin Iterative Restoration")
     result_iterative = _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
     merge_solution!(result_iterative, result_mld)
 
+    # this sets the status of components that were removed by
+    # propagate_damage_status!, set_component_inactive!, propagate_topology_status!, ...
+    for (nw,sol) in result_iterative["solution"]["nw"]
+        for (i,bus) in network["bus"]
+            init_bus = network_mld["bus"][i]
+            if bus["bus_type"] != 4 && init_bus["bus_type"] == 4
+                sol_bus = sol["bus"][i] = get(sol["bus"], i, Dict{String,Any}("status" => 0, "va" => 0.0, "vm" => 0.0))
+                if !haskey(sol_bus, "status")
+                    sol_gen["status"] = 0
+                end
+            end
+        end
+
+        for (i,gen) in network["gen"]
+            init_gen = network_mld["gen"][i]
+            if gen["gen_status"] != 0 && init_gen["gen_status"] == 0
+                sol_gen = sol["gen"][i] = get(sol["gen"], i, Dict{String,Any}("gen_status" => 0, "pg" => 0.0, "qg" => 0.0))
+                if !haskey(sol_gen, "gen_status")
+                    sol_gen["status"] = 0
+                end
+            end
+        end
+
+        for (i,strg) in network["storage"]
+            init_strg = network_mld["storage"][i]
+            if strg["status"] != 0 && init_strg["status"] == 0
+                sol_storage = sol["storage"][i] = get(sol["storage"], i, Dict{String,Any}("status" => 0, "ps" => 0.0, "qs" => 0.0))
+                if !haskey(sol_storage, "status")
+                    sol_storage["status"] = 0
+                end
+            end
+        end
+
+        if haskey(sol, "branch")
+            for (i,branch) in network["branch"]
+                init_branch = network_mld["branch"][i]
+                if branch["br_status"] != 0 && init_branch["br_status"] == 0
+                    sol_branch = sol["branch"][i] = get(sol["branch"], i, Dict{String,Any}("br_status" => 0))
+                    if !haskey(sol_branch, "br_status")
+                        sol_branch["br_status"] = 0
+                    end
+                end
+            end
+        else
+            # this occurs for inital solution where the MLD model does not reason over branch status
+            sol["branch"] = Dict{String,Any}()
+            for (i,branch) in network["branch"]
+                init_branch = network_mld["branch"][i]
+                if branch["br_status"] != 0 && init_branch["br_status"] == 0
+                    sol["branch"][i] = Dict("br_status" => 0)
+                end
+            end
+        end
+    end
+
     return result_iterative
 end
+
 
 
 function _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=2, kwargs...)
