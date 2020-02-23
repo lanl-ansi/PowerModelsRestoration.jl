@@ -40,48 +40,6 @@ function _get_repairable_items(network::Dict{String,Any})
 end
 
 
-"Count the number of items that have an active status value in a network"
-function count_active_items(network::Dict{String, Any})
-    if _IMs.ismultinetwork(network)
-        active_count = Dict{String,Any}("nw" => Dict{String,Any}())
-        active_set = get_active_items(network)
-        active_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_type,comp_ids) in repariable_network) for (nw, repariable_network) in active_set["nw"] )
-    else
-        active_set = get_active_items(network)
-        active_count = sum(length(comp_ids) for (comp_type,comp_ids) in active_set)
-    end
-    return active_count
-end
-
-
-""
-function get_active_items(network::Dict{String, Any})
-    if haskey(network, "multinetwork") && network["multinetwork"] == true
-        active = Dict{String,Any}("nw"=>Dict{String,Any}())
-        for (nw, net) in network["nw"]
-            active["nw"][nw] = _get_active_items(net)
-        end
-    else
-        active =  _get_active_items(network)
-    end
-    return active
-end
-
-
-""
-function _get_active_items(network::Dict{String,Any})
-    active = Dict{String, Array{String}}()
-    for (comp_name, status_key) in _PMs.pm_component_status
-        active[comp_name] = []
-        for (comp_id, comp) in get(network, comp_name, Dict())
-            if haskey(comp, status_key) && comp[status_key] != _PMs.pm_component_status_inactive[comp_name]
-                push!(active[comp_name], comp_id)
-            end
-        end
-    end
-    return active
-end
-
 "Set damage status for damaged_items in nw_data"
 function damage_items!(nw_data::Dict{String,<:Any}, comp_list::Dict{String, Array{String,1}})
     for (comp_name, comp_ids) in comp_list

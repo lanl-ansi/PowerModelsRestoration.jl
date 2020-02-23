@@ -144,11 +144,10 @@
 
 
         network_mn = replicate_restoration_network(network,count=2)
-        count = count_active_items(network_mn)
 
-        @test isapprox(count["nw"]["0"], 18, atol=1e-2)
-        @test isapprox(count["nw"]["1"], 18, atol=1e-2)
-        @test isapprox(count["nw"]["2"], 18, atol=1e-2)
+        @test isapprox(count_active_items(network_mn["nw"]["0"]), 18, atol=1e-2)
+        @test isapprox(count_active_items(network_mn["nw"]["1"]), 18, atol=1e-2)
+        @test isapprox(count_active_items(network_mn["nw"]["2"]), 18, atol=1e-2)
     end
 
     @testset "get_active_items" begin
@@ -167,10 +166,10 @@
         set_component_inactive!(network, Dict("storage" => ["1"]))
 
         active_set = get_active_items(network)
-        @test ~("1" in active_set["gen"]) #items no longer active
-        @test ~("1" in active_set["bus"])
-        @test ~("1" in active_set["branch"])
-        @test ~("1" in active_set["storage"])
+        @test !("1" in active_set["gen"]) #items no longer active
+        @test !("1" in active_set["bus"])
+        @test !("1" in active_set["branch"])
+        @test !("1" in active_set["storage"])
 
         @test [i in active_set["gen"] for i in ["2","3","4","5"]] == ones(4) #items still active
         @test [i in active_set["bus"] for i in ["2","3","4","10"]] == ones(4)
@@ -179,16 +178,16 @@
 
         #should have same result in multinetwork
         network_mn = replicate_restoration_network(network,count=2)
-        active_set = get_active_items(network_mn)
-        @test ~("1" in active_set["nw"]["0"]["gen"]) #items no longer active
-        @test ~("1" in active_set["nw"]["0"]["bus"])
-        @test ~("1" in active_set["nw"]["0"]["branch"])
-        @test ~("1" in active_set["nw"]["0"]["storage"])
+        active_set_0 = get_active_items(network_mn["nw"]["0"])
+        @test !("1" in active_set_0["gen"]) #items no longer active
+        @test !("1" in active_set_0["bus"])
+        @test !("1" in active_set_0["branch"])
+        @test !("1" in active_set_0["storage"])
 
-        @test [i in active_set["nw"]["0"]["gen"] for i in ["2","3","4","5"]] == ones(4) #items still active
-        @test [i in active_set["nw"]["0"]["bus"] for i in ["2","3","4","10"]] == ones(4)
-        @test [i in active_set["nw"]["0"]["branch"] for i in ["2","3","4","5","6","7"]] == ones(6)
-        @test [i in active_set["nw"]["0"]["storage"] for i in ["2"]] == ones(1)
+        @test [i in active_set_0["gen"] for i in ["2","3","4","5"]] == ones(4) #items still active
+        @test [i in active_set_0["bus"] for i in ["2","3","4","10"]] == ones(4)
+        @test [i in active_set_0["branch"] for i in ["2","3","4","5","6","7"]] == ones(6)
+        @test [i in active_set_0["storage"] for i in ["2"]] == ones(1)
     end
 
     @testset "clear_damage_indicator!" begin
