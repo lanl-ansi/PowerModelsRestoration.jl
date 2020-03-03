@@ -1,6 +1,6 @@
 # Maximum loadability with generator and bus participation relaxed
 function run_mld(file, model_constructor, solver; kwargs...)
-    return _PMs.run_model(file, model_constructor, solver, build_mld; solution_builder = solution_mld, kwargs...)
+    return _PMs.run_model(file, model_constructor, solver, build_mld; kwargs...)
 end
 
 function build_mld(pm::_PMs.AbstractPowerModel)
@@ -13,8 +13,8 @@ function build_mld(pm::_PMs.AbstractPowerModel)
     _PMs.variable_branch_flow(pm)
     _PMs.variable_dcline_flow(pm)
 
-    variable_demand_factor(pm, relax=true)
-    variable_shunt_factor(pm, relax=true)
+    _PMs.variable_demand_factor(pm, relax=true)
+    _PMs.variable_shunt_factor(pm, relax=true)
 
 
     objective_max_loadability(pm)
@@ -53,7 +53,7 @@ end
 
 # Maximum loadability with flexible generator participation fixed
 function run_mld_uc(file, model_constructor, solver; kwargs...)
-    return _PMs.run_model(file, model_constructor, solver, build_mld_uc; solution_builder = solution_mld, kwargs...)
+    return _PMs.run_model(file, model_constructor, solver, build_mld_uc; kwargs...)
 end
 
 function build_mld_uc(pm::_PMs.AbstractPowerModel)
@@ -66,8 +66,8 @@ function build_mld_uc(pm::_PMs.AbstractPowerModel)
     _PMs.variable_branch_flow(pm)
     _PMs.variable_dcline_flow(pm)
 
-    variable_demand_factor(pm, relax=true)
-    variable_shunt_factor(pm, relax=true)
+    _PMs.variable_demand_factor(pm, relax=true)
+    _PMs.variable_shunt_factor(pm, relax=true)
 
 
     objective_max_loadability(pm)
@@ -103,37 +103,9 @@ function build_mld_uc(pm::_PMs.AbstractPowerModel)
 end
 
 
-function solution_mld(pm::_PMs.AbstractPowerModel, sol::Dict{String,Any})
-    _PMs.add_setpoint_bus_voltage!(sol, pm)
-    _PMs.add_setpoint_generator_power!(sol, pm)
-    _PMs.add_setpoint_branch_flow!(sol, pm)
-    _PMs.add_setpoint_generator_status!(sol, pm)
-    _PMs.add_setpoint_branch_status!(sol,pm)
-    add_setpoint_bus_status_voltage!(sol, pm)
-    add_setpoint_load!(sol, pm)
-    add_setpoint_shunt!(sol, pm)
-end
-
-function add_setpoint_load!(sol, pm::_PMs.AbstractPowerModel)
-    _PMs.add_setpoint!(sol, pm, "load", "pd", :z_demand; conductorless=true, scale = (x,item,i) -> x*item["pd"][i])
-    _PMs.add_setpoint!(sol, pm, "load", "qd", :z_demand; conductorless=true, scale = (x,item,i) -> x*item["qd"][i])
-    _PMs.add_setpoint!(sol, pm, "load", "status", :z_demand; conductorless=true, default_value = (item) -> if (item["status"] == 0) 0.0 else 1.0 end)
-end
-
-function add_setpoint_shunt!(sol, pm::_PMs.AbstractPowerModel)
-    _PMs.add_setpoint!(sol, pm, "shunt", "gs", :z_shunt; conductorless=true, scale = (x,item,i) -> x*item["gs"][i])
-    _PMs.add_setpoint!(sol, pm, "shunt", "bs", :z_shunt; conductorless=true, scale = (x,item,i) -> x*item["bs"][i])
-    _PMs.add_setpoint!(sol, pm, "shunt", "status", :z_shunt; conductorless=true, default_value = (item) -> if (item["status"] == 0) 0.0 else 1.0 end)
-end
-
-function add_setpoint_bus_status_voltage!(sol, pm::_PMs.AbstractPowerModel)
-    _PMs.add_setpoint!(sol, pm, "bus", "status", :z_voltage, status_name="bus_type", inactive_status_value = 4, conductorless=true, default_value = (item) -> if item["bus_type"] == 4 0.0 else 1.0 end)
-end
-
-
 # Maximum loadability with generator participation fixed
 function run_mld_smpl(file, model_constructor, solver; kwargs...)
-    return _PMs.run_model(file, model_constructor, solver, run_mld_smpl; solution_builder = solution_mld_smpl, kwargs...)
+    return _PMs.run_model(file, model_constructor, solver, run_mld_smpl; kwargs...)
 end
 
 function run_mld_smpl(pm::_PMs.AbstractPowerModel)
@@ -143,8 +115,8 @@ function run_mld_smpl(pm::_PMs.AbstractPowerModel)
     _PMs.variable_branch_flow(pm)
     _PMs.variable_dcline_flow(pm)
 
-    variable_demand_factor(pm, relax=true)
-    variable_shunt_factor(pm, relax=true)
+    _PMs.variable_demand_factor(pm, relax=true)
+    _PMs.variable_shunt_factor(pm, relax=true)
 
     _PMs.var(pm)[:vm_vio] = JuMP.@variable(pm.model, vm_vio[i in _PMs.ids(pm, :bus)] >= 0)
     _PMs.var(pm)[:pg_vio] = JuMP.@variable(pm.model, pg_vio[i in _PMs.ids(pm, :gen)] >= 0)
@@ -198,19 +170,9 @@ function run_mld_smpl(pm::_PMs.AbstractPowerModel)
 end
 
 
-function solution_mld_smpl(pm::_PMs.AbstractPowerModel, sol::Dict{String,Any})
-    _PMs.add_setpoint_bus_voltage!(sol, pm)
-    _PMs.add_setpoint_generator_power!(sol, pm)
-    _PMs.add_setpoint_branch_flow!(sol, pm)
-    add_setpoint_load!(sol, pm)
-    add_setpoint_shunt!(sol, pm)
-end
-
-
-
 # Maximum loadability with storage, generator and bus participation relaxed
 function run_mld_strg(file, model_constructor, solver; kwargs...)
-    return _PMs.run_model(file, model_constructor, solver, build_mld_strg; solution_builder = solution_mld_storage, kwargs...)
+    return _PMs.run_model(file, model_constructor, solver, build_mld_strg; kwargs...)
 end
 
 function build_mld_strg(pm::_PMs.AbstractPowerModel)
@@ -220,15 +182,14 @@ function build_mld_strg(pm::_PMs.AbstractPowerModel)
     _PMs.variable_generation_indicator(pm, relax=true)
     _PMs.variable_generation_on_off(pm)
 
-    _PMs.variable_storage(pm)
     _PMs.variable_storage_indicator(pm, relax = true)
     _PMs.variable_storage_mi_on_off(pm)
 
     _PMs.variable_branch_flow(pm)
     _PMs.variable_dcline_flow(pm)
 
-    variable_demand_factor(pm, relax=true)
-    variable_shunt_factor(pm, relax=true)
+    _PMs.variable_demand_factor(pm, relax=true)
+    _PMs.variable_shunt_factor(pm, relax=true)
 
 
     objective_max_loadability_strg(pm)
@@ -272,7 +233,7 @@ end
 
 # Maximum loadability with storage and generator participated fixed,  and bus participation relaxed
 function run_mld_strg_uc(file, model_constructor, solver; kwargs...)
-    return _PMs.run_model(file, model_constructor, solver, build_mld_strg_uc; solution_builder = solution_mld_storage, kwargs...)
+    return _PMs.run_model(file, model_constructor, solver, build_mld_strg_uc; kwargs...)
 end
 
 function build_mld_strg_uc(pm::_PMs.AbstractPowerModel)
@@ -282,15 +243,14 @@ function build_mld_strg_uc(pm::_PMs.AbstractPowerModel)
     _PMs.variable_generation_indicator(pm)
     _PMs.variable_generation_on_off(pm)
 
-    _PMs.variable_storage(pm)
     _PMs.variable_storage_indicator(pm)
     _PMs.variable_storage_mi_on_off(pm)
 
     _PMs.variable_branch_flow(pm)
     _PMs.variable_dcline_flow(pm)
 
-    variable_demand_factor(pm, relax=true)
-    variable_shunt_factor(pm, relax=true)
+    _PMs.variable_demand_factor(pm, relax=true)
+    _PMs.variable_shunt_factor(pm, relax=true)
 
 
     objective_max_loadability_strg(pm)
@@ -332,15 +292,3 @@ function build_mld_strg_uc(pm::_PMs.AbstractPowerModel)
     end
 end
 
-function solution_mld_storage(pm::_PMs.AbstractPowerModel, sol::Dict{String,Any})
-    _PMs.add_setpoint_bus_voltage!(sol, pm)
-    _PMs.add_setpoint_generator_power!(sol, pm)
-    _PMs.add_setpoint_branch_flow!(sol, pm)
-    _PMs.add_setpoint_generator_status!(sol, pm)
-    _PMs.add_setpoint_storage!(sol, pm)
-    _PMs.add_setpoint_branch_status!(sol,pm)
-    _PMs.add_setpoint_storage_status!(sol,pm)
-    add_setpoint_bus_status_voltage!(sol, pm)
-    add_setpoint_load!(sol, pm)
-    add_setpoint_shunt!(sol, pm)
-end

@@ -147,3 +147,32 @@ function all_voltages_on(result)
     #println([bus["status"] for (i,bus) in result["solution"]["bus"]])
     return return minimum([bus["status"] for (i,bus) in result["solution"]["bus"]]) >= 1.0 - 1e-3 #(note, non-SCS solvers are more accurate)
 end
+
+
+
+function count_active_items(network::Dict{String, Any})
+    # only single networks are supported
+    @assert !InfrastructureModels.ismultinetwork(network)
+
+    active_set = get_active_items(network)
+
+    return sum(length(comp_ids) for (comp_type,comp_ids) in active_set)
+end
+
+
+function get_active_items(network::Dict{String, Any})
+    # only single networks are supported
+    @assert !InfrastructureModels.ismultinetwork(network)
+
+    active = Dict{String, Array{String}}()
+    for (comp_name, status_key) in PowerModels.pm_component_status
+        active[comp_name] = []
+        for (comp_id, comp) in get(network, comp_name, Dict())
+            if haskey(comp, status_key) && comp[status_key] != PowerModels.pm_component_status_inactive[comp_name]
+                push!(active[comp_name], comp_id)
+            end
+        end
+    end
+
+    return active
+end

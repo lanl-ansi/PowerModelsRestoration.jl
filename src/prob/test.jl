@@ -1,6 +1,6 @@
 # Maximum loadability with flexible generator participation fixed
 function _run_mld_discrete_load(file, model_constructor, solver; kwargs...)
-    return _PMs.run_model(file, model_constructor, solver, _build_mld_discrete_load; solution_builder = solution_mld, kwargs...)
+    return _PMs.run_model(file, model_constructor, solver, _build_mld_discrete_load; kwargs...)
 end
 
 function _build_mld_discrete_load(pm::_PMs.AbstractPowerModel)
@@ -15,8 +15,8 @@ function _build_mld_discrete_load(pm::_PMs.AbstractPowerModel)
     _PMs.variable_branch_flow(pm)
     _PMs.variable_dcline_flow(pm)
 
-    variable_demand_factor(pm)
-    variable_shunt_factor(pm)
+    _PMs.variable_demand_factor(pm)
+    _PMs.variable_shunt_factor(pm)
 
 
     objective_max_loadability(pm)

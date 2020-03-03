@@ -56,9 +56,11 @@
 
         @test result["termination_status"] == LOCALLY_SOLVED
         for (i,bus) in result["solution"]["bus"]
-            @test haskey(bus, "vm")
-            @test haskey(bus, "va")
-            @test bus["status"] >= 0.0 && bus["status"] <= 1.0
+            #if bus[PowerModels.pm_component_status["bus"]] != PowerModels.pm_component_status_inactive["bus"]
+                @test haskey(bus, "vm")
+                @test haskey(bus, "va")
+                @test bus["status"] >= 0.0 && bus["status"] <= 1.0
+            #end
         end
 
         for (i,load) in result["solution"]["load"]
@@ -84,17 +86,17 @@
 
         load1 = result["solution"]["load"]["1"]
         load2 = result["solution"]["load"]["2"]
-        @test isapprox(load1["pd"], 0.570512; atol = 1e-3)
-        @test isequal(load1["qd"], NaN)
-        @test isapprox(load2["pd"], 0.800; atol = 1e-3)
-        @test isequal(load2["qd"], NaN)
+        @test isapprox(load1["pd"], 0.570512; atol=1e-3)
+        @test isapprox(load1["qd"], 0.285256; atol=1e-3)
+        @test isapprox(load2["pd"], 0.800; atol=1e-3)
+        @test isapprox(load2["qd"], 0.400; atol=1e-3)
 
         shunt1 = result["solution"]["shunt"]["1"]
         shunt2 = result["solution"]["shunt"]["2"]
-        @test isapprox(shunt1["gs"],  0.010; atol = 1e-3)
-        @test isequal(shunt1["bs"], NaN)
-        @test isapprox(shunt2["gs"],  0.000; atol = 1e-3)
-        @test isequal(shunt2["bs"], NaN)
+        @test isapprox(shunt1["gs"],  0.010; atol=1e-3)
+        @test isapprox(shunt1["bs"], -0.300; atol=1e-3)
+        @test isapprox(shunt2["gs"],  0.000; atol=1e-3)
+        @test isapprox(shunt2["bs"], -0.300; atol=1e-3)
     end
 end
 

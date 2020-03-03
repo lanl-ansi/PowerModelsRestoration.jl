@@ -3,6 +3,9 @@
 ## Staged
 - nothing
 
+## v0.3.0
+- Update to PowerModels v0.15
+
 ## v0.2.1
 - Minor fix to result building in run_iterative_restoration
 - Add upper bound on test solver versions

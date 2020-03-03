@@ -1,8 +1,7 @@
 ""
 function run_mrsp(file, model_constructor, optimizer; kwargs...)
     return _PMs.run_model(file, model_constructor, optimizer, build_mrsp;
-        ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!],
-        solution_builder = solution_mrsp!, kwargs...)
+        ref_extensions=[_PMs.ref_add_on_off_va_bounds!, ref_add_damaged_items!], kwargs...)
 end
 
 
@@ -77,19 +76,5 @@ function objective_min_restoration(pm::_PMs.AbstractPowerModel)
         + sum(z_storage[i] for (i,storage) in _PMs.ref(pm, :damaged_storage))
         + sum(z_bus[i] for (i,bus) in _PMs.ref(pm, :damaged_bus))
     )
-end
-
-
-"report minimal restoration set solution"
-function solution_mrsp!(pm::_PMs.AbstractPowerModel, sol::Dict{String,Any})
-    add_setpoint_bus_status!(sol,pm)
-    _PMs.add_setpoint_bus_voltage!(sol, pm)
-    _PMs.add_setpoint_generator_status!(sol, pm)
-    _PMs.add_setpoint_generator_power!(sol, pm)
-    _PMs.add_setpoint_branch_status!(sol, pm)
-    _PMs.add_setpoint_branch_flow!(sol, pm)
-    _PMs.add_setpoint_dcline_flow!(sol, pm)
-    _PMs.add_setpoint_storage_status!(sol, pm)
-    _PMs.add_setpoint_storage!(sol, pm)
 end
 
