@@ -3,8 +3,12 @@
 ## Staged
 - nothing
 
+## v0.4.0
+- Update to PowerModels v0.16 (breaking)
+- Add support for Memento v0.13, v1.0
+
 ## v0.3.0
-- Update to PowerModels v0.15
+- Update to PowerModels v0.15 (breaking)
 
 ## v0.2.1
 - Minor fix to result building in run_iterative_restoration
