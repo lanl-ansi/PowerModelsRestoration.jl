@@ -6,7 +6,7 @@
         data_initial = PowerModels.parse_file("../test/data/case5_mld_ft.m")
 
         data = PowerModels.parse_file("../test/data/case5_mld_ft.m")
-        PowerModels.propagate_topology_status!(data)
+        PowerModels.simplify_network!(data)
 
         @test length(data_initial["bus"]) == length(data["bus"])
         @test length(data_initial["gen"]) == length(data["gen"])
@@ -38,7 +38,7 @@
         data_initial = PowerModels.parse_file("../test/data/case5_mld_ft.m")
 
         data = PowerModels.parse_file("../test/data/case5_mld_ft.m")
-        PowerModels.propagate_topology_status!(data)
+        PowerModels.simplify_network!(data)
         PowerModels.select_largest_component!(data)
 
         @test length(data_initial["bus"]) == length(data["bus"])
@@ -69,7 +69,7 @@
     @testset "output values" begin
 
         data = PowerModels.parse_file("../test/data/case5_mld_ft.m")
-        PowerModels.propagate_topology_status!(data)
+        PowerModels.simplify_network!(data)
         result = run_mld(data, PowerModels.ACPPowerModel, ipopt_solver)
         solution = result["solution"]
 

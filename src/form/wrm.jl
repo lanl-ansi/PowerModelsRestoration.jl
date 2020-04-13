@@ -1,17 +1,17 @@
 
 
-function variable_bus_voltage_on_off(pm::_PMs.AbstractWRMModel, nw::Int=pm.cnw; bounded = true, kwargs...)
-    wr_min, wr_max, wi_min, wi_max = _PMs.ref_calc_voltage_product_bounds(_PMs.ref(pm, nw, :buspairs))
+function variable_bus_voltage_on_off(pm::_PM.AbstractWRMModel, nw::Int=pm.cnw; bounded = true, kwargs...)
+    wr_min, wr_max, wi_min, wi_max = _PM.ref_calc_voltage_product_bounds(_PM.ref(pm, nw, :buspairs))
 
-    bus_count = length(_PMs.ref(pm, nw, :bus))
+    bus_count = length(_PM.ref(pm, nw, :bus))
     w_index = 1:bus_count
-    lookup_w_index = Dict([(bi, i) for (i,bi) in enumerate(keys(_PMs.ref(pm, nw, :bus)))])
+    lookup_w_index = Dict([(bi, i) for (i,bi) in enumerate(keys(_PM.ref(pm, nw, :bus)))])
 
-    WR = _PMs.var(pm, nw)[:WR] = JuMP.@variable(pm.model, [1:bus_count, 1:bus_count], Symmetric, base_name="$(nw)_WR")
-    WI = _PMs.var(pm, nw)[:WI] = JuMP.@variable(pm.model, [1:bus_count, 1:bus_count], base_name="$(nw)_WI")
+    WR = _PM.var(pm, nw)[:WR] = JuMP.@variable(pm.model, [1:bus_count, 1:bus_count], Symmetric, base_name="$(nw)_WR")
+    WI = _PM.var(pm, nw)[:WI] = JuMP.@variable(pm.model, [1:bus_count, 1:bus_count], base_name="$(nw)_WI")
 
     # bounds on diagonal
-    for (i, bus) in _PMs.ref(pm, nw, :bus)
+    for (i, bus) in _PM.ref(pm, nw, :bus)
         w_idx = lookup_w_index[i]
         wr_ii = WR[w_idx,w_idx]
         wi_ii = WR[w_idx,w_idx]
@@ -29,7 +29,7 @@ function variable_bus_voltage_on_off(pm::_PMs.AbstractWRMModel, nw::Int=pm.cnw; 
     end
 
     # bounds on off-diagonal
-    for (i,j) in _PMs.ids(pm, nw, :buspairs)
+    for (i,j) in _PM.ids(pm, nw, :buspairs)
         wi_idx = lookup_w_index[i]
         wj_idx = lookup_w_index[j]
 
@@ -42,32 +42,32 @@ function variable_bus_voltage_on_off(pm::_PMs.AbstractWRMModel, nw::Int=pm.cnw; 
         end
     end
 
-    _PMs.var(pm, nw)[:w] = Dict{Int,Any}()
-    for (i, bus) in _PMs.ref(pm, nw, :bus)
+    _PM.var(pm, nw)[:w] = Dict{Int,Any}()
+    for (i, bus) in _PM.ref(pm, nw, :bus)
         w_idx = lookup_w_index[i]
-        _PMs.var(pm, nw, :w)[i] = WR[w_idx,w_idx]
+        _PM.var(pm, nw, :w)[i] = WR[w_idx,w_idx]
     end
 
-    _PMs.var(pm, nw)[:wr] = Dict{Tuple{Int,Int},Any}()
-    _PMs.var(pm, nw)[:wi] = Dict{Tuple{Int,Int},Any}()
-    for (i,j) in _PMs.ids(pm, nw, :buspairs)
+    _PM.var(pm, nw)[:wr] = Dict{Tuple{Int,Int},Any}()
+    _PM.var(pm, nw)[:wi] = Dict{Tuple{Int,Int},Any}()
+    for (i,j) in _PM.ids(pm, nw, :buspairs)
         w_fr_index = lookup_w_index[i]
         w_to_index = lookup_w_index[j]
 
-        _PMs.var(pm, nw, :wr)[(i,j)] = WR[w_fr_index, w_to_index]
-        _PMs.var(pm, nw, :wi)[(i,j)] = WI[w_fr_index, w_to_index]
+        _PM.var(pm, nw, :wr)[(i,j)] = WR[w_fr_index, w_to_index]
+        _PM.var(pm, nw, :wi)[(i,j)] = WI[w_fr_index, w_to_index]
     end
 end
 
 
-function constraint_bus_voltage_on_off(pm::_PMs.AbstractWRMModel, n::Int)
-    WR = _PMs.var(pm, n, :WR)
-    WI = _PMs.var(pm, n, :WI)
-    z_voltage = _PMs.var(pm, n, :z_voltage)
+function constraint_bus_voltage_on_off(pm::_PM.AbstractWRMModel, n::Int)
+    WR = _PM.var(pm, n, :WR)
+    WI = _PM.var(pm, n, :WI)
+    z_voltage = _PM.var(pm, n, :z_voltage)
 
     JuMP.@SDconstraint(pm.model, [WR WI; -WI WR] >= 0)
 
-    for (i,bus) in _PMs.ref(pm, n, :bus)
+    for (i,bus) in _PM.ref(pm, n, :bus)
         constraint_voltage_magnitude_sqr_on_off(pm, i; nw=n)
     end
 
