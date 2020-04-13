@@ -5,8 +5,8 @@ import InfrastructureModels
 import PowerModels
 import Memento
 
-const _IMs = InfrastructureModels
-const _PMs = PowerModels
+const _IM = InfrastructureModels
+const _PM = PowerModels
 
 include("core/variable.jl")
 include("core/data.jl")

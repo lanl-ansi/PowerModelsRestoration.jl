@@ -1,5 +1,5 @@
 function count_repairable_items(network::Dict{String, Any})
-    if _IMs.ismultinetwork(network)
+    if _IM.ismultinetwork(network)
         repairable_count = Dict{String,Any}("nw" => Dict{String,Any}())
         repairable_set = get_repairable_items(network)
         repairable_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_type,comp_ids) in repariable_network) for (nw, repariable_network) in repairable_set["nw"] )
@@ -28,10 +28,10 @@ end
 ""
 function _get_repairable_items(network::Dict{String,Any})
     repairs = Dict{String, Vector{String}}()
-    for (comp_name, status_key) in _PMs.pm_component_status
+    for (comp_name, status_key) in _PM.pm_component_status
         repairs[comp_name] = []
         for (comp_id, comp) in get(network, comp_name, Dict())
-            if haskey(comp, status_key) && comp[status_key] != _PMs.pm_component_status_inactive[comp_name] && haskey(comp, "damaged") && comp["damaged"] == 1
+            if haskey(comp, status_key) && comp[status_key] != _PM.pm_component_status_inactive[comp_name] && haskey(comp, "damaged") && comp["damaged"] == 1
                 push!(repairs[comp_name], comp_id)
             end
         end
@@ -58,7 +58,7 @@ end
 
 "Count the number of items with a key \"damaged\" == 1 in a network"
 function count_damaged_items(network::Dict{String, Any})
-    if _IMs.ismultinetwork(network)
+    if _IM.ismultinetwork(network)
         damaged_count = Dict{String,Any}("nw" => Dict{String,Any}())
         damaged_set = get_damaged_items(network)
         damaged_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_type,comp_ids) in damage_network) for (nw, damage_network) in damaged_set["nw"] )
@@ -72,7 +72,7 @@ end
 
 ""
 function get_damaged_items(data::Dict{String,Any})
-    if _IMs.ismultinetwork(data)
+    if _IM.ismultinetwork(data)
         comp_list = Dict{String,Any}("nw" => Dict{String,Any}())
         for (i, nw_data) in data["nw"]
             comp_list["nw"][i] = _get_damaged_items(nw_data)
@@ -87,7 +87,7 @@ end
 ""
 function _get_damaged_items(network::Dict{String,Any})
     comp_list = Dict{String, Array{String,1}}()
-    for (comp_type, comp_status) in _PMs.pm_component_status
+    for (comp_type, comp_status) in _PM.pm_component_status
         comp_list[comp_type] = []
         for (comp_id, comp) in network[comp_type]
             if haskey(comp, "damaged") && comp["damaged"] == 1
@@ -101,7 +101,7 @@ end
 
 ""
 function get_isolated_load(data::Dict{String,Any})
-    if _IMs.ismultinetwork(data)
+    if _IM.ismultinetwork(data)
         load_list = Dict{String,Any}("nw" => Dict{String,Any}())
         for (i, nw_data) in data["nw"]
             load_list["nw"][i] = _get_isolated_load(nw_data)
@@ -118,11 +118,11 @@ function _get_isolated_load(network::Dict{String,Any})
     load_list =  Dict{String, Array{String,1}}()
     load_list["load"] = []
 
-    bus_status =  _PMs.pm_component_status["bus"]
-    bus_inactive = _PMs.pm_component_status_inactive["bus"]
+    bus_status =  _PM.pm_component_status["bus"]
+    bus_inactive = _PM.pm_component_status_inactive["bus"]
 
-    load_status = _PMs.pm_component_status["load"]
-    load_inactive = _PMs.pm_component_status_inactive["load"]
+    load_status = _PM.pm_component_status["load"]
+    load_inactive = _PM.pm_component_status_inactive["load"]
 
     for (load_id, load) in network["load"]
         if haskey(network["bus"]["$(load["load_bus"])"], bus_status) &&  network["bus"]["$(load["load_bus"])"][bus_status] == bus_inactive
@@ -135,7 +135,7 @@ end
 
 ""
 function set_component_inactive!(data::Dict{String,Any}, comp_list::Dict{String, Array{String,1}})
-    if _IMs.ismultinetwork(data)
+    if _IM.ismultinetwork(data)
         items = Dict{String,Any}("nw" => Dict{String,Any}())
         for (i, nw_data) in data["nw"]
             _set_component_inactive!(nw_data, comp_list)
@@ -151,7 +151,7 @@ end
 function _set_component_inactive!(network::Dict{String,Any}, comp_list::Dict{String, Array{String,1}})
     for (comp_type, comp_ids) in comp_list
         for comp_id in comp_ids
-            network[comp_type][comp_id][_PMs.pm_component_status[comp_type]] = _PMs.pm_component_status_inactive[comp_type]
+            network[comp_type][comp_id][_PM.pm_component_status[comp_type]] = _PM.pm_component_status_inactive[comp_type]
         end
     end
 end
@@ -159,7 +159,7 @@ end
 
 "Clear damage indicator and replace with status=0"
 function clear_damage_indicator!(data::Dict{String, Any})
-    if _IMs.ismultinetwork(data)
+    if _IM.ismultinetwork(data)
         for (i, nw_data) in data["nw"]
             _clear_damage_indicator!(nw_data)
         end
@@ -170,7 +170,7 @@ end
 
 
 function _clear_damage_indicator!(network::Dict{String,Any})
-    for (comp_name, status_key) in _PMs.pm_component_status
+    for (comp_name, status_key) in _PM.pm_component_status
         for (i, comp) in get(network, comp_name, Dict())
             if haskey(comp, "damaged")
                 comp["damaged"] = 0
@@ -212,9 +212,9 @@ end
 
 "updates status in the data model with values from a sparse solution dict"
 function update_status!(data::Dict{String, Any}, solution::Dict{String, Any})
-    @assert _IMs.ismultinetwork(data) == _IMs.ismultinetwork(solution)
+    @assert _IM.ismultinetwork(data) == _IM.ismultinetwork(solution)
 
-    if _IMs.ismultinetwork(solution)
+    if _IM.ismultinetwork(solution)
         for (i, nw_sol) in solution["nw"]
             nw_data = data["nw"][i]
             _update_status!(nw_data, nw_sol)
@@ -225,7 +225,7 @@ function update_status!(data::Dict{String, Any}, solution::Dict{String, Any})
 end
 
 function _update_status!(network::Dict{String,Any}, solution::Dict{String, Any})
-    for (comp_name, status_key) in _PMs.pm_component_status
+    for (comp_name, status_key) in _PM.pm_component_status
         if haskey(solution, comp_name) && haskey(network, comp_name)
             nw_comps = network[comp_name]
             for (i, sol_comp) in solution[comp_name]
@@ -291,7 +291,7 @@ end
 # Required because PowerModels assumes integral status values
 "Replace non-integer status codes for devices, maps bus status to bus_type"
 function clean_status!(data::Dict{String,Any})
-    if _IMs.ismultinetwork(data)
+    if _IM.ismultinetwork(data)
         for (i, nw_data) in data["nw"]
             _clean_status!(nw_data)
         end
@@ -309,7 +309,7 @@ function _clean_status!(network::Dict{String,Any})
             elseif status == 1
                 bt = get(bus, "bus_type", 5)
                 if bt == 4
-                    Memento.warn(_PMs._LOGGER, "bus $(i) given status 1 but the bus_type is 4")
+                    Memento.warn(_PM._LOGGER, "bus $(i) given status 1 but the bus_type is 4")
                 else
                     bus["bus_type"] = bt
                 end
@@ -319,14 +319,14 @@ function _clean_status!(network::Dict{String,Any})
         end
     end
 
-    for (comp_name, status_key) in _PMs.pm_component_status
+    for (comp_name, status_key) in _PM.pm_component_status
         for (i, comp) in get(network, comp_name, Dict())
             if haskey(comp, status_key)
-                if isapprox(comp[status_key], _PMs.pm_component_status_inactive[comp_name], atol=1e-4)
+                if isapprox(comp[status_key], _PM.pm_component_status_inactive[comp_name], atol=1e-4)
                     # i.e. status= 1.05e-9, then set status=0
                     # instead of rounding, which would cause a load with status "0.2" (80% of load shed)
                     # to be set to status 0 instead.
-                    comp[status_key] = _PMs.pm_component_status_inactive[comp_name]
+                    comp[status_key] = _PM.pm_component_status_inactive[comp_name]
                 elseif isapprox(comp[status_key], 1, atol=1e-4)
                     comp[status_key] = 1
                 end
@@ -338,15 +338,15 @@ end
 
 "Transforms a single network into a multinetwork with several deepcopies of the original network. Indexed from 0."
 function replicate_restoration_network(sn_data::Dict{String,<:Any}; count::Int=1, global_keys::Set{String}=Set{String}())
-    return replicate_restoration_network(sn_data, count, union(global_keys, _PMs._pm_global_keys))
+    return replicate_restoration_network(sn_data, count, union(global_keys, _PM._pm_global_keys))
 end
 
 
 "Transforms a single network into a multinetwork with several deepcopies of the original network. Indexed from 0."
 function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, global_keys::Set{String})
     @assert count > 0
-    if _IMs.ismultinetwork(sn_data)
-        Memento.error(_PMs._LOGGER, "replicate_restoration_network can only be used on single networks")
+    if _IM.ismultinetwork(sn_data)
+        Memento.error(_PM._LOGGER, "replicate_restoration_network can only be used on single networks")
     end
 
     clean_status!(sn_data)
@@ -373,7 +373,7 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
     total_repairs = count_repairable_items(sn_data)
 
     if count > total_repairs
-        Memento.warn(_PMs._LOGGER, "More restoration steps than repairable components.  Reducing restoration steps to $(total_repairs).")
+        Memento.warn(_PM._LOGGER, "More restoration steps than repairable components.  Reducing restoration steps to $(total_repairs).")
         count = trunc(Int,total_repairs)
     end
 
@@ -405,7 +405,7 @@ end
 
 ""
 function propagate_damage_status!(data::Dict{String,<:Any})
-    if _IMs.ismultinetwork(data)
+    if _IM.ismultinetwork(data)
         for (i,nw_data) in data["nw"]
             _propagate_damage_status!(nw_data)
         end
@@ -419,8 +419,8 @@ end
 function _propagate_damage_status!(data::Dict{String,<:Any})
     buses = Dict(bus["bus_i"] => bus for (i,bus) in data["bus"])
 
-    incident_gen = _PMs.bus_gen_lookup(data["gen"], data["bus"])
-    incident_storage = _PMs.bus_storage_lookup(data["storage"], data["bus"])
+    incident_gen = _PM.bus_gen_lookup(data["gen"], data["bus"])
+    incident_storage = _PM.bus_storage_lookup(data["storage"], data["bus"])
 
     incident_branch = Dict(bus["bus_i"] => [] for (i,bus) in data["bus"])
     for (i,branch) in data["branch"]
@@ -432,19 +432,19 @@ function _propagate_damage_status!(data::Dict{String,<:Any})
         if haskey(bus, "damaged") && bus["damaged"] == 1
             for gen in incident_gen[i]
                 if !(haskey(gen, "damaged") && gen["damaged"] == 1)
-                    Memento.info(_PMs._LOGGER, "damaging generator $(gen["index"]) due to damaged bus $(i)")
+                    Memento.info(_PM._LOGGER, "damaging generator $(gen["index"]) due to damaged bus $(i)")
                     gen["damaged"] = 1
                 end
             end
             for storage in incident_storage[i]
                 if !(haskey(storage, "damaged") && storage["damaged"] == 1)
-                    Memento.info(_PMs._LOGGER, "damaging storage $(storage["index"]) due to damaged bus $(i)")
+                    Memento.info(_PM._LOGGER, "damaging storage $(storage["index"]) due to damaged bus $(i)")
                     storage["damaged"] = 1
                 end
             end
             for branch in incident_branch[i]
                 if !(haskey(branch, "damaged") && branch["damaged"] == 1)
-                    Memento.info(_PMs._LOGGER, "damaging branch $(branch["index"]) due to damaged bus $(i)")
+                    Memento.info(_PM._LOGGER, "damaging branch $(branch["index"]) due to damaged bus $(i)")
                     branch["damaged"] = 1
                 end
             end
@@ -465,12 +465,12 @@ end
 prints a summary of a restoration solution
 """
 function summary_restoration(io::IO, data::Dict{String,<:Any})
-    if !_IMs.ismultinetwork(data)
-        Memento.error(_PMs._LOGGER, "summary_restoration requires multinetwork data")
+    if !_IM.ismultinetwork(data)
+        Memento.error(_PM._LOGGER, "summary_restoration requires multinetwork data")
     end
 
     networks = sort(collect(keys(data["nw"])), by=x -> parse(Int, x))
-    component_names = sort(collect(keys(_PMs.pm_component_status)))
+    component_names = sort(collect(keys(_PM.pm_component_status)))
 
     network = data["nw"][networks[1]]
     header = ["step", "pd", "qd"]
@@ -496,7 +496,7 @@ function summary_restoration(io::IO, data::Dict{String,<:Any})
         push!(summary_data, trunc(load_qd, sigdigits=5))
 
         for comp_name in component_names
-            comp_status_name = _PMs.pm_component_status[comp_name]
+            comp_status_name = _PM.pm_component_status[comp_name]
             if haskey(network, comp_name)
                 components = network[comp_name]
                 comp_ids = sort(collect(keys(components)), by=x -> parse(Int, x))
@@ -520,7 +520,7 @@ end
 
 function add_load_weights!(data::Dict{String,<:Any})
     if !haskey(data, "source_type") || data["source_type"] != "pti"
-        Memento.warn(_PMs._LOGGER, "add_load_weights! currently only supports networks from pti files")
+        Memento.warn(_PM._LOGGER, "add_load_weights! currently only supports networks from pti files")
         return
     end
 
@@ -528,13 +528,13 @@ function add_load_weights!(data::Dict{String,<:Any})
         @assert(haskey(load, "source_id") && length(load["source_id"]) == 3)
         load_ckt = lowercase(load["source_id"][3])
         if startswith(load_ckt, 'l')
-            Memento.info(_PMs._LOGGER, "setting load $(i) to low priority")
+            Memento.info(_PM._LOGGER, "setting load $(i) to low priority")
             load["weight"] = 1.0
         elseif startswith(load_ckt, 'm')
-            Memento.info(_PMs._LOGGER, "setting load $(i) to medium priority")
+            Memento.info(_PM._LOGGER, "setting load $(i) to medium priority")
             load["weight"] = 10.0
         elseif startswith(load_ckt, 'h')
-            Memento.info(_PMs._LOGGER, "setting load $(i) to high priority")
+            Memento.info(_PM._LOGGER, "setting load $(i) to high priority")
             load["weight"] = 100.0
         end
     end

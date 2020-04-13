@@ -1,17 +1,17 @@
 # tools for working with a PowerModels ref dict structures
 
 ""
-function ref_add_damaged_items!(pm::_PMs.AbstractPowerModel)
-    ref_add_damaged_gens!(pm)
-    ref_add_damaged_branches!(pm)
-    ref_add_damaged_storage!(pm)
-    ref_add_damaged_buses!(pm)
+function ref_add_damaged_items!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    ref_add_damaged_gens!(ref, data)
+    ref_add_damaged_branches!(ref, data)
+    ref_add_damaged_storage!(ref, data)
+    ref_add_damaged_buses!(ref, data)
 end
 
 
 ""
-function ref_add_damaged_gens!(pm::_PMs.AbstractPowerModel)
-    for (nw, nw_ref) in pm.ref[:nw]
+function ref_add_damaged_gens!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    for (nw, nw_ref) in ref[:nw]
         damaged_gen = Dict{Int,Any}()
         for (i,gen) in nw_ref[:gen]
             if haskey(gen, "damaged") && gen["damaged"] == 1
@@ -20,12 +20,12 @@ function ref_add_damaged_gens!(pm::_PMs.AbstractPowerModel)
         end
         nw_ref[:damaged_gen] = damaged_gen
     end
-    _PMs.ref(pm,:damaged_gen)
+    #_PM.ref(pm,:damaged_gen)
 end
 
 ""
-function ref_add_damaged_buses!(pm::_PMs.AbstractPowerModel)
-    for (nw, nw_ref) in pm.ref[:nw]
+function ref_add_damaged_buses!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    for (nw, nw_ref) in ref[:nw]
         damaged_bus = Dict{Int,Any}()
         for (i,bus) in nw_ref[:bus]
             if haskey(bus, "damaged") && bus["damaged"] == 1
@@ -38,8 +38,8 @@ end
 
 
 ""
-function ref_add_damaged_branches!(pm::_PMs.AbstractPowerModel)
-    for (nw, nw_ref) in pm.ref[:nw]
+function ref_add_damaged_branches!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    for (nw, nw_ref) in ref[:nw]
         damaged_branch = Dict{Int,Any}()
         for (i,branch) in nw_ref[:branch]
             if haskey(branch, "damaged") && branch["damaged"] == 1
@@ -52,8 +52,8 @@ end
 
 
 ""
-function ref_add_damaged_storage!(pm::_PMs.AbstractPowerModel)
-    for (nw, nw_ref) in pm.ref[:nw]
+function ref_add_damaged_storage!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    for (nw, nw_ref) in ref[:nw]
         damaged_storage = Dict{Int,Any}()
         for (i,storage) in nw_ref[:storage]
             if haskey(storage, "damaged") && storage["damaged"] == 1
