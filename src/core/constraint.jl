@@ -63,7 +63,7 @@ end
 
 
 ""
-function constraint_active_gen(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
+function constraint_gen_active(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
     if haskey(_PM.ref(pm, nw_1, :damaged_gen), i)
         z_gen_1 = _PM.var(pm, nw_1, :z_gen, i)
         z_gen_2 = _PM.var(pm, nw_2, :z_gen, i)
@@ -73,7 +73,7 @@ function constraint_active_gen(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, n
 end
 
 ""
-function constraint_active_bus(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
+function constraint_bus_active(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
     if haskey(_PM.ref(pm, nw_1, :damaged_gen), i)
         z_bus_1 = _PM.var(pm, nw_1, :z_bus, i)
         z_bus_2 = _PM.var(pm, nw_2, :z_bus, i)
@@ -84,7 +84,7 @@ end
 
 
 ""
-function constraint_active_storage(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
+function constraint_storage_active(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
     if haskey(_PM.ref(pm, nw_1, :damaged_storage), i)
         z_storage_1 = _PM.var(pm, nw_1, :z_storage, i)
         z_storage_2 = _PM.var(pm, nw_2, :z_storage, i)
@@ -95,7 +95,7 @@ end
 
 
 ""
-function constraint_active_branch(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
+function constraint_branch_active(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
     if haskey(_PM.ref(pm, nw_1, :damaged_branch), i)
         z_branch_1 = _PM.var(pm, nw_1, :z_branch, i)
         z_branch_2 = _PM.var(pm, nw_2, :z_branch, i)
@@ -106,7 +106,7 @@ end
 
 
 "Load delivered at each node must be greater than or equal the previous time period"
-function constraint_increasing_load(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
+function constraint_load_increasing(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
 
     z_demand_1 = _PM.var(pm, nw_1, :z_demand, i)
     z_demand_2 = _PM.var(pm, nw_2, :z_demand, i)

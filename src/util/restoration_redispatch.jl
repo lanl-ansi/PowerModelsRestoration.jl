@@ -15,16 +15,16 @@ end
 ""
 function build_restoration_redispatch(pm::_PM.AbstractPowerModel)
     for (n, network) in _PM.nws(pm)
-        _PM.variable_voltage(pm, nw=n)
-        variable_voltage_magnitude_violation(pm; nw=n)
+        _PM.variable_bus_voltage(pm, nw=n)
+        variable_bus_voltage_magnitude_violation(pm; nw=n)
 
-        _PM.variable_generation(pm, nw=n)
-        _PM.variable_storage(pm, nw=n)
-        _PM.variable_branch_flow(pm, nw=n)
-        _PM.variable_dcline_flow(pm, nw=n)
+        _PM.variable_gen_power(pm, nw=n)
+        _PM.variable_storage_power(pm, nw=n)
+        _PM.variable_branch_power(pm, nw=n)
+        _PM.variable_dcline_power(pm, nw=n)
 
-        _PM.variable_demand_factor(pm, nw=n, relax=true)
-        _PM.variable_shunt_factor(pm, nw=n, relax=true)
+        _PM.variable_load_power_factor(pm, nw=n, relax=true)
+        _PM.variable_shunt_admittance_factor(pm, nw=n, relax=true)
 
         _PM.constraint_model_voltage(pm, nw=n)
 
@@ -39,7 +39,7 @@ function build_restoration_redispatch(pm::_PM.AbstractPowerModel)
 
         for i in _PM.ids(pm, :storage, nw=n)
             _PM.constraint_storage_complementarity_nl(pm, i, nw=n)
-            _PM.constraint_storage_loss(pm, i, nw=n)
+            _PM.constraint_storage_losses(pm, i, nw=n)
             _PM.constraint_storage_thermal_limit(pm, i, nw=n)
         end
 
@@ -54,7 +54,7 @@ function build_restoration_redispatch(pm::_PM.AbstractPowerModel)
         end
 
         for i in _PM.ids(pm, :dcline, nw=n)
-            _PM.constraint_dcline(pm, i, nw=n)
+            _PM.constraint_dcline_power_losses(pm, i, nw=n)
         end
 
     end

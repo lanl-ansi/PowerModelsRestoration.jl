@@ -2,8 +2,8 @@ function constraint_model_voltage_damage(pm::_PM.AbstractDCPModel, n::Int)
 end
 
 ""
-function variable_voltage_damage(pm::_PM.AbstractDCPModel; kwargs...)
-    _PM.variable_voltage_angle(pm; kwargs...)
+function variable_bus_voltage_damage(pm::_PM.AbstractDCPModel; kwargs...)
+    _PM.variable_bus_voltage_angle(pm; kwargs...)
 end
 
 # "no vm values to turn off"
@@ -18,11 +18,11 @@ function variable_bus_voltage_indicator(pm::_PM.AbstractDCPModel; nw::Int=pm.cnw
 end
 
 function variable_bus_voltage_on_off(pm::_PM.AbstractDCPModel; kwargs...)
-    _PM.variable_voltage_angle(pm; kwargs...)
-    variable_voltage_magnitude_on_off(pm; kwargs...)
+    _PM.variable_bus_voltage_angle(pm; kwargs...)
+    variable_bus_voltage_magnitude_on_off(pm; kwargs...)
 end
 
-function variable_voltage_magnitude_on_off(pm::_PM.AbstractDCPModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
+function variable_bus_voltage_magnitude_on_off(pm::_PM.AbstractDCPModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
     report && _IM.sol_component_fixed(pm, nw, :bus, :vm, _PM.ids(pm, nw, :bus), 1.0)
 end
 
@@ -119,7 +119,7 @@ end
 
 ### These are needed to overload the default behavior for reactive power ###
 "no vm values to turn off"
-function constraint_bus_voltage_violation_damage(pm::_PM.AbstractDCPModel, n::Int, i::Int, vm_min, vm_max)
+function constraint_voltage_violation_damage(pm::_PM.AbstractDCPModel, n::Int, i::Int, vm_min, vm_max)
 end
 
 "no vm values to turn off"

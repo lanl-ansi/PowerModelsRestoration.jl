@@ -22,14 +22,14 @@ end
 
 
 ""
-function constraint_generation_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_gen_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
     gen = _PM.ref(pm, nw, :gen, i)
 
     gen_damaged = haskey(_PM.ref(pm, nw, :damaged_gen), i)
     bus_damaged = haskey(_PM.ref(pm, nw, :damaged_bus), gen["gen_bus"])
 
     if gen_damaged
-        _PM.constraint_generation_on_off(pm, nw, i, gen["pmin"], gen["pmax"], gen["qmin"], gen["qmax"])
+        _PM.constraint_gen_power_on_off(pm, nw, i, gen["pmin"], gen["pmax"], gen["qmin"], gen["qmax"])
         if bus_damaged
             constraint_gen_bus_connection(pm, nw, i, gen["gen_bus"])
         end
@@ -248,10 +248,10 @@ function constraint_storage_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=p
 end
 
 ""
-function constraint_bus_voltage_violation_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_voltage_violation_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
     bus = _PM.ref(pm, nw, :bus, i)
 
-    constraint_bus_voltage_violation_damage(pm, nw, i, bus["vmin"], bus["vmax"])
+    constraint_voltage_violation_damage(pm, nw, i, bus["vmin"], bus["vmax"])
 end
 
 

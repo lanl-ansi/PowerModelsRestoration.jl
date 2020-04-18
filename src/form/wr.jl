@@ -1,16 +1,16 @@
 ""
-function variable_voltage_damage(pm::_PM.AbstractWRModel; kwargs...)
-    variable_voltage_magnitude_sqr_on_off(pm; kwargs...)
-    variable_voltage_magnitude_sqr_violation(pm; kwargs...)
-    _PM.variable_voltage_magnitude_sqr_from_on_off(pm; kwargs...)
-    _PM.variable_voltage_magnitude_sqr_to_on_off(pm; kwargs...)
+function variable_bus_voltage_damage(pm::_PM.AbstractWRModel; kwargs...)
+    variable_bus_voltage_magnitude_sqr_on_off(pm; kwargs...)
+    variable_bus_voltage_magnitude_sqr_violation(pm; kwargs...)
+    _PM.variable_branch_voltage_magnitude_fr_sqr_on_off(pm; kwargs...)
+    _PM.variable_branch_voltage_magnitude_to_sqr_on_off(pm; kwargs...)
 
-    _PM.variable_voltage_product_on_off(pm; kwargs...)
+    _PM.variable_branch_voltage_product_on_off(pm; kwargs...)
 end
 
 "this is the same as non-damaged version becouse ccms includes zero"
-function variable_current_storage_damage(pm::_PM.AbstractWRModel; nw::Int=pm.cnw)
-    _PM.variable_current_storage(pm, nw=nw)
+function variable_storage_current_damage(pm::_PM.AbstractWRModel; nw::Int=pm.cnw)
+    _PM.variable_storage_current(pm, nw=nw)
     # buses = _PM.ref(pm, nw, :bus)
     # ub = Dict()
     # for (i, storage) in _PM.ref(pm, nw, :storage)
@@ -32,7 +32,7 @@ end
 
 
 ""
-function variable_voltage_magnitude_sqr_violation(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw)
+function variable_bus_voltage_magnitude_sqr_violation(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw)
     _PM.var(pm, nw)[:w_vio] = JuMP.@variable(pm.model,
         [i in _PM.ids(pm, nw, :bus)], base_name="$(nw)_w_vio",
         lower_bound = 0.0,
@@ -108,7 +108,7 @@ end
 
 
 ""
-function constraint_bus_voltage_violation_damage(pm::_PM.AbstractWRModel, n::Int, i::Int, vm_min, vm_max)
+function constraint_voltage_violation_damage(pm::_PM.AbstractWRModel, n::Int, i::Int, vm_min, vm_max)
     w = _PM.var(pm, n, :w, i)
     w_vio = _PM.var(pm, n, :w_vio, i)
     z = _PM.var(pm, n, :z_bus, i)
@@ -215,7 +215,7 @@ end
 
 
 function variable_bus_voltage_on_off(pm::_PM.AbstractWRModel; kwargs...)
-    variable_voltage_magnitude_sqr_on_off(pm; kwargs...)
+    variable_bus_voltage_magnitude_sqr_on_off(pm; kwargs...)
     variable_bus_voltage_product_on_off(pm; kwargs...)
 end
 
