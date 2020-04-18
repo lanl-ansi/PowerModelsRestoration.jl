@@ -84,16 +84,16 @@ function build_rop(pm::_PM.AbstractPowerModel)
             _PM.constraint_storage_state(pm, i, n_1, n_2)
         end
         for i in _PM.ids(pm, :gen, nw=n_2)
-            constraint_gen_active(pm, i, n_1, n_2)
+            constraint_gen_energized(pm, i, n_1, n_2)
         end
         for i in _PM.ids(pm, :bus, nw=n_2)
-            constraint_bus_active(pm, i, n_1, n_2)
+            constraint_bus_energized(pm, i, n_1, n_2)
         end
         for i in _PM.ids(pm, :storage, nw=n_2)
-            constraint_storage_active(pm, i, n_1, n_2)
+            constraint_storage_energized(pm, i, n_1, n_2)
         end
         for i in _PM.ids(pm, :branch, nw=n_2)
-            constraint_branch_active(pm, i, n_1, n_2)
+            constraint_branch_energized(pm, i, n_1, n_2)
         end
         for i in _PM.ids(pm, :load, nw=n_2)
             constraint_load_increasing(pm, i, n_1, n_2)
