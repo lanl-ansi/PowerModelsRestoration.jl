@@ -1,30 +1,4 @@
 
-# # same as AbstractWRForm
-""
-function variable_shunt_factor(pm::_PM.AbstractWModels; nw::Int=pm.cnw, relax = false)
-    if relax == true
-        _PM.var(pm, nw)[:z_shunt] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :shunt)], base_name="$(nw)_z_shunt", 
-            upper_bound = 1, 
-            lower_bound = 0,
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :shunt, i), "z_shunt_on_start", 1.0)
-        )
-    else
-        _PM.var(pm, nw)[:z_shunt] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :shunt)], base_name="$(nw)_z_shunt", 
-            binary = true,
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :shunt, i), "z_shunt_on_start", 1.0)
-        )
-    end
-    _PM.var(pm, nw)[:wz_shunt] = JuMP.@variable(pm.model,
-            [i in _PM.ids(pm, nw, :shunt)], base_name="$(nw)_wz_shunt",
-            lower_bound = 0,
-            upper_bound = _PM.ref(pm, nw, :bus)[_PM.ref(pm, nw, :shunt, i)["shunt_bus"]]["vmax"]^2,
-            start = _PM.comp_start_value(_PM.ref(pm, nw, :shunt, i), "wz_shunt_start", 1.001)
-        )
-end
-
-
 ""
 function constraint_power_balance_shed(pm::_PM.AbstractWModels, n::Int, i::Int, bus_arcs, bus_arcs_dc, bus_arcs_sw, bus_gens, bus_storage, bus_pd, bus_qd, bus_gs, bus_bs)
     w   = _PM.var(pm, n, :w, i)
