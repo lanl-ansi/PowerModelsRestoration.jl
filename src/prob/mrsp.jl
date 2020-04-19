@@ -28,7 +28,7 @@ function build_mrsp(pm::_PM.AbstractPowerModel)
     end
 
     for i in _PM.ids(pm, :bus)
-        constraint_voltage_violation_damage(pm, i)
+        constraint_bus_damage_soft(pm, i)
         _PM.constraint_power_balance(pm, i)
     end
 

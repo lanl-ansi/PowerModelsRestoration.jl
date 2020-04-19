@@ -119,9 +119,9 @@ end
 
 ### These are needed to overload the default behavior for reactive power ###
 "no vm values to turn off"
-function constraint_voltage_violation_damage(pm::_PM.AbstractDCPModel, n::Int, i::Int, vm_min, vm_max)
+function constraint_bus_damage_soft(pm::_PM.AbstractDCPModel, n::Int, i::Int, vm_min, vm_max)
 end
 
 "no vm values to turn off"
-function constraint_bus_voltage_violation(pm::_PM.AbstractDCPModel, n::Int, i::Int, vm_min, vm_max)
+function constraint_voltage_magnitude_bounds_soft(pm::_PM.AbstractDCPModel, n::Int, i::Int, vm_min, vm_max)
 end

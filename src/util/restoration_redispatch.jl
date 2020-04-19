@@ -33,7 +33,7 @@ function build_restoration_redispatch(pm::_PM.AbstractPowerModel)
         end
 
         for i in _PM.ids(pm, :bus, nw=n)
-            constraint_bus_voltage_violation(pm, i, nw=n)
+            constraint_voltage_magnitude_bounds_soft(pm, i, nw=n)
             constraint_power_balance_shed(pm, i, nw=n)
         end
 

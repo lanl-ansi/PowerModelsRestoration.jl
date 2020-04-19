@@ -108,7 +108,7 @@ end
 
 
 ""
-function constraint_voltage_violation_damage(pm::_PM.AbstractWRModel, n::Int, i::Int, vm_min, vm_max)
+function constraint_bus_damage_soft(pm::_PM.AbstractWRModel, n::Int, i::Int, vm_min, vm_max)
     w = _PM.var(pm, n, :w, i)
     w_vio = _PM.var(pm, n, :w_vio, i)
     z = _PM.var(pm, n, :z_bus, i)
@@ -118,7 +118,7 @@ function constraint_voltage_violation_damage(pm::_PM.AbstractWRModel, n::Int, i:
 end
 
 ""
-function constraint_bus_voltage_violation(pm::_PM.AbstractWRModel, n::Int, i::Int, vm_min, vm_max)
+function constraint_voltage_magnitude_bounds_soft(pm::_PM.AbstractWRModel, n::Int, i::Int, vm_min, vm_max)
     w = _PM.var(pm, n, :w, i)
     w_vio = _PM.var(pm, n, :w_vio, i)
 

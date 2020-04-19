@@ -248,18 +248,18 @@ function constraint_storage_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=p
 end
 
 ""
-function constraint_voltage_violation_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_bus_damage_soft(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
     bus = _PM.ref(pm, nw, :bus, i)
 
-    constraint_voltage_violation_damage(pm, nw, i, bus["vmin"], bus["vmax"])
+    constraint_bus_damage_soft(pm, nw, i, bus["vmin"], bus["vmax"])
 end
 
 
 ""
-function constraint_bus_voltage_violation(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_voltage_magnitude_bounds_soft(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
     bus = _PM.ref(pm, nw, :bus, i)
 
-    constraint_bus_voltage_violation(pm, nw, i, bus["vmin"], bus["vmax"])
+    constraint_voltage_magnitude_bounds_soft(pm, nw, i, bus["vmin"], bus["vmax"])
 end
 
 

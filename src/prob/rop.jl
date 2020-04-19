@@ -34,7 +34,7 @@ function build_rop(pm::_PM.AbstractPowerModel)
         end
 
         for i in _PM.ids(pm, :bus, nw=n)
-            constraint_voltage_violation_damage(pm, i, nw=n)
+            constraint_bus_damage_soft(pm, i, nw=n)
             constraint_power_balance_shed(pm, i, nw=n)
         end
 

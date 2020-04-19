@@ -10,7 +10,7 @@ function variable_bus_voltage_damage(pm::_PM.AbstractACPModel; kwargs...)
 end
 
 ""
-function constraint_voltage_violation_damage(pm::_PM.AbstractACPModel, n::Int, i::Int, vm_min, vm_max)
+function constraint_bus_damage_soft(pm::_PM.AbstractACPModel, n::Int, i::Int, vm_min, vm_max)
     vm = _PM.var(pm, n, :vm, i)
     vm_vio = _PM.var(pm, n, :vm_vio, i)
     z = _PM.var(pm, n, :z_bus, i)
@@ -20,7 +20,7 @@ function constraint_voltage_violation_damage(pm::_PM.AbstractACPModel, n::Int, i
 end
 
 ""
-function constraint_bus_voltage_violation(pm::_PM.AbstractACPModel, n::Int, i::Int, vm_min, vm_max)
+function constraint_voltage_magnitude_bounds_soft(pm::_PM.AbstractACPModel, n::Int, i::Int, vm_min, vm_max)
     vm = _PM.var(pm, n, :vm, i)
     vm_vio = _PM.var(pm, n, :vm_vio, i)
 
