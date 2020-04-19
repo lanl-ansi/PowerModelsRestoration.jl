@@ -1,8 +1,11 @@
 # PowerModelsRestoration.jl
 
+Release: [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://lanl-ansi.github.io/PowerModelsRestoration.jl/stable/)
+
 Dev:
 [![Build Status](https://travis-ci.org/lanl-ansi/PowerModelsRestoration.jl.svg?branch=master)](https://travis-ci.org/lanl-ansi/PowerModelsRestoration.jl)
 [![codecov](https://codecov.io/gh/lanl-ansi/PowerModelsRestoration.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/lanl-ansi/PowerModelsRestoration.jl)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://lanl-ansi.github.io/PowerModelsRestoration.jl/dev/)
 
 A PowerModelsRestoration provides extensions to [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) for solving the power system restoration tasks.  A core building block in PowerModelsRestoration is the Maximum Load Delivery (MLD) problem, which provides a reliable numerical method for solving challenging N-k damage scenarios, such as those that arise in the analysis of extreme events.
 
