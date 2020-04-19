@@ -7,26 +7,27 @@ function build_mld(pm::_PM.AbstractPowerModel)
     variable_bus_voltage_indicator(pm, relax=true)
     variable_bus_voltage_on_off(pm)
 
-    _PM.variable_generation_indicator(pm, relax=true)
-    _PM.variable_generation_on_off(pm)
+    _PM.variable_gen_indicator(pm, relax=true)
+    _PM.variable_gen_power_on_off(pm)
 
-    _PM.variable_branch_flow(pm)
-    _PM.variable_dcline_flow(pm)
+    _PM.variable_branch_power(pm)
+    _PM.variable_dcline_power(pm)
 
-    _PM.variable_demand_factor(pm, relax=true)
-    _PM.variable_shunt_factor(pm, relax=true)
+    _PM.variable_load_power_factor(pm, relax=true)
+    _PM.variable_shunt_admittance_factor(pm, relax=true)
 
 
     objective_max_loadability(pm)
 
 
+    constraint_bus_voltage_on_off(pm)
+
     for i in _PM.ids(pm, :ref_buses)
         _PM.constraint_theta_ref(pm, i)
     end
-    constraint_bus_voltage_on_off(pm)
 
     for i in _PM.ids(pm, :gen)
-        _PM.constraint_generation_on_off(pm, i)
+        _PM.constraint_gen_power_on_off(pm, i)
     end
 
     for i in _PM.ids(pm, :bus)
@@ -44,7 +45,7 @@ function build_mld(pm::_PM.AbstractPowerModel)
     end
 
     for i in _PM.ids(pm, :dcline)
-        _PM.constraint_dcline(pm, i)
+        _PM.constraint_dcline_power_losses(pm, i)
     end
 end
 
@@ -60,27 +61,27 @@ function build_mld_uc(pm::_PM.AbstractPowerModel)
     variable_bus_voltage_indicator(pm)
     variable_bus_voltage_on_off(pm)
 
-    _PM.variable_generation_indicator(pm)
-    _PM.variable_generation_on_off(pm)
+    _PM.variable_gen_indicator(pm)
+    _PM.variable_gen_power_on_off(pm)
 
-    _PM.variable_branch_flow(pm)
-    _PM.variable_dcline_flow(pm)
+    _PM.variable_branch_power(pm)
+    _PM.variable_dcline_power(pm)
 
-    _PM.variable_demand_factor(pm, relax=true)
-    _PM.variable_shunt_factor(pm, relax=true)
+    _PM.variable_load_power_factor(pm, relax=true)
+    _PM.variable_shunt_admittance_factor(pm, relax=true)
 
 
     objective_max_loadability(pm)
 
 
+    constraint_bus_voltage_on_off(pm)
+
     for i in _PM.ids(pm, :ref_buses)
         _PM.constraint_theta_ref(pm, i)
     end
-    constraint_bus_voltage_on_off(pm)
-
 
     for i in _PM.ids(pm, :gen)
-        _PM.constraint_generation_on_off(pm, i)
+        _PM.constraint_gen_power_on_off(pm, i)
     end
 
     for i in _PM.ids(pm, :bus)
@@ -98,7 +99,7 @@ function build_mld_uc(pm::_PM.AbstractPowerModel)
     end
 
     for i in _PM.ids(pm, :dcline)
-        _PM.constraint_dcline(pm, i)
+        _PM.constraint_dcline_power_losses(pm, i)
     end
 end
 
@@ -109,14 +110,14 @@ function run_mld_smpl(file, model_constructor, solver; kwargs...)
 end
 
 function run_mld_smpl(pm::_PM.AbstractPowerModel)
-    _PM.variable_voltage(pm, bounded = false)
-    _PM.variable_generation(pm, bounded = false)
+    _PM.variable_bus_voltage(pm, bounded = false)
+    _PM.variable_gen_power(pm, bounded = false)
 
-    _PM.variable_branch_flow(pm)
-    _PM.variable_dcline_flow(pm)
+    _PM.variable_branch_power(pm)
+    _PM.variable_dcline_power(pm)
 
-    _PM.variable_demand_factor(pm, relax=true)
-    _PM.variable_shunt_factor(pm, relax=true)
+    _PM.variable_load_power_factor(pm, relax=true)
+    _PM.variable_shunt_admittance_factor(pm, relax=true)
 
     _PM.var(pm)[:vm_vio] = JuMP.@variable(pm.model, vm_vio[i in _PM.ids(pm, :bus)] >= 0)
     _PM.var(pm)[:pg_vio] = JuMP.@variable(pm.model, pg_vio[i in _PM.ids(pm, :gen)] >= 0)
@@ -137,11 +138,11 @@ function run_mld_smpl(pm::_PM.AbstractPowerModel)
         sum( load_weight[i]*abs(load["pd"])*z_demand[i] for (i, load) in _PM.ref(pm, :load))
     )
 
+    _PM.constraint_model_voltage(pm)
+
     for i in _PM.ids(pm, :ref_buses)
         _PM.constraint_theta_ref(pm, i)
     end
-
-    _PM.constraint_model_voltage(pm)
 
     for (i, bus) in _PM.ref(pm, :bus)
         constraint_power_balance_shed(pm, i)
@@ -179,29 +180,30 @@ function build_mld_strg(pm::_PM.AbstractPowerModel)
     variable_bus_voltage_indicator(pm, relax=true)
     variable_bus_voltage_on_off(pm)
 
-    _PM.variable_generation_indicator(pm, relax=true)
-    _PM.variable_generation_on_off(pm)
+    _PM.variable_gen_indicator(pm, relax=true)
+    _PM.variable_gen_power_on_off(pm)
 
     _PM.variable_storage_indicator(pm, relax = true)
-    _PM.variable_storage_mi_on_off(pm)
+    _PM.variable_storage_power_mi_on_off(pm)
 
-    _PM.variable_branch_flow(pm)
-    _PM.variable_dcline_flow(pm)
+    _PM.variable_branch_power(pm)
+    _PM.variable_dcline_power(pm)
 
-    _PM.variable_demand_factor(pm, relax=true)
-    _PM.variable_shunt_factor(pm, relax=true)
+    _PM.variable_load_power_factor(pm, relax=true)
+    _PM.variable_shunt_admittance_factor(pm, relax=true)
 
 
     objective_max_loadability_strg(pm)
 
 
+    constraint_bus_voltage_on_off(pm)
+
     for i in _PM.ids(pm, :ref_buses)
         _PM.constraint_theta_ref(pm, i)
     end
-    constraint_bus_voltage_on_off(pm)
 
     for i in _PM.ids(pm, :gen)
-        _PM.constraint_generation_on_off(pm, i)
+        _PM.constraint_gen_power_on_off(pm, i)
     end
 
     for i in _PM.ids(pm, :bus)
@@ -212,7 +214,7 @@ function build_mld_strg(pm::_PM.AbstractPowerModel)
         _PM.constraint_storage_state(pm, i)
         _PM.constraint_storage_complementarity_mi(pm, i)
         _PM.constraint_storage_on_off(pm,i)
-        _PM.constraint_storage_loss(pm, i)
+        _PM.constraint_storage_losses(pm, i)
         _PM.constraint_storage_thermal_limit(pm, i)
     end
 
@@ -227,7 +229,7 @@ function build_mld_strg(pm::_PM.AbstractPowerModel)
     end
 
     for i in _PM.ids(pm, :dcline)
-        _PM.constraint_dcline(pm, i)
+        _PM.constraint_dcline_power_losses(pm, i)
     end
 end
 
@@ -240,29 +242,30 @@ function build_mld_strg_uc(pm::_PM.AbstractPowerModel)
     variable_bus_voltage_indicator(pm, relax=true)
     variable_bus_voltage_on_off(pm)
 
-    _PM.variable_generation_indicator(pm)
-    _PM.variable_generation_on_off(pm)
+    _PM.variable_gen_indicator(pm)
+    _PM.variable_gen_power_on_off(pm)
 
     _PM.variable_storage_indicator(pm)
-    _PM.variable_storage_mi_on_off(pm)
+    _PM.variable_storage_power_mi_on_off(pm)
 
-    _PM.variable_branch_flow(pm)
-    _PM.variable_dcline_flow(pm)
+    _PM.variable_branch_power(pm)
+    _PM.variable_dcline_power(pm)
 
-    _PM.variable_demand_factor(pm, relax=true)
-    _PM.variable_shunt_factor(pm, relax=true)
+    _PM.variable_load_power_factor(pm, relax=true)
+    _PM.variable_shunt_admittance_factor(pm, relax=true)
 
 
     objective_max_loadability_strg(pm)
 
 
+    constraint_bus_voltage_on_off(pm)
+
     for i in _PM.ids(pm, :ref_buses)
         _PM.constraint_theta_ref(pm, i)
     end
-    constraint_bus_voltage_on_off(pm)
 
     for i in _PM.ids(pm, :gen)
-        _PM.constraint_generation_on_off(pm, i)
+        _PM.constraint_gen_power_on_off(pm, i)
     end
 
     for i in _PM.ids(pm, :bus)
@@ -272,7 +275,7 @@ function build_mld_strg_uc(pm::_PM.AbstractPowerModel)
     for i in _PM.ids(pm, :storage)
         _PM.constraint_storage_state(pm, i)
         _PM.constraint_storage_complementarity_mi(pm, i)
-        _PM.constraint_storage_loss(pm, i)
+        _PM.constraint_storage_losses(pm, i)
         _PM.constraint_storage_thermal_limit(pm, i)
         _PM.constraint_storage_on_off(pm,i)
     end
@@ -288,7 +291,7 @@ function build_mld_strg_uc(pm::_PM.AbstractPowerModel)
     end
 
     for i in _PM.ids(pm, :dcline)
-        _PM.constraint_dcline(pm, i)
+        _PM.constraint_dcline_power_losses(pm, i)
     end
 end
 

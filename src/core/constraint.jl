@@ -6,10 +6,10 @@ function constraint_restoration_cardinality_ub(pm::_PM.AbstractPowerModel, n::In
     z_bus = _PM.var(pm, n, :z_bus)
 
     JuMP.@constraint(pm.model,
-        sum(z_branch[i] for (i,branch) in _PM.ref(pm, n, :damaged_branch))
-        + sum(z_gen[i] for (i,gen) in _PM.ref(pm, n, :damaged_gen))
-        + sum(z_storage[i] for (i,storage) in _PM.ref(pm, n, :damaged_storage))
-        + sum(z_bus[i] for (i,bus) in _PM.ref(pm, n, :damaged_bus))
+        sum(z_branch[i] for (i,branch) in _PM.ref(pm, n, :branch_damage))
+        + sum(z_gen[i] for (i,gen) in _PM.ref(pm, n, :gen_damage))
+        + sum(z_storage[i] for (i,storage) in _PM.ref(pm, n, :storage_damage))
+        + sum(z_bus[i] for (i,bus) in _PM.ref(pm, n, :bus_damage))
         <= cumulative_repairs
     )
 end
@@ -23,10 +23,10 @@ function constraint_restoration_cardinality_lb(pm::_PM.AbstractPowerModel, n::In
     z_bus = _PM.var(pm, n, :z_bus)
 
     JuMP.@constraint(pm.model,
-        sum(z_branch[i] for (i,branch) in _PM.ref(pm, n, :damaged_branch))
-        + sum(z_gen[i] for (i,gen) in _PM.ref(pm, n, :damaged_gen))
-        + sum(z_storage[i] for (i,storage) in _PM.ref(pm, n, :damaged_storage))
-        + sum(z_bus[i] for (i,bus) in _PM.ref(pm, n, :damaged_bus))
+        sum(z_branch[i] for (i,branch) in _PM.ref(pm, n, :branch_damage))
+        + sum(z_gen[i] for (i,gen) in _PM.ref(pm, n, :gen_damage))
+        + sum(z_storage[i] for (i,storage) in _PM.ref(pm, n, :storage_damage))
+        + sum(z_bus[i] for (i,bus) in _PM.ref(pm, n, :bus_damage))
         >= cumulative_repairs
     )
 end
@@ -47,24 +47,24 @@ function constraint_restore_all_items(pm, n)
         JuMP.@constraint(pm.model, z_shunt[i] == 1)
     end
 
-    for (i,storage) in  _PM.ref(pm, n, :damaged_storage)
+    for (i,storage) in  _PM.ref(pm, n, :storage_damage)
         JuMP.@constraint(pm.model, z_storage[i] == 1)
     end
-    for (i,gen) in  _PM.ref(pm, n, :damaged_gen)
+    for (i,gen) in  _PM.ref(pm, n, :gen_damage)
         JuMP.@constraint(pm.model, z_gen[i] == 1)
     end
-    for (i,branch) in  _PM.ref(pm, n, :damaged_branch)
+    for (i,branch) in  _PM.ref(pm, n, :branch_damage)
         JuMP.@constraint(pm.model, z_branch[i] == 1)
     end
-    for (i,bus) in  _PM.ref(pm, n, :damaged_bus)
+    for (i,bus) in  _PM.ref(pm, n, :bus_damage)
         JuMP.@constraint(pm.model, z_bus[i] == 1)
     end
 end
 
 
 ""
-function constraint_active_gen(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
-    if haskey(_PM.ref(pm, nw_1, :damaged_gen), i)
+function constraint_gen_energized(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
+    if haskey(_PM.ref(pm, nw_1, :gen_damage), i)
         z_gen_1 = _PM.var(pm, nw_1, :z_gen, i)
         z_gen_2 = _PM.var(pm, nw_2, :z_gen, i)
 
@@ -73,8 +73,8 @@ function constraint_active_gen(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, n
 end
 
 ""
-function constraint_active_bus(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
-    if haskey(_PM.ref(pm, nw_1, :damaged_gen), i)
+function constraint_bus_energized(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
+    if haskey(_PM.ref(pm, nw_1, :gen_damage), i)
         z_bus_1 = _PM.var(pm, nw_1, :z_bus, i)
         z_bus_2 = _PM.var(pm, nw_2, :z_bus, i)
 
@@ -84,8 +84,8 @@ end
 
 
 ""
-function constraint_active_storage(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
-    if haskey(_PM.ref(pm, nw_1, :damaged_storage), i)
+function constraint_storage_energized(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
+    if haskey(_PM.ref(pm, nw_1, :storage_damage), i)
         z_storage_1 = _PM.var(pm, nw_1, :z_storage, i)
         z_storage_2 = _PM.var(pm, nw_2, :z_storage, i)
 
@@ -95,8 +95,8 @@ end
 
 
 ""
-function constraint_active_branch(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
-    if haskey(_PM.ref(pm, nw_1, :damaged_branch), i)
+function constraint_branch_energized(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
+    if haskey(_PM.ref(pm, nw_1, :branch_damage), i)
         z_branch_1 = _PM.var(pm, nw_1, :z_branch, i)
         z_branch_2 = _PM.var(pm, nw_2, :z_branch, i)
 
@@ -106,7 +106,7 @@ end
 
 
 "Load delivered at each node must be greater than or equal the previous time period"
-function constraint_increasing_load(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
+function constraint_load_increasing(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
 
     z_demand_1 = _PM.var(pm, nw_1, :z_demand, i)
     z_demand_2 = _PM.var(pm, nw_2, :z_demand, i)

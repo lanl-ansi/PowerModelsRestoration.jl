@@ -3,6 +3,10 @@
 ## Staged
 - nothing
 
+## v0.5.0
+- Update to new function name convention of PowerModels v0.17 details in PR #40 (breaking)
+- Update to PowerModels v0.17 (breaking)
+
 ## v0.4.0
 - Update to PowerModels v0.16 (breaking)
 - Add support for Memento v0.13, v1.0

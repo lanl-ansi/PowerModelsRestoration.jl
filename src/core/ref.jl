@@ -18,9 +18,8 @@ function ref_add_damaged_gens!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any}
                 damaged_gen[i]=gen
             end
         end
-        nw_ref[:damaged_gen] = damaged_gen
+        nw_ref[:gen_damage] = damaged_gen
     end
-    #_PM.ref(pm,:damaged_gen)
 end
 
 ""
@@ -32,7 +31,7 @@ function ref_add_damaged_buses!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any
                 damaged_bus[i]=bus
             end
         end
-        nw_ref[:damaged_bus] = damaged_bus
+        nw_ref[:bus_damage] = damaged_bus
     end
 end
 
@@ -46,7 +45,7 @@ function ref_add_damaged_branches!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:
                 damaged_branch[i]=branch
             end
         end
-        nw_ref[:damaged_branch] = damaged_branch
+        nw_ref[:branch_damage] = damaged_branch
     end
 end
 
@@ -60,6 +59,6 @@ function ref_add_damaged_storage!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:A
                 damaged_storage[i]=storage
             end
         end
-        nw_ref[:damaged_storage] = damaged_storage
+        nw_ref[:storage_damage] = damaged_storage
     end
 end

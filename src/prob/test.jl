@@ -7,28 +7,29 @@ function _build_mld_discrete_load(pm::_PM.AbstractPowerModel)
     variable_bus_voltage_indicator(pm)
     variable_bus_voltage_on_off(pm)
 
-    _PM.variable_generation_indicator(pm)
-    _PM.variable_generation_on_off(pm)
+    _PM.variable_gen_indicator(pm)
+    _PM.variable_gen_power_on_off(pm)
 
-    _PM.variable_storage(pm)
+    _PM.variable_storage_power(pm)
 
-    _PM.variable_branch_flow(pm)
-    _PM.variable_dcline_flow(pm)
+    _PM.variable_branch_power(pm)
+    _PM.variable_dcline_power(pm)
 
-    _PM.variable_demand_factor(pm)
-    _PM.variable_shunt_factor(pm)
+    _PM.variable_load_power_factor(pm)
+    _PM.variable_shunt_admittance_factor(pm)
 
 
     objective_max_loadability(pm)
 
 
+    constraint_bus_voltage_on_off(pm)
+
     for i in _PM.ids(pm, :ref_buses)
         _PM.constraint_theta_ref(pm, i)
     end
-    constraint_bus_voltage_on_off(pm)
 
     for i in _PM.ids(pm, :gen)
-        _PM.constraint_generation_on_off(pm, i)
+        _PM.constraint_gen_power_on_off(pm, i)
     end
 
     for i in _PM.ids(pm, :bus)
@@ -46,6 +47,6 @@ function _build_mld_discrete_load(pm::_PM.AbstractPowerModel)
     end
 
     for i in _PM.ids(pm, :dcline)
-        _PM.constraint_dcline(pm, i)
+        _PM.constraint_dcline_power_losses(pm, i)
     end
 end

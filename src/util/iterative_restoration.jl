@@ -207,21 +207,21 @@ end
 function _build_rop_ir(pm::_PM.AbstractPowerModel)
     for (n, network) in _PM.nws(pm)
         variable_bus_damage_indicator(pm, nw=n)
-        variable_voltage_damage(pm, nw=n)
+        variable_bus_voltage_damage(pm, nw=n)
 
         variable_branch_damage_indicator(pm, nw=n)
-        _PM.variable_branch_flow(pm, nw=n)
+        _PM.variable_branch_power(pm, nw=n)
 
-        _PM.variable_dcline_flow(pm, nw=n)
+        _PM.variable_dcline_power(pm, nw=n)
 
         variable_storage_damage_indicator(pm, nw=n)
-        variable_storage_mi_damage(pm, nw=n)
+        variable_storage_power_mi_damage(pm, nw=n)
 
-        variable_generation_damage_indicator(pm, nw=n)
-        variable_generation_damage(pm, nw=n)
+        variable_gen_damage_indicator(pm, nw=n)
+        variable_gen_power_damage(pm, nw=n)
 
-        _PM.variable_demand_factor(pm, nw=n, relax=true)
-        _PM.variable_shunt_factor(pm, nw=n, relax=true)
+        _PM.variable_load_power_factor(pm, nw=n, relax=true)
+        _PM.variable_shunt_admittance_factor(pm, nw=n, relax=true)
 
         constraint_restoration_cardinality_ub(pm, nw=n)
         constraint_restoration_cardinality_lb(pm, nw=n)
@@ -233,12 +233,12 @@ function _build_rop_ir(pm::_PM.AbstractPowerModel)
         end
 
         for i in _PM.ids(pm, :bus, nw=n)
-            constraint_bus_voltage_violation_damage(pm, i, nw=n)
+            constraint_bus_damage_soft(pm, i, nw=n)
             constraint_power_balance_shed(pm, i, nw=n)
         end
 
         for i in _PM.ids(pm, :gen, nw=n)
-            constraint_generation_damage(pm, i, nw=n)
+            constraint_gen_damage(pm, i, nw=n)
         end
 
         for i in _PM.ids(pm, :load, nw=n)
@@ -261,13 +261,13 @@ function _build_rop_ir(pm::_PM.AbstractPowerModel)
         end
 
         for i in _PM.ids(pm, :dcline, nw=n)
-            _PM.constraint_dcline(pm, i, nw=n)
+            _PM.constraint_dcline_power_losses(pm, i, nw=n)
         end
 
         for i in _PM.ids(pm, :storage, nw=n)
             constraint_storage_damage(pm, i, nw=n)
             _PM.constraint_storage_complementarity_mi(pm, i, nw=n)
-            _PM.constraint_storage_loss(pm, i, nw=n)
+            _PM.constraint_storage_losses(pm, i, nw=n)
         end
     end
 
@@ -283,19 +283,19 @@ function _build_rop_ir(pm::_PM.AbstractPowerModel)
             _PM.constraint_storage_state(pm, i, n_1, n_2)
         end
         for i in _PM.ids(pm, :gen, nw=n_2)
-            constraint_active_gen(pm, i, n_1, n_2)
+            constraint_gen_energized(pm, i, n_1, n_2)
         end
         for i in _PM.ids(pm, :bus, nw=n_2)
-            constraint_active_bus(pm, i, n_1, n_2)
+            constraint_bus_energized(pm, i, n_1, n_2)
         end
         for i in _PM.ids(pm, :storage, nw=n_2)
-            constraint_active_storage(pm, i, n_1, n_2)
+            constraint_storage_energized(pm, i, n_1, n_2)
         end
         for i in _PM.ids(pm, :branch, nw=n_2)
-            constraint_active_branch(pm, i, n_1, n_2)
+            constraint_branch_energized(pm, i, n_1, n_2)
         end
         for i in _PM.ids(pm, :load, nw=n_2)
-            constraint_increasing_load(pm, i, n_1, n_2)
+            constraint_load_increasing(pm, i, n_1, n_2)
         end
         n_1 = n_2
     end
@@ -312,16 +312,16 @@ function constraint_restore_all_items_partial_load(pm, n)
     z_branch = _PM.var(pm, n, :z_branch)
     z_bus = _PM.var(pm, n, :z_bus)
 
-    for (i,storage) in  _PM.ref(pm, n, :damaged_storage)
+    for (i,storage) in  _PM.ref(pm, n, :storage_damage)
         JuMP.@constraint(pm.model, z_storage[i] == 1)
     end
-    for (i,gen) in  _PM.ref(pm, n, :damaged_gen)
+    for (i,gen) in  _PM.ref(pm, n, :gen_damage)
         JuMP.@constraint(pm.model, z_gen[i] == 1)
     end
-    for (i,branch) in  _PM.ref(pm, n, :damaged_branch)
+    for (i,branch) in  _PM.ref(pm, n, :branch_damage)
         JuMP.@constraint(pm.model, z_branch[i] == 1)
     end
-    for (i,bus) in  _PM.ref(pm, n, :damaged_bus)
+    for (i,bus) in  _PM.ref(pm, n, :bus_damage)
         JuMP.@constraint(pm.model, z_bus[i] == 1)
     end
 end

@@ -35,9 +35,9 @@
 
         #println(result["objective"])
         @test result["termination_status"] == LOCALLY_SOLVED
-        @test isapprox(result["objective"], 2080.1068,; atol = 1e-2)
+        @test isapprox(result["objective"], 2080.2286; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
-        @test isapprox(active_power_served(result), 0.10708; atol = 1e-1)
+        @test isapprox(active_power_served(result), 0.22888; atol = 1e-1)
         @test !haskey(result["solution"],"gen") # all generators are inactive
         @test isapprox(storage_status(result, "1"), 1.000000; atol = 1e-6)
         @test isapprox(storage_status(result, "2"), 1.000000; atol = 1e-6)
@@ -63,7 +63,7 @@ end
 
         #println(result["objective"])
         @test result["termination_status"] == LOCALLY_SOLVED
-        @test isapprox(result["objective"], 2304.98; atol = 1e-2)
+        @test isapprox(result["objective"], 2305.94; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 6.9476; atol = 1e-1)
         @test isapprox(gen_status(result, "1"), 1.000000; atol = 1e-6)
@@ -80,9 +80,9 @@ end
 
         #println(result["objective"])
         @test result["termination_status"] == LOCALLY_SOLVED
-        @test isapprox(result["objective"], 2080.11,; atol = 1e-2)
+        @test isapprox(result["objective"], 2080.22; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
-        @test isapprox(active_power_served(result), 0.10708; atol = 1e-1)
+        @test isapprox(active_power_served(result), 0.228540; atol = 1e-1)
         @test !haskey(result["solution"],"gen") # all generators are inactive
         @test isapprox(storage_status(result, "1"), 1.000000; atol = 1e-6)
         @test isapprox(storage_status(result, "2"), 1.000000; atol = 1e-6)

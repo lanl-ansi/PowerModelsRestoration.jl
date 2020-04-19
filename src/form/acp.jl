@@ -3,14 +3,14 @@ function constraint_model_voltage_damage(pm::_PM.AbstractACPModel, n::Int)
 end
 
 ""
-function variable_voltage_damage(pm::_PM.AbstractACPModel; kwargs...)
-    _PM.variable_voltage_angle(pm; kwargs...)
-    variable_voltage_magnitude_on_off(pm; kwargs...)
-    variable_voltage_magnitude_violation(pm; kwargs...)
+function variable_bus_voltage_damage(pm::_PM.AbstractACPModel; kwargs...)
+    _PM.variable_bus_voltage_angle(pm; kwargs...)
+    variable_bus_voltage_magnitude_on_off(pm; kwargs...)
+    variable_bus_voltage_magnitude_violation(pm; kwargs...)
 end
 
 ""
-function constraint_bus_voltage_violation_damage(pm::_PM.AbstractACPModel, n::Int, i::Int, vm_min, vm_max)
+function constraint_bus_damage_soft(pm::_PM.AbstractACPModel, n::Int, i::Int, vm_min, vm_max)
     vm = _PM.var(pm, n, :vm, i)
     vm_vio = _PM.var(pm, n, :vm_vio, i)
     z = _PM.var(pm, n, :z_bus, i)
@@ -20,7 +20,7 @@ function constraint_bus_voltage_violation_damage(pm::_PM.AbstractACPModel, n::In
 end
 
 ""
-function constraint_bus_voltage_violation(pm::_PM.AbstractACPModel, n::Int, i::Int, vm_min, vm_max)
+function constraint_voltage_magnitude_bounds_soft(pm::_PM.AbstractACPModel, n::Int, i::Int, vm_min, vm_max)
     vm = _PM.var(pm, n, :vm, i)
     vm_vio = _PM.var(pm, n, :vm_vio, i)
 
@@ -29,8 +29,8 @@ function constraint_bus_voltage_violation(pm::_PM.AbstractACPModel, n::Int, i::I
 end
 
 function variable_bus_voltage_on_off(pm::_PM.AbstractACPModel; kwargs...)
-    _PM.variable_voltage_angle(pm; kwargs...)
-    variable_voltage_magnitude_on_off(pm; kwargs...)
+    _PM.variable_bus_voltage_angle(pm; kwargs...)
+    variable_bus_voltage_magnitude_on_off(pm; kwargs...)
 end
 
 function constraint_bus_voltage_on_off(pm::_PM.AbstractACPModel; nw::Int=pm.cnw, kwargs...)
