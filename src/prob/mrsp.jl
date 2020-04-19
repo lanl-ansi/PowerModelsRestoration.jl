@@ -18,7 +18,7 @@ function build_mrsp(pm::_PM.AbstractPowerModel)
     variable_damaged_storage_indicator(pm)
     variable_storage_power_mi_damage(pm)
 
-    variable_gen_damage_indicator(pm)
+    variable_damaged_gen_indicator(pm)
     variable_gen_power_damage(pm)
 
     _PM.constraint_model_voltage_on_off(pm)

@@ -217,7 +217,7 @@ function _build_rop_ir(pm::_PM.AbstractPowerModel)
         variable_damaged_storage_indicator(pm, nw=n)
         variable_storage_power_mi_damage(pm, nw=n)
 
-        variable_gen_damage_indicator(pm, nw=n)
+        variable_damaged_gen_indicator(pm, nw=n)
         variable_gen_power_damage(pm, nw=n)
 
         _PM.variable_load_power_factor(pm, nw=n, relax=true)

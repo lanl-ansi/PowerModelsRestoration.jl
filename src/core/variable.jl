@@ -27,7 +27,7 @@ end
 
 
 "variable: `0 <= damage_gen[l] <= 1` for `l` in `gen`es"
-function variable_gen_damage_indicator(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
+function variable_damaged_gen_indicator(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
 
     if relax == false
         z_gen_vars = JuMP.@variable(pm.model,
