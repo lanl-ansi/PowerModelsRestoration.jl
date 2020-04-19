@@ -27,18 +27,17 @@ end
 
 
 "variable: `0 <= damage_gen[l] <= 1` for `l` in `gen`es"
-function variable_damaged_gen_indicator(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
-
+function variable_gen_damage_indicator(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
     if relax == false
         z_gen_vars = JuMP.@variable(pm.model,
-            [l in _PM.ids(pm, nw, :damaged_gen)],
+            [l in _PM.ids(pm, nw, :gen_damage)],
             base_name="$(nw)_active_gen",
             binary = true,
             start = _PM.comp_start_value(_PM.ref(pm, nw, :gen, l), "gen_damage_start")
         )
     else
         z_gen_vars = JuMP.@variable(pm.model,
-            [l in _PM.ids(pm, nw, :damaged_gen)],
+            [l in _PM.ids(pm, nw, :gen_damage)],
             base_name="$(nw)_active_gen",
             lower_bound = 0,
             upper_bound = 1,
@@ -113,17 +112,17 @@ end
 
 
 "variable: `0 <= damage_branch[l] <= 1` for `l` in `branch`es"
-function variable_damaged_branch_indicator(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
+function variable_branch_damage_indicator(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
     if relax == false
         z_branch_vars = JuMP.@variable(pm.model,
-            [l in _PM.ids(pm, nw, :damaged_branch)],
+            [l in _PM.ids(pm, nw, :branch_damage)],
             base_name="$(nw)_active_branch",
             binary = true,
             start = _PM.comp_start_value(_PM.ref(pm, nw, :branch, l), "branch_damage_start")
         )
     else
         z_branch_vars = JuMP.@variable(pm.model,
-            [l in _PM.ids(pm, nw, :damaged_branch)],
+            [l in _PM.ids(pm, nw, :branch_damage)],
             base_name="$(nw)_active_branch",
             lower_bound = 0,
             upper_bound = 1,
@@ -139,17 +138,17 @@ end
 
 
 "variable: `0 <= damage_storage[l] <= 1` for `l` in `storage`es"
-function variable_damaged_storage_indicator(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
+function variable_storage_damage_indicator(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
     if relax == false
         z_storage_vars = JuMP.@variable(pm.model,
-            [l in _PM.ids(pm, nw, :damaged_storage)],
+            [l in _PM.ids(pm, nw, :storage_damage)],
             base_name="$(nw)_active_storage",
             binary = true,
             start = _PM.comp_start_value(_PM.ref(pm, nw, :storage, l), "storage_damage_start")
         )
     else
         z_storage_vars = JuMP.@variable(pm.model,
-            [l in _PM.ids(pm, nw, :damaged_storage)],
+            [l in _PM.ids(pm, nw, :storage_damage)],
             base_name="$(nw)_active_storage",
             lower_bound = 0,
             upper_bound = 1,
@@ -246,17 +245,17 @@ end
 
 
 "variable: `0 <= damage_bus[l] <= 1` for `l` in `bus`es"
-function variable_damaged_bus_indicator(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
+function variable_bus_damage_indicator(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
     if relax == false
         z_bus_vars = JuMP.@variable(pm.model,
-            [l in _PM.ids(pm, nw, :damaged_bus)],
+            [l in _PM.ids(pm, nw, :bus_damage)],
             base_name="$(nw)_active_bus",
             binary = true,
             start = _PM.comp_start_value(_PM.ref(pm, nw, :bus, l), "bus_damage_start")
         )
     else
         z_bus_vars = JuMP.@variable(pm.model,
-            [l in _PM.ids(pm, nw, :damaged_bus)],
+            [l in _PM.ids(pm, nw, :bus_damage)],
             base_name="$(nw)_active_bus",
             lower_bound = 0,
             upper_bound = 1,

@@ -206,18 +206,18 @@ end
 ""
 function _build_rop_ir(pm::_PM.AbstractPowerModel)
     for (n, network) in _PM.nws(pm)
-        variable_damaged_bus_indicator(pm, nw=n)
+        variable_bus_damage_indicator(pm, nw=n)
         variable_bus_voltage_damage(pm, nw=n)
 
-        variable_damaged_branch_indicator(pm, nw=n)
+        variable_branch_damage_indicator(pm, nw=n)
         _PM.variable_branch_power(pm, nw=n)
 
         _PM.variable_dcline_power(pm, nw=n)
 
-        variable_damaged_storage_indicator(pm, nw=n)
+        variable_storage_damage_indicator(pm, nw=n)
         variable_storage_power_mi_damage(pm, nw=n)
 
-        variable_damaged_gen_indicator(pm, nw=n)
+        variable_gen_damage_indicator(pm, nw=n)
         variable_gen_power_damage(pm, nw=n)
 
         _PM.variable_load_power_factor(pm, nw=n, relax=true)
@@ -312,16 +312,16 @@ function constraint_restore_all_items_partial_load(pm, n)
     z_branch = _PM.var(pm, n, :z_branch)
     z_bus = _PM.var(pm, n, :z_bus)
 
-    for (i,storage) in  _PM.ref(pm, n, :damaged_storage)
+    for (i,storage) in  _PM.ref(pm, n, :storage_damage)
         JuMP.@constraint(pm.model, z_storage[i] == 1)
     end
-    for (i,gen) in  _PM.ref(pm, n, :damaged_gen)
+    for (i,gen) in  _PM.ref(pm, n, :gen_damage)
         JuMP.@constraint(pm.model, z_gen[i] == 1)
     end
-    for (i,branch) in  _PM.ref(pm, n, :damaged_branch)
+    for (i,branch) in  _PM.ref(pm, n, :branch_damage)
         JuMP.@constraint(pm.model, z_branch[i] == 1)
     end
-    for (i,bus) in  _PM.ref(pm, n, :damaged_bus)
+    for (i,bus) in  _PM.ref(pm, n, :bus_damage)
         JuMP.@constraint(pm.model, z_bus[i] == 1)
     end
 end

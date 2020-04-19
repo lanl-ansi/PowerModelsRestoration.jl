@@ -7,18 +7,18 @@ end
 
 ""
 function build_mrsp(pm::_PM.AbstractPowerModel)
-    variable_damaged_bus_indicator(pm)
+    variable_bus_damage_indicator(pm)
     variable_bus_voltage_damage(pm)
 
-    variable_damaged_branch_indicator(pm)
+    variable_branch_damage_indicator(pm)
     _PM.variable_branch_power(pm)
 
     _PM.variable_dcline_power(pm)
 
-    variable_damaged_storage_indicator(pm)
+    variable_storage_damage_indicator(pm)
     variable_storage_power_mi_damage(pm)
 
-    variable_damaged_gen_indicator(pm)
+    variable_gen_damage_indicator(pm)
     variable_gen_power_damage(pm)
 
     _PM.constraint_model_voltage_on_off(pm)
@@ -71,10 +71,10 @@ function objective_min_restoration(pm::_PM.AbstractPowerModel)
     z_bus = _PM.var(pm, pm.cnw, :z_bus)
 
     JuMP.@objective(pm.model, Min,
-        sum(z_branch[i] for (i,branch) in _PM.ref(pm, :damaged_branch))
-        + sum(z_gen[i] for (i,gen) in _PM.ref(pm, :damaged_gen))
-        + sum(z_storage[i] for (i,storage) in _PM.ref(pm, :damaged_storage))
-        + sum(z_bus[i] for (i,bus) in _PM.ref(pm, :damaged_bus))
+        sum(z_branch[i] for (i,branch) in _PM.ref(pm, :branch_damage))
+        + sum(z_gen[i] for (i,gen) in _PM.ref(pm, :gen_damage))
+        + sum(z_storage[i] for (i,storage) in _PM.ref(pm, :storage_damage))
+        + sum(z_bus[i] for (i,bus) in _PM.ref(pm, :bus_damage))
     )
 end
 

@@ -167,7 +167,7 @@ function constraint_ohms_yt_from_damage(pm::_PM.AbstractWRModel, i::Int; nw::Int
     # TODO make indexing of :wi,:wr standardized
     ## Because :wi, :wr are indexed by bus_id or bus_pairs depending on if the value is on_off or
     # standard, there are indexing issues.  Temporary solution: always call *_on_off variant
-    if haskey(_PM.ref(pm, nw, :damaged_branch), i)
+    if haskey(_PM.ref(pm, nw, :branch_damage), i)
         vad_min = _PM.ref(pm, nw, :off_angmin)
         vad_max = _PM.ref(pm, nw, :off_angmax)
         _PM.constraint_ohms_yt_from_on_off(pm, nw, i, f_bus, t_bus, f_idx, t_idx, g, b, g_fr, b_fr, tr, ti, tm, vad_min, vad_max)
@@ -197,7 +197,7 @@ function constraint_ohms_yt_to_damage(pm::_PM.AbstractWRModel, i::Int; nw::Int=p
     # TODO make indexing of :wi,:wr standardized
     ## Because :wi, :wr are indexed by bus_id or bus_pairs depending on if the value is on_off or
     # standard, there are indexing issues.  Temporary solution: always call *_on_off variant
-    if haskey(_PM.ref(pm, nw, :damaged_branch), i)
+    if haskey(_PM.ref(pm, nw, :branch_damage), i)
         vad_min = _PM.ref(pm, nw, :off_angmin)
         vad_max = _PM.ref(pm, nw, :off_angmax)
 
