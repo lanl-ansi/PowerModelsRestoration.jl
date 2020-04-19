@@ -204,7 +204,7 @@
 
             # required due to oscillation between semantical solutions
             branch_status_total = sum(branch_status(result, id) for id in ["1", "2", "3", "4", "5", "6", "7"])
-            @test isapprox(branch_status_total, 4; atol=1e-2)
+            @test 2.99 <= branch_status_total && branch_status_total <= 4.01
 
             # @test isapprox(branch_status(result,"1"), 1; atol=1e-2)
             # @test isapprox(branch_status(result,"2"), 1; atol=1e-2)
