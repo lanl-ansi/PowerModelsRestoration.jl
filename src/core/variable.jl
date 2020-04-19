@@ -168,6 +168,7 @@ end
 function variable_storage_power_mi_damage(pm::_PM.AbstractPowerModel; kwargs...)
     variable_storage_power_real_damage(pm; kwargs...)
     variable_storage_power_imaginary_damage(pm; kwargs...)
+    variable_storage_power_control_imaginary_damage(pm; kwargs...)
     variable_storage_current_damage(pm; kwargs...)
     _PM.variable_storage_energy(pm; kwargs...)
     _PM.variable_storage_charge(pm; kwargs...)
@@ -220,6 +221,27 @@ function variable_storage_power_imaginary_damage(pm::_PM.AbstractPowerModel; nw:
     end
 
     report && _IM.sol_component_value(pm, nw, :storage, :qs, _PM.ids(pm, nw, :storage), qs)
+end
+
+""
+function variable_storage_power_control_imaginary_damage(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw, report::Bool=true)
+    inj_lb, inj_ub = _PM.ref_calc_storage_injection_bounds(_PM.ref(pm, nw, :storage), _PM.ref(pm, nw, :bus))
+
+    qsc = _PM.var(pm, nw)[:qsc] = JuMP.@variable(pm.model,
+        [i in _PM.ids(pm, nw, :storage)], base_name="$(nw)_qsc",
+        lower_bound = max(inj_lb[i], _PM.ref(pm, nw, :storage, i, "qmin")),
+        upper_bound = min(inj_ub[i], _PM.ref(pm, nw, :storage, i, "qmax")),
+        start = _PM.comp_start_value(_PM.ref(pm, nw, :storage, i), "qsc_start")
+    )
+
+    for i in _PM.ids(pm, nw, :storage)
+        if haskey(_PM.ref(pm, nw, :storage, i), "damaged") && _PM.ref(pm, nw, :storage, i)["damaged"] == 1
+            JuMP.set_upper_bound(_PM.var(pm, nw, :qsc, i), max(0, min(inj_ub[i], _PM.ref(pm, nw, :storage, i, "qmax"))))
+            JuMP.set_lower_bound(_PM.var(pm, nw, :qsc, i), min(0, max(inj_lb[i], _PM.ref(pm, nw, :storage, i, "qmin"))))
+        end
+    end
+
+    report && _IM.sol_component_value(pm, nw, :storage, :qsc, _PM.ids(pm, nw, :storage), qsc)
 end
 
 
