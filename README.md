@@ -25,8 +25,19 @@ A PowerModelsRestoration provides extensions to [PowerModels](https://github.com
 * SDP Relaxation (W-space)
 
 ## Citing PowerModelsRestoration
+If you find the PowerModelsRestoration package useful in your work, we request that you cite the following [publication](https://arxiv.org/abs/2004.13177):
+```
+@misc{rhodes2020powermodelsrestorationjl,
+    title={PowerModelsRestoration.jl: An Open-Source Framework for Exploring Power Network Restoration Algorithms},
+    author={Noah Rhodes and David Fobes and Carleton Coffrin and Line Roald},
+    year={2020},
+    eprint={2004.13177},
+    archivePrefix={arXiv},
+    primaryClass={eess.SY}
+}
+```
 
-If you find the MLD problem from PowerModelsRestoration useful in your work, we kindly request that you cite the following [publication](https://ieeexplore.ieee.org/document/8494809):
+In addition, if the MLD problem from PowerModelsRestoration useful in your work, we kindly request that you cite the following [publication](https://ieeexplore.ieee.org/document/8494809):
 ```
 @article{8494809, 
   author={Carleton Coffrin and Russel Bent and Byron Tasseff and Kaarthik Sundar and Scott Backhaus}, 
@@ -37,6 +48,8 @@ If you find the MLD problem from PowerModelsRestoration useful in your work, we 
   doi={10.1109/TPWRS.2018.2876507}, ISSN={0885-8950}
 }
 ```
+
+
 Citation of the [PowerModels framework](https://ieeexplore.ieee.org/document/8442948/) is also encouraged when publishing works that use PowerModels extension packages.
 
 
