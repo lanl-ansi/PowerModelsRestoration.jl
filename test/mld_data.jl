@@ -80,14 +80,14 @@
             if i in active_buses
                 @test !isequal(solution["bus"][i]["va"], NaN)
                 # note status may be non-one from optimization
-                @test solution["bus"][i]["status"] >= 0
+                @test solution["bus"][i]["status"] >= 0.1
             end
         end
 
         for (i,gen) in data["gen"]
             if i in active_gens
                 @test !isequal(solution["gen"][i]["pg"], NaN)
-                @test solution["gen"][i]["gen_status"] == 1
+                @test solution["gen"][i]["gen_status"] >= 0.5
             end
         end
 
