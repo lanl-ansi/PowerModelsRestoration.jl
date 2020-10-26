@@ -48,7 +48,7 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
             if bus["bus_type"] != 4 && init_bus["bus_type"] == 4
                 sol_bus = sol["bus"][i] = get(sol["bus"], i, Dict{String,Any}("status" => 0, "va" => 0.0, "vm" => 0.0))
                 if !haskey(sol_bus, "status")
-                    sol_gen["status"] = 0
+                    sol_bus["status"] = 0
                 end
             end
         end
