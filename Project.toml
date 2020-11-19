@@ -1,7 +1,7 @@
 name = "PowerModelsRestoration"
 uuid = "23adbb12-a187-11e9-26a2-eb4d4e6e68fb"
 authors = ["David M Fobes <dfobes@lanl.gov>", "Noah Rhodes"]
-version = "0.5.0"
+version = "0.6.0"
 
 [deps]
 InfrastructureModels = "2030c09a-7f63-5d83-885d-db604e0e9cc0"
@@ -11,11 +11,11 @@ Memento = "f28f55f0-a522-5efc-85c2-fe41dfb9b2d9"
 PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
 
 [compat]
-InfrastructureModels = "~0.5"
+InfrastructureModels = "~0.6"
 JuMP = "~0.19.1, ~0.20, ~0.21"
 MathOptInterface = "~0.8, ~0.9"
 Memento = "~0.10, ~0.11, ~0.12, ~0.13, ~1.0, ~1.1"
-PowerModels = "~0.17"
+PowerModels = "~0.18"
 julia = "^1"
 
 [extras]
