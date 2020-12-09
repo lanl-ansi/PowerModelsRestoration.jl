@@ -1,11 +1,6 @@
 # PowerModelsRestoration.jl
 
-Release: [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://lanl-ansi.github.io/PowerModelsRestoration.jl/stable/)
-
-Dev:
-[![Build Status](https://travis-ci.org/lanl-ansi/PowerModelsRestoration.jl.svg?branch=master)](https://travis-ci.org/lanl-ansi/PowerModelsRestoration.jl)
-[![codecov](https://codecov.io/gh/lanl-ansi/PowerModelsRestoration.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/lanl-ansi/PowerModelsRestoration.jl)
-[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://lanl-ansi.github.io/PowerModelsRestoration.jl/dev/)
+![CI](https://github.com/lanl-ansi/PowerModelsRestoration.jl/workflows/CI/badge.svg) ![Documentation](https://github.com/lanl-ansi/PowerModelsRestoration.jl/workflows/Documentation/badge.svg)
 
 A PowerModelsRestoration provides extensions to [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) for solving the power system restoration tasks.  A core building block in PowerModelsRestoration is the Maximum Load Delivery (MLD) problem, which provides a reliable numerical method for solving challenging N-k damage scenarios, such as those that arise in the analysis of extreme events.
 
@@ -39,10 +34,10 @@ If you find the PowerModelsRestoration package useful in your work, we request t
 
 In addition, if the MLD problem from PowerModelsRestoration useful in your work, we kindly request that you cite the following [publication](https://ieeexplore.ieee.org/document/8494809):
 ```
-@article{8494809, 
-  author={Carleton Coffrin and Russel Bent and Byron Tasseff and Kaarthik Sundar and Scott Backhaus}, 
-  title={Relaxations of AC Maximal Load Delivery for Severe Contingency Analysis}, 
-  journal={IEEE Transactions on Power Systems}, 
+@article{8494809,
+  author={Carleton Coffrin and Russel Bent and Byron Tasseff and Kaarthik Sundar and Scott Backhaus},
+  title={Relaxations of AC Maximal Load Delivery for Severe Contingency Analysis},
+  journal={IEEE Transactions on Power Systems},
   volume={34}, number={2}, pages={1450-1458},
   month={March}, year={2019},
   doi={10.1109/TPWRS.2018.2876507}, ISSN={0885-8950}
