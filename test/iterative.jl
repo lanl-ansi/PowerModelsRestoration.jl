@@ -137,20 +137,20 @@
             @test isapprox(count_active_items( result["solution"]["nw"]["11"]), 20, atol=1e0)
             @test isapprox(count_active_items( result["solution"]["nw"]["12"]), 21, atol=1e0)
 
-            @test isapprox(gen_status(result,"0","1"), 0; atol=1e-2)
-            @test isapprox(gen_status(result,"0","2"), 0; atol=1e-2)
-            @test isapprox(gen_status(result,"0","4"), 0; atol=1e-2)
-            @test isapprox(branch_status(result,"0","1"), 0; atol=1e-2)
-            @test isapprox(branch_status(result,"0","2"), 0; atol=1e-2)
-            @test isapprox(branch_status(result,"0","3"), 0; atol=1e-2)
-            @test isapprox(branch_status(result,"0","4"), 0; atol=1e-2)
-            @test isapprox(branch_status(result,"0","5"), 0; atol=1e-2)
-            @test isapprox(branch_status(result,"0","6"), 0; atol=1e-2)
-            @test isapprox(branch_status(result,"0","7"), 0; atol=1e-2)
-            @test isapprox(bus_status(result,"0","1"), 0; atol=1e-2)
-            @test isapprox(bus_status(result,"0","2"), 0; atol=1e-2)
-            @test isapprox(bus_status(result,"0","4"), 0; atol=1e-2)
-            @test isapprox(storage_status(result,"0","1"), 0; atol=1e-2)
+            # @test isapprox(gen_status(result,"0","1"), 0; atol=1e-2)
+            # @test isapprox(gen_status(result,"0","2"), 0; atol=1e-2)
+            # @test isapprox(gen_status(result,"0","4"), 0; atol=1e-2)
+            # @test isapprox(branch_status(result,"0","1"), 0; atol=1e-2)
+            # @test isapprox(branch_status(result,"0","2"), 0; atol=1e-2)
+            # @test isapprox(branch_status(result,"0","3"), 0; atol=1e-2)
+            # @test isapprox(branch_status(result,"0","4"), 0; atol=1e-2)
+            # @test isapprox(branch_status(result,"0","5"), 0; atol=1e-2)
+            # @test isapprox(branch_status(result,"0","6"), 0; atol=1e-2)
+            # @test isapprox(branch_status(result,"0","7"), 0; atol=1e-2)
+            # @test isapprox(bus_status(result,"0","1"), 0; atol=1e-2)
+            # @test isapprox(bus_status(result,"0","2"), 0; atol=1e-2)
+            # @test isapprox(bus_status(result,"0","4"), 0; atol=1e-2)
+            # @test isapprox(storage_status(result,"0","1"), 0; atol=1e-2)
 
 
             @test isapprox(load_power(result, "0",["1","2","3"]), 3.0; atol=1e-1)
@@ -166,6 +166,16 @@
             @test isapprox(load_power(result, "10",["1","2","3"]), 10.0; atol=1e-1)
             @test isapprox(load_power(result, "11",["1","2","3"]), 10.0; atol=1e-1)
             @test isapprox(load_power(result, "12",["1","2","3"]), 10.0; atol=1e-1)
+        end
+
+
+        @testset "multi-item restore" begin
+            # case is set so that multiple items must be restored in a sigle time period for feasability
+            case = PowerModels.parse_file("../test/data/case24.m")
+            damaged_n = Dict("branch" => ["31", "25"],"gen" => ["13", "9"],"bus" => ["12", "21"])
+            damage_items!(case, damaged_n)
+            result = run_iterative_restoration(case, PowerModels.DCPPowerModel, cbc_solver; repair_periods=2)
+            @test result["termination_status"] == OPTIMAL
         end
     end
 
