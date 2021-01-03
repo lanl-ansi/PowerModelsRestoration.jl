@@ -171,6 +171,27 @@ function merge_solution!(solution1, solution2)
     end
 end
 
+function get_item_repairs(mn_data)
+    repairs = Dict{String,Array{Tuple{String,String},1}}(nw=>[] for nw in keys(mn_data["nw"]))
+    if _IM.ismultinetwork(mn_data)
+        for (nw_id, network) in mn_data["nw"]
+            for (comp_type, comp_status) in _PM.pm_component_status
+                for (comp_id, comp) in network[comp_type]
+                    if nw_id != "0" #not items are repaired in "0", do not check in previous network for a change
+                        if comp[comp_status] != _PM.pm_component_status_inactive[comp_type] &&  # if comp is active
+                            mn_data["nw"]["$(parse(Int,nw_id)-1)"][comp_type][comp_id][comp_status] == _PM.pm_component_status_inactive[comp_type] # if comp was previously inactive
+                            push!(repairs[nw_id], (comp_type,comp_id))
+                        end
+                    end
+                end
+            end
+        end
+    else
+        Memento.error(_PM._LOGGER, "update_damage_status required multinetwork to identify is a device has been previously repaired.")
+    end
+    return repairs
+end
+
 
 " Update damage status for each time period based on whether the device has already been repaired"
 function update_damage_status!(mn_data)
