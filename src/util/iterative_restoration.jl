@@ -108,9 +108,10 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
     ## Run ROP problem with lower bound on restoration cardinality and partial load restoration
     restoration_solution = _run_rop_ir(restoration_network, model_constructor, optimizer, kwargs...)
 
-    clean_status!(restoration_solution["solution"])
-    _PM.update_data!(restoration_network, restoration_solution["solution"]) # will update, loads, storage, etc....
-    update_damage_status!(restoration_network) #set status of items before/after repairs
+    clean_solution!(restoration_solution)
+    clean_status!(restoration_solution)
+    _PM.update_data!(restoration_network, restoration_solution["solution"])
+    process_repair_status!(restoration_network)
     delete!(restoration_network["nw"],"0")
 
     subnet_solution_set = deepcopy(restoration_solution)
@@ -187,35 +188,34 @@ function get_item_repairs(mn_data)
             end
         end
     else
-        Memento.error(_PM._LOGGER, "update_damage_status required multinetwork to identify is a device has been previously repaired.")
+        Memento.error(_PM._LOGGER, "get_item_repairs requires multinetwork.")
     end
     return repairs
 end
 
 
-" Update damage status for each time period based on whether the device has already been repaired"
-function update_damage_status!(mn_data)
+"Remove damage status if a device has already been repaired"
+function process_repair_status!(mn_data)
     if _IM.ismultinetwork(mn_data)
-        for (nw_id, network) in mn_data["nw"]
-            for (comp_type, comp_status) in _PM.pm_component_status
-                for (comp_id, comp) in network[comp_type]
-                    if nw_id != "0" #not items are repaired in "0", do not check in previous network for a change
-                        if comp[comp_status] != _PM.pm_component_status_inactive[comp_type] &&  # if comp is active
-                            mn_data["nw"]["$(parse(Int,nw_id)-1)"][comp_type][comp_id][comp_status] != _PM.pm_component_status_inactive[comp_type] # if comp was previously active
-                            if haskey(comp,"damaged") && comp["damaged"] == 1
-                                # therefore the comp was repaired in a former time_step, should be considered undamaged
-                                Memento.info(_PM._LOGGER, "$(comp_type) $(comp_id) was repaired before step $(nw_id). Setting damged state to 0.")
-                                comp["damaged"] = 0
-                            end
+        repairs = get_item_repairs(mn_data)
+        for (nw_repair,items) in repairs
+            for (comp_type,comp_id) in items
+                for nw_network in keys(mn_data["nw"])
+                    if nw_repair <= nw_network
+                        comp = mn_data["nw"][nw_network][comp_type][comp_id]
+                        if haskey(comp,"damaged") && comp["damaged"]==1
+                            Memento.info(_PM._LOGGER, "$(comp_type) $(comp_id) was repaired at step $(nw_repair). Setting damaged state to 0 in network $(nw_network).")
+                            comp["damaged"]=0
                         end
                     end
                 end
             end
         end
     else
-        Memento.error(_PM._LOGGER, "update_damage_status required multinetwork to identify is a device has been previously repaired.")
+        Memento.error(_PM._LOGGER, "get_item_repairs requires multinetwork")
     end
 end
+
 
 ""
 function _run_rop_ir(file, model_constructor, optimizer; kwargs...)
