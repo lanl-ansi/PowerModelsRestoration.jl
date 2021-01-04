@@ -108,29 +108,46 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
     ## Run ROP problem with lower bound on restoration cardinality and partial load restoration
     restoration_solution = _run_rop_ir(restoration_network, model_constructor, optimizer, kwargs...)
 
+    ## Was the network solved?
+    if restoration_solution["termination_status"]!= _MOI.OPTIMAL && restoration_solution["termination_status"]!= _MOI.LOCALLY_SOLVED
+        Memento.warn(_PM._LOGGER, "subnetwork i was not solved, returning current solution")
+        terminate_problem = true
+    else
+        terminate_problem = false
+    end
+
     clean_solution!(restoration_solution)
     clean_status!(restoration_solution)
     _PM.update_data!(restoration_network, restoration_solution["solution"])
+    clean_status!(restoration_network)
     process_repair_status!(restoration_network)
     delete!(restoration_network["nw"],"0")
 
+    # copy network metadata, remove network data. There should be a better way of doing this.
     subnet_solution_set = deepcopy(restoration_solution)
     subnet_solution_set["solution"]["nw"] = Dict{String,Any}()
 
-    for(nw_id, network) in sort(Dict{Int,Any}([(parse(Int, k), v) for (k,v) in restoration_network["nw"]]))
-        if count_repairable_items(network) > 1
-            Memento.info(_PM._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(network)) damaged items and $(count_repairable_items(network)) repairable items")
+    ## do all repairs occur in one network?
+    repairs = get_item_repairs(restoration_network)
+    terminate_recursion = count(~isempty(nw_repairs) for (nw,nw_repairs) in repairs)==1
+
+    # do not run attempt restoration on network "0"
+    delete!(restoration_network["nw"],"0")
+
+    for(nw_id, net) in sort(Dict{Int,Any}([(parse(Int, k), v) for (k,v) in restoration_network["nw"]]))
+        if count_repairable_items(net) > 1 && ~terminate_problem && ~terminate_recursion
+            Memento.info(_PM._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(net)) damaged items and $(count_repairable_items(net)) repairable items")
 
             Memento.info(_PM._LOGGER, "Starting sub network restoration")
             for k in keys(restoration_network)
                 if k != "nw"
-                    network[k] = restoration_network[k]
+                    net[k] = restoration_network[k]
                 end
-                network["multinetwork"] = false
+                net["multinetwork"] = false
             end
 
             Memento.info(_PM._LOGGER, "Start recursive call")
-            subnet_solution = _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
+            subnet_solution = _run_iterative_sub_network(net, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
 
             ##  Rename solution nw_ids appropriately
             last_network = isempty(subnet_solution_set["solution"]["nw"]) ? 0 : maximum(parse.(Int,keys(subnet_solution_set["solution"]["nw"])))
@@ -146,9 +163,9 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
         else
 
             last_network = isempty(subnet_solution_set["solution"]["nw"]) ? 0 : maximum(parse.(Int,keys(subnet_solution_set["solution"]["nw"])))
-            subnet_solution_set["solution"]["nw"]["$(last_network+1)"] = network
+            subnet_solution_set["solution"]["nw"]["$(last_network+1)"] = net
 
-            Memento.info(_PM._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(network)) damaged items and $(count_repairable_items(network)) repairable items")
+            Memento.info(_PM._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(net)) damaged items and $(count_repairable_items(net)) repairable items")
             Memento.info(_PM._LOGGER, "sub_network does not need restoration sequencing")
         end
     end
