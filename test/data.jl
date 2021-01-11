@@ -19,11 +19,21 @@
 
         @test isapprox(network["gen"]["4"]["damaged"], 0, atol=1e-4)
         @test isapprox(network["branch"]["7"]["damaged"], 0, atol=1e-4)
+        @test isapprox(network["storage"]["1"]["damaged"], 0, atol=1e-4)
 
         propagate_damage_status!(network)
 
         @test isapprox(network["gen"]["4"]["damaged"], 1, atol=1e-4)
         @test isapprox(network["branch"]["7"]["damaged"], 1, atol=1e-4)
+        @test isapprox(network["storage"]["1"]["damaged"], 1, atol=1e-4)
+
+        #TODO test shunt damage propagation on other network
+        case3_mld_s_copy = deepcopy(case3_mld_s)
+        damage_items!(case3_mld_s_copy, Dict("bus"=>["2"]))
+
+        @test isapprox(get(case3_mld_s_copy["shunt"]["1"],"damaged",0), 0, atol=1e-4)
+        propagate_damage_status!(case3_mld_s_copy)
+        @test isapprox(case3_mld_s_copy["shunt"]["1"]["damaged"], 1, atol=1e-4)
 
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         network_mn = replicate_restoration_network(network, count=2)

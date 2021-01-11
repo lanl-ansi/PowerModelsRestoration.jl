@@ -349,6 +349,7 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
         Memento.error(_PM._LOGGER, "replicate_restoration_network can only be used on single networks")
     end
 
+    #TODO make deepcopy to prevent altering input network
     clean_status!(sn_data)
     propagate_damage_status!(sn_data)
 
@@ -403,7 +404,7 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
     return mn_data
 end
 
-""
+"propagates the damaged indicator from buses to indicent branches, generators, shunts, and storage"
 function propagate_damage_status!(data::Dict{String,<:Any})
     if _IM.ismultinetwork(data)
         for (i,nw_data) in data["nw"]
@@ -420,6 +421,7 @@ function _propagate_damage_status!(data::Dict{String,<:Any})
     buses = Dict(bus["bus_i"] => bus for (i,bus) in data["bus"])
 
     incident_gen = _PM.bus_gen_lookup(data["gen"], data["bus"])
+    incident_shunt = _PM.bus_shunt_lookup(data["shunt"], data["bus"])
     incident_storage = _PM.bus_storage_lookup(data["storage"], data["bus"])
 
     incident_branch = Dict(bus["bus_i"] => [] for (i,bus) in data["bus"])
@@ -434,6 +436,12 @@ function _propagate_damage_status!(data::Dict{String,<:Any})
                 if !(haskey(gen, "damaged") && gen["damaged"] == 1)
                     Memento.info(_PM._LOGGER, "damaging generator $(gen["index"]) due to damaged bus $(i)")
                     gen["damaged"] = 1
+                end
+            end
+            for shunt in incident_shunt[i]
+                if !(haskey(shunt, "damaged") && shunt["damaged"] == 1)
+                    Memento.info(_PM._LOGGER, "damaging shunt $(shunt["index"]) due to damaged bus $(i)")
+                    shunt["damaged"] = 1
                 end
             end
             for storage in incident_storage[i]
