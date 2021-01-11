@@ -170,11 +170,19 @@
 
 
         @testset "multi-item restore" begin
-            # case is set so that multiple items must be restored in a sigle time period for feasability
-            case = PowerModels.parse_file("../test/data/case24.m")
-            damaged_n = Dict("branch" => ["31", "25"],"gen" => ["13", "9"],"bus" => ["12", "21"])
-            damage_items!(case, damaged_n)
-            result = run_iterative_restoration(case, PowerModels.DCPPowerModel, cbc_solver; repair_periods=2)
+            # shunt damage and bus damage to the same component
+            data = PowerModels.parse_file("../test/data/case5_restoration_iterative_shunt.m")
+            damaged_n = Dict("bus" => ["1"])
+            damage_items!(data, damaged_n)
+            propagate_damage_status!(data)
+
+            # does it solve for ROP?
+            mn_data = build_mn_data(data, replicates=2)
+            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
+            @test result["termination_status"] == OPTIMAL
+
+            # does it solve for iter?
+            result = run_iterative_restoration(data, PowerModels.DCPPowerModel, cbc_solver; repair_periods=2)
             @test result["termination_status"] == OPTIMAL
         end
     end

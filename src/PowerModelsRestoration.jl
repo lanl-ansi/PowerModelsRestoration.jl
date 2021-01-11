@@ -4,9 +4,11 @@ import JuMP
 import InfrastructureModels
 import PowerModels
 import Memento
+import MathOptInterface
 
 const _IM = InfrastructureModels
 const _PM = PowerModels
+const _MOI = MathOptInterface
 
 include("core/variable.jl")
 include("core/data.jl")
