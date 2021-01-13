@@ -195,11 +195,11 @@ function get_item_repairs(mn_data)
         for (nw_id, network) in mn_data["nw"]
             for comp_name in restoration_comps
                 status_key = _PM.pm_component_status[comp_name]
-                for (comp_id, comp) in network[comp_type]
+                for (comp_id, comp) in network[comp_name]
                     if nw_id != "0" #not items are repaired in "0", do not check in previous network for a change
-                        if comp[comp_status] != _PM.pm_component_status_inactive[comp_type] &&  # if comp is active
-                            mn_data["nw"]["$(parse(Int,nw_id)-1)"][comp_type][comp_id][comp_status] == _PM.pm_component_status_inactive[comp_type] # if comp was previously inactive
-                            push!(repairs[nw_id], (comp_type,comp_id))
+                        if comp[comp_status] != _PM.pm_component_status_inactive[comp_name] &&  # if comp is active
+                            mn_data["nw"]["$(parse(Int,nw_id)-1)"][comp_name][comp_id][comp_status] == _PM.pm_component_status_inactive[comp_name] # if comp was previously inactive
+                            push!(repairs[nw_id], (comp_name,comp_id))
                         end
                     end
                 end
@@ -217,12 +217,12 @@ function process_repair_status!(mn_data)
     if _IM.ismultinetwork(mn_data)
         repairs = get_item_repairs(mn_data)
         for (nw_repair,items) in repairs
-            for (comp_type,comp_id) in items
+            for (comp_name,comp_id) in items
                 for nw_network in keys(mn_data["nw"])
-                    if nw_repair <= nw_network
-                        comp = mn_data["nw"][nw_network][comp_type][comp_id]
+                    if nw_repair < nw_network # is it still damaged in the time period the repair occurs
+                        comp = mn_data["nw"][nw_network][comp_name][comp_id]
                         if haskey(comp,"damaged") && comp["damaged"]==1
-                            Memento.info(_PM._LOGGER, "$(comp_type) $(comp_id) was repaired at step $(nw_repair). Setting damaged state to 0 in network $(nw_network).")
+                            Memento.info(_PM._LOGGER, "$(comp_name) $(comp_id) was repaired at step $(nw_repair). Setting damaged state to 0 in network $(nw_network).")
                             comp["damaged"]=0
                         end
                     end

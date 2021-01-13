@@ -8,10 +8,10 @@ function count_repairable_items(network::Dict{String, Any})
     if _IM.ismultinetwork(network)
         repairable_count = Dict{String,Any}("nw" => Dict{String,Any}())
         repairable_set = get_repairable_items(network)
-        repairable_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_type,comp_ids) in repariable_network) for (nw, repariable_network) in repairable_set["nw"] )
+        repairable_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_name,comp_ids) in repariable_network) for (nw, repariable_network) in repairable_set["nw"] )
     else
         repairable_set = get_repairable_items(network)
-        return repairable_count = sum(length(comp_ids) for (comp_type,comp_ids) in repairable_set)
+        return repairable_count = sum(length(comp_ids) for (comp_name,comp_ids) in repairable_set)
     end
     return repairable_count
 end
@@ -68,10 +68,10 @@ function count_damaged_items(network::Dict{String, Any})
     if _IM.ismultinetwork(network)
         damaged_count = Dict{String,Any}("nw" => Dict{String,Any}())
         damaged_set = get_damaged_items(network)
-        damaged_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_type,comp_ids) in damage_network) for (nw, damage_network) in damaged_set["nw"] )
+        damaged_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_name,comp_ids) in damage_network) for (nw, damage_network) in damaged_set["nw"] )
     else
         damaged_set = get_damaged_items(network)
-        damaged_count = sum(length(comp_ids) for (comp_type,comp_ids) in damaged_set)
+        damaged_count = sum(length(comp_ids) for (comp_name,comp_ids) in damaged_set)
     end
     return damaged_count
 end
@@ -96,10 +96,10 @@ function _get_damaged_items(network::Dict{String,Any})
     comp_list = Dict{String, Array{String,1}}()
     for comp_name in restoration_comps
         status_key = _PM.pm_component_status[comp_name]
-        comp_list[comp_type] = []
-        for (comp_id, comp) in network[comp_type]
+        comp_list[comp_name] = []
+        for (comp_id, comp) in network[comp_name]
             if haskey(comp, "damaged") && comp["damaged"] == 1
-                push!(comp_list[comp_type], comp_id)
+                push!(comp_list[comp_name], comp_id)
             end
         end
     end
@@ -157,9 +157,9 @@ end
 
 ""
 function _set_component_inactive!(network::Dict{String,Any}, comp_list::Dict{String, Array{String,1}})
-    for (comp_type, comp_ids) in comp_list
+    for (comp_name, comp_ids) in comp_list
         for comp_id in comp_ids
-            network[comp_type][comp_id][_PM.pm_component_status[comp_type]] = _PM.pm_component_status_inactive[comp_type]
+            network[comp_name][comp_id][_PM.pm_component_status[comp_name]] = _PM.pm_component_status_inactive[comp_name]
         end
     end
 end
