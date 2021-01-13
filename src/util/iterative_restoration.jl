@@ -117,11 +117,9 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
     end
 
     clean_solution!(restoration_solution)
-    clean_status!(restoration_solution)
     _PM.update_data!(restoration_network, restoration_solution["solution"])
     clean_status!(restoration_network)
     process_repair_status!(restoration_network)
-    delete!(restoration_network["nw"],"0")
 
     # copy network metadata, remove network data. There should be a better way of doing this.
     subnet_solution_set = deepcopy(restoration_solution)
