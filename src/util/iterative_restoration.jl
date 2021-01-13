@@ -193,7 +193,8 @@ function get_item_repairs(mn_data)
     repairs = Dict{String,Array{Tuple{String,String},1}}(nw=>[] for nw in keys(mn_data["nw"]))
     if _IM.ismultinetwork(mn_data)
         for (nw_id, network) in mn_data["nw"]
-            for (comp_type, comp_status) in _PM.pm_component_status
+            for comp_name in restoration_comps
+                status_key = _PM.pm_component_status[comp_name]
                 for (comp_id, comp) in network[comp_type]
                     if nw_id != "0" #not items are repaired in "0", do not check in previous network for a change
                         if comp[comp_status] != _PM.pm_component_status_inactive[comp_type] &&  # if comp is active

@@ -1,3 +1,9 @@
+
+"supported components for restoration"
+const restoration_comps = ["bus" "gen" "storage" "branch"]
+
+
+""
 function count_repairable_items(network::Dict{String, Any})
     if _IM.ismultinetwork(network)
         repairable_count = Dict{String,Any}("nw" => Dict{String,Any}())
@@ -28,7 +34,8 @@ end
 ""
 function _get_repairable_items(network::Dict{String,Any})
     repairs = Dict{String, Vector{String}}()
-    for (comp_name, status_key) in _PM.pm_component_status
+    for comp_name in restoration_comps
+        status_key = _PM.pm_component_status[comp_name]
         repairs[comp_name] = []
         for (comp_id, comp) in get(network, comp_name, Dict())
             if haskey(comp, status_key) && comp[status_key] != _PM.pm_component_status_inactive[comp_name] && haskey(comp, "damaged") && comp["damaged"] == 1
@@ -87,7 +94,8 @@ end
 ""
 function _get_damaged_items(network::Dict{String,Any})
     comp_list = Dict{String, Array{String,1}}()
-    for (comp_type, comp_status) in _PM.pm_component_status
+    for comp_name in restoration_comps
+        status_key = _PM.pm_component_status[comp_name]
         comp_list[comp_type] = []
         for (comp_id, comp) in network[comp_type]
             if haskey(comp, "damaged") && comp["damaged"] == 1
@@ -170,7 +178,8 @@ end
 
 
 function _clear_damage_indicator!(network::Dict{String,Any})
-    for (comp_name, status_key) in _PM.pm_component_status
+    for comp_name in restoration_comps
+        status_key = _PM.pm_component_status[comp_name]
         for (i, comp) in get(network, comp_name, Dict())
             if haskey(comp, "damaged")
                 comp["damaged"] = 0
