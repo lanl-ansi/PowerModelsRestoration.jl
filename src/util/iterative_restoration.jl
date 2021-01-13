@@ -13,7 +13,7 @@
 "solve restoration using iterative period length"
 function run_iterative_restoration(network, model_constructor, optimizer; repair_periods=2, kwargs...)
     if _IM.ismultinetwork(network)
-        Memento.error(_PM._LOGGER, "iterative restoration does not support multinetwork starting conditions")
+        Memento.error(_PM._LOGGER, "Iterative Restoration does not support multinetwork starting conditions")
     end
 
     Memento.info(_PM._LOGGER, "Iterative Restoration Algorithm starting...")
@@ -197,8 +197,8 @@ function get_item_repairs(mn_data)
                 status_key = _PM.pm_component_status[comp_name]
                 for (comp_id, comp) in network[comp_name]
                     if nw_id != "0" #not items are repaired in "0", do not check in previous network for a change
-                        if comp[comp_status] != _PM.pm_component_status_inactive[comp_name] &&  # if comp is active
-                            mn_data["nw"]["$(parse(Int,nw_id)-1)"][comp_name][comp_id][comp_status] == _PM.pm_component_status_inactive[comp_name] # if comp was previously inactive
+                        if comp[status_key] != _PM.pm_component_status_inactive[comp_name] &&  # if comp is active
+                            mn_data["nw"]["$(parse(Int,nw_id)-1)"][comp_name][comp_id][status_key] == _PM.pm_component_status_inactive[comp_name] # if comp was previously inactive
                             push!(repairs[nw_id], (comp_name,comp_id))
                         end
                     end
