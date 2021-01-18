@@ -1,7 +1,7 @@
 # PowerModelsRestoration.jl Change Log
 
 ## Staged
-- nothing
+- Fixed bug in iterative restoration solution generation (#44)
 
 ## v0.5.0
 - Update to new function name convention of PowerModels v0.17 details in PR #40 (breaking)

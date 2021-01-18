@@ -103,6 +103,7 @@ function load_power(result, nw_id::String, load_id::String)
             return load["pd"]
         end
     end
+    @info "Network $(nw_id) does not exist in result"
     return 0
 end
 

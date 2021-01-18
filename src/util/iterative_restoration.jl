@@ -1,11 +1,11 @@
 ## Process::
 # 1. take network and create XX repair periods and solve ROP.
-# 2. take each single network from 1 and break into XX repair periods and solve ROP.
-#       - this requires extensive rehashing of the data dict to set status values
+# 2. take each single network from (1) and break into XX repair periods and solve ROP.
+#       - this requires extensive reorganizing of the data dict to set status values
 #       - if a device is repaired after this network, the status is 0 ->seems to be set by solution builder? need to double check buses.
 #       - if a device is repaired before this network, the status is 1, damaged is 0
 #       - if a device is repaired in this network, the status is 1, damaged is 1
-# 3. repeat 2 until the number of repairs is <= XX and there is only 1 item repaired per time period
+# 3. do recursion on 2 until the number of repairs is <= XX and there is only 1 item repaired per time period
 # 4. report a final restoration dictionary with the ordered repairs (this dictionary should only contain
 #     solution data from last period restoration)
 
@@ -48,7 +48,7 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
             if bus["bus_type"] != 4 && init_bus["bus_type"] == 4
                 sol_bus = sol["bus"][i] = get(sol["bus"], i, Dict{String,Any}("status" => 0, "va" => 0.0, "vm" => 0.0))
                 if !haskey(sol_bus, "status")
-                    sol_gen["status"] = 0
+                    sol_bus["status"] = 0
                 end
             end
         end
