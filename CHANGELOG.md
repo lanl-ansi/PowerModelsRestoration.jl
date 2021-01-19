@@ -2,6 +2,7 @@
 
 ## Staged
 - Fixed bug in iterative restoration solution generation (#44)
+- Add support for InfrastructureModels multi-infrastructure functions.
 
 ## v0.5.0
 - Update to new function name convention of PowerModels v0.17 details in PR #40 (breaking)

@@ -10,7 +10,7 @@ function variable_bus_voltage_magnitude_on_off(pm::_PM.AbstractPowerModel; nw::I
         start = _PM.comp_start_value(_PM.ref(pm, nw, :bus, i), "vm_start", 1.0)
     )
 
-    report && _IM.sol_component_value(pm, :ep, nw, :bus, :vm, _PM.ids(pm, nw, :bus), vm)
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :bus, :vm, _PM.ids(pm, nw, :bus), vm)
 end
 
 "variable: `v[i]` for `i` in `bus`es"
@@ -22,7 +22,7 @@ function variable_bus_voltage_magnitude_violation(pm::_PM.AbstractPowerModel; nw
         start = _PM.comp_start_value(_PM.ref(pm, nw, :bus, i), "vm_vio_start")
     )
 
-    report && _IM.sol_component_value(pm, :ep, nw, :bus, :vm_vio, _PM.ids(pm, nw, :bus), vm_vio)
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :bus, :vm_vio, _PM.ids(pm, nw, :bus), vm_vio)
 end
 
 
@@ -47,7 +47,7 @@ function variable_gen_damage_indicator(pm::_PM.AbstractPowerModel; nw::Int=pm.cn
     z_gen = Dict(i => haskey(gen, "damaged") && gen["damaged"] == 1 && gen["gen_status"]==1 ? z_gen_vars[i] : gen["gen_status"] for (i,gen) in _PM.ref(pm, nw, :gen))
     _PM.var(pm, nw)[:z_gen] = z_gen
 
-    report && _IM.sol_component_value(pm, :ep, nw, :gen, :gen_status, _PM.ids(pm, nw, :gen), z_gen)
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :gen, :gen_status, _PM.ids(pm, nw, :gen), z_gen)
 end
 
 
@@ -80,7 +80,7 @@ function variable_gen_power_real_damage(pm::_PM.AbstractPowerModel; nw::Int=pm.c
         )
     end
 
-    report && _IM.sol_component_value(pm, :ep, nw, :gen, :pg, _PM.ids(pm, nw, :gen), pg)
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :gen, :pg, _PM.ids(pm, nw, :gen), pg)
 end
 
 
@@ -107,7 +107,7 @@ function variable_gen_power_imaginary_damage(pm::_PM.AbstractPowerModel; nw::Int
         end
     end
 
-    report && _IM.sol_component_value(pm, :ep, nw, :gen, :qg, _PM.ids(pm, nw, :gen), qg)
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :gen, :qg, _PM.ids(pm, nw, :gen), qg)
 end
 
 
@@ -133,7 +133,7 @@ function variable_branch_damage_indicator(pm::_PM.AbstractPowerModel; nw::Int=pm
     z_branch = Dict(i => haskey(branch, "damaged") && branch["damaged"] == 1 ? z_branch_vars[i] : branch["br_status"]  for (i,branch) in _PM.ref(pm, nw, :branch))
     _PM.var(pm, nw)[:z_branch] = z_branch
 
-    report && _IM.sol_component_value(pm, :ep, nw, :branch, :br_status, _PM.ids(pm, nw, :branch), z_branch)
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :branch, :br_status, _PM.ids(pm, nw, :branch), z_branch)
 end
 
 
@@ -159,7 +159,7 @@ function variable_storage_damage_indicator(pm::_PM.AbstractPowerModel; nw::Int=p
     z_storage = Dict(i => haskey(storage, "damaged") && storage["damaged"] == 1 ? z_storage_vars[i] : storage["status"]  for (i,storage) in _PM.ref(pm, nw, :storage))
     _PM.var(pm, nw)[:z_storage] = z_storage
 
-    report && _IM.sol_component_value(pm, :ep, nw, :storage, :status, _PM.ids(pm, nw, :storage), z_storage)
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :storage, :status, _PM.ids(pm, nw, :storage), z_storage)
 end
 
 
@@ -198,7 +198,7 @@ function variable_storage_power_real_damage(pm::_PM.AbstractPowerModel; nw::Int=
         end
     end
 
-    report && _IM.sol_component_value(pm, :ep, nw, :storage, :ps, _PM.ids(pm, nw, :storage), ps)
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :storage, :ps, _PM.ids(pm, nw, :storage), ps)
 end
 
 
@@ -219,7 +219,7 @@ function variable_storage_power_imaginary_damage(pm::_PM.AbstractPowerModel; nw:
         end
     end
 
-    report && _IM.sol_component_value(pm, :ep, nw, :storage, :qs, _PM.ids(pm, nw, :storage), qs)
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :storage, :qs, _PM.ids(pm, nw, :storage), qs)
 end
 
 ""
@@ -240,7 +240,7 @@ function variable_storage_power_control_imaginary_damage(pm::_PM.AbstractPowerMo
         end
     end
 
-    report && _IM.sol_component_value(pm, :ep, nw, :storage, :qsc, _PM.ids(pm, nw, :storage), qsc)
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :storage, :qsc, _PM.ids(pm, nw, :storage), qsc)
 end
 
 
@@ -266,7 +266,7 @@ function variable_bus_damage_indicator(pm::_PM.AbstractPowerModel; nw::Int=pm.cn
     z_bus = Dict(i => haskey(bus, "damaged") && bus["damaged"] == 1 ? z_bus_vars[i] : bus["bus_type"]==4 ? 0 : 1  for (i,bus) in _PM.ref(pm, nw, :bus))
     _PM.var(pm, nw)[:z_bus] = z_bus
 
-    report && _IM.sol_component_value(pm, :ep, nw, :bus, :status, _PM.ids(pm, nw, :bus), z_bus)
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :bus, :status, _PM.ids(pm, nw, :bus), z_bus)
 end
 
 
@@ -286,7 +286,7 @@ function variable_bus_voltage_indicator(pm::_PM.AbstractPowerModel; nw::Int=pm.c
         )
     end
 
-    report && _IM.sol_component_value(pm, :ep, nw, :bus, :status, _PM.ids(pm, nw, :bus), z_voltage)
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :bus, :status, _PM.ids(pm, nw, :bus), z_voltage)
 end
 
 
@@ -299,6 +299,6 @@ function variable_bus_voltage_magnitude_sqr_on_off(pm::_PM.AbstractPowerModel; n
         start = _PM.comp_start_value(_PM.ref(pm, nw, :bus, i), "w_start", 1.001)
     )
 
-    report && _IM.sol_component_value(pm, :ep, nw, :bus, :w, _PM.ids(pm, nw, :bus), w)
+    report && _IM.sol_component_value(pm, _PM.pm_it_sym, nw, :bus, :w, _PM.ids(pm, nw, :bus), w)
 end
 

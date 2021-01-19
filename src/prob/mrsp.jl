@@ -64,7 +64,7 @@ end
 
 ""
 function objective_min_restoration(pm::_PM.AbstractPowerModel)
-    @assert !_IM.ismultinetwork(pm)
+    @assert !_PM.ismultinetwork(pm)
     z_storage = _PM.var(pm, pm.cnw, :z_storage)
     z_gen = _PM.var(pm, pm.cnw, :z_gen)
     z_branch = _PM.var(pm, pm.cnw, :z_branch)
