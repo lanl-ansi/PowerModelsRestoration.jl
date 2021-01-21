@@ -128,6 +128,55 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
     ## do all repairs occur in one network?
     repairs = get_item_repairs(restoration_network)
     terminate_recursion = count(~isempty(nw_repairs) for (nw,nw_repairs) in repairs)==1
+    if terminate_recursion
+        ## Rerun with with period for every device, fixed repairs in final time period
+        ## This ensures that dispatches will be viable (especially storage) for the duration of the repair set
+
+        # make a repaired devices list for processing
+        repaired_devices = Dict(comp_name=>String[] for comp_name in restoration_comps)
+        for (nw_id, list) in repairs
+            for (comp_name, comp_id) in list
+                push!(repaired_devices[comp_name],comp_id)
+            end
+        end
+        repair_count=sum(length(comp_ids) for (comp_name,comp_ids) in repaired_devices)
+
+        restoration_network = replicate_restoration_network(network, count=repair_count)
+
+        # set all repaired components inactive before final time period
+        for net_id in 0:repair_count-1
+            set_component_inactive!(restoration_network["nw"]["$(net_id)"], repaired_devices)
+        end
+
+        # clear damage indicator for final time period
+        for comp_name in restoration_comps
+            for (comp_id,comp) in restoration_network["nw"]["$(repair_count)"][comp_name]
+                comp["damaged"]=0
+            end
+        end
+
+        ## run 'restoration' on this network to solve powerflow
+        restoration_solution = _run_rop_ir(restoration_network, model_constructor, optimizer, kwargs...)
+
+        ## Was the network solved?
+        if restoration_solution["termination_status"]!= _MOI.OPTIMAL && restoration_solution["termination_status"]!= _MOI.LOCALLY_SOLVED
+            Memento.warn(_PM._LOGGER, "subnetwork i was not solved, returning current solution")
+            terminate_problem = true
+        else
+            terminate_problem = false
+        end
+
+        clean_solution!(restoration_solution)
+        _PM.update_data!(restoration_network, restoration_solution["solution"])
+        clean_status!(restoration_network)
+        process_repair_status!(restoration_network)
+
+        # copy network metadata, remove network data. There should be a better way of doing this.
+        subnet_solution_set = deepcopy(restoration_solution)
+        subnet_solution_set["solution"]["nw"] = Dict{String,Any}()
+
+
+    end
 
     # do not run attempt restoration on network "0"
     delete!(restoration_network["nw"],"0")
@@ -157,7 +206,6 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
                 end
             end
             merge_solution!(subnet_solution_set, temp_solution)
-
         else
 
             last_network = isempty(subnet_solution_set["solution"]["nw"]) ? 0 : maximum(parse.(Int,keys(subnet_solution_set["solution"]["nw"])))
@@ -261,7 +309,7 @@ function _build_rop_ir(pm::_PM.AbstractPowerModel)
         _PM.variable_shunt_admittance_factor(pm, nw=n, relax=true)
 
         constraint_restoration_cardinality_ub(pm, nw=n)
-        constraint_restoration_cardinality_lb(pm, nw=n)
+        # constraint_restoration_cardinality_lb(pm, nw=n)
 
         constraint_model_voltage_damage(pm, nw=n)
 
