@@ -101,7 +101,6 @@ end
 
 
 function _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=2, kwargs...)
-
     ## Set up network data files
     restoration_network = replicate_restoration_network(network, count=repair_periods)
 
@@ -121,15 +120,12 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
     clean_status!(restoration_network)
     process_repair_status!(restoration_network)
 
-    # copy network metadata, remove network data. There should be a better way of doing this.
-    subnet_solution_set = deepcopy(restoration_solution)
-    subnet_solution_set["solution"]["nw"] = Dict{String,Any}()
-
     ## do all repairs occur in one network?
     repairs = get_item_repairs(restoration_network)
     terminate_recursion = count(~isempty(nw_repairs) for (nw,nw_repairs) in repairs)==1
     if terminate_recursion
-        ## Rerun with with period for every device, fixed repairs in final time period
+        ## All repairs acccur in same time period: either no impact on load served, or required for feasbility
+        ## Rerun with with period for every device, with repairs fixed to final time period
         ## This ensures that dispatches will be viable (especially storage) for the duration of the repair set
 
         # make a repaired devices list for processing
@@ -147,7 +143,6 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
         for net_id in 0:repair_count-1
             set_component_inactive!(restoration_network["nw"]["$(net_id)"], repaired_devices)
         end
-
         # clear damage indicator for final time period
         for comp_name in restoration_comps
             for (comp_id,comp) in restoration_network["nw"]["$(repair_count)"][comp_name]
@@ -155,10 +150,10 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
             end
         end
 
-        ## run 'restoration' on this network to solve powerflow
+        # run 'restoration' on this network to solve powerflow
         restoration_solution = _run_rop_ir(restoration_network, model_constructor, optimizer, kwargs...)
 
-        ## Was the network solved?
+        # Was the network solved?
         if restoration_solution["termination_status"]!= _MOI.OPTIMAL && restoration_solution["termination_status"]!= _MOI.LOCALLY_SOLVED
             Memento.warn(_PM._LOGGER, "subnetwork i was not solved, returning current solution")
             terminate_problem = true
@@ -170,33 +165,33 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
         _PM.update_data!(restoration_network, restoration_solution["solution"])
         clean_status!(restoration_network)
         process_repair_status!(restoration_network)
+    end
 
         # copy network metadata, remove network data. There should be a better way of doing this.
         subnet_solution_set = deepcopy(restoration_solution)
         subnet_solution_set["solution"]["nw"] = Dict{String,Any}()
-
-
-    end
-
-    # do not run attempt restoration on network "0"
+    # do not run restoration on network "0"
     delete!(restoration_network["nw"],"0")
 
     for(nw_id, net) in sort(Dict{Int,Any}([(parse(Int, k), v) for (k,v) in restoration_network["nw"]]))
+        net["time_elapsed"] = network["time_elapsed"] # is this the correct way to reset time-elapsed for each network?
         if count_repairable_items(net) > 1 && ~terminate_problem && ~terminate_recursion
+            # Run another layer of recursion
             Memento.info(_PM._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(net)) damaged items and $(count_repairable_items(net)) repairable items")
 
             Memento.info(_PM._LOGGER, "Starting sub network restoration")
+            # copy global keys to create single networks
             for k in keys(restoration_network)
                 if k != "nw"
                     net[k] = restoration_network[k]
                 end
-                net["multinetwork"] = false
             end
+                net["multinetwork"] = false
 
             Memento.info(_PM._LOGGER, "Start recursive call")
             subnet_solution = _run_iterative_sub_network(net, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
 
-            ##  Rename solution nw_ids appropriately
+            # Rename solution nw_ids appropriately
             last_network = isempty(subnet_solution_set["solution"]["nw"]) ? 0 : maximum(parse.(Int,keys(subnet_solution_set["solution"]["nw"])))
             temp_solution = deepcopy(subnet_solution)
             temp_solution["solution"]["nw"] = Dict{String,Any}()
@@ -207,7 +202,7 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
             end
             merge_solution!(subnet_solution_set, temp_solution)
         else
-
+            # Final recursion layer, place network in solution set
             last_network = isempty(subnet_solution_set["solution"]["nw"]) ? 0 : maximum(parse.(Int,keys(subnet_solution_set["solution"]["nw"])))
             subnet_solution_set["solution"]["nw"]["$(last_network+1)"] = net
 
