@@ -38,7 +38,7 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
 
     Memento.info(_PM._LOGGER, "begin Iterative Restoration")
     result_iterative = _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
-    merge_solution!(result_iterative, result_mld)
+    _merge_solution!(result_iterative, result_mld)
 
     # this sets the status of components that were removed by
     # propagate_damage_status!, set_component_inactive!, propagate_topology_status!, ...
@@ -118,10 +118,10 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
     clean_solution!(restoration_solution)
     _PM.update_data!(restoration_network, restoration_solution["solution"])
     clean_status!(restoration_network)
-    process_repair_status!(restoration_network)
+    _process_repair_status!(restoration_network)
 
     ## do all repairs occur in one network?
-    repairs = get_item_repairs(restoration_network)
+    repairs = _get_item_repairs(restoration_network)
     terminate_recursion = count(~isempty(nw_repairs) for (nw,nw_repairs) in repairs)==1
     if terminate_recursion
         ## All repairs acccur in same time period: either no impact on load served, or required for feasbility
@@ -168,7 +168,7 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
         clean_solution!(restoration_solution)
         _PM.update_data!(restoration_network, restoration_solution["solution"])
         clean_status!(restoration_network)
-        process_repair_status!(restoration_network)
+        _process_repair_status!(restoration_network)
     end
 
     # copy network metadata, remove network data. There should be a better way of doing this.
@@ -204,7 +204,7 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
                     temp_solution["solution"]["nw"]["$(last_network+parse(Int,id))"] = net
                 end
             end
-            merge_solution!(subnet_solution_set, temp_solution)
+            _merge_solution!(subnet_solution_set, temp_solution)
         else
             # Final recursion layer, place network in solution set
             last_network = isempty(subnet_solution_set["solution"]["nw"]) ? 0 : maximum(parse.(Int,keys(subnet_solution_set["solution"]["nw"])))
@@ -220,7 +220,7 @@ end
 
 
 "Merge solution dictionaries and accumulate solvetime and objective"
-function merge_solution!(solution1, solution2)
+function _merge_solution!(solution1, solution2)
     Memento.info(_PM._LOGGER, "networks $(keys(solution2["solution"]["nw"])) finished with status $(solution2["termination_status"])")
 
     solution1["termination_status"] = max(solution1["termination_status"],solution2["termination_status"])
@@ -234,7 +234,7 @@ function merge_solution!(solution1, solution2)
     end
 end
 
-function get_item_repairs(mn_data)
+function _get_item_repairs(mn_data)
     repairs = Dict{String,Array{Tuple{String,String},1}}(nw=>[] for nw in keys(mn_data["nw"]))
     if _IM.ismultinetwork(mn_data)
         for (nw_id, network) in mn_data["nw"]
@@ -258,9 +258,9 @@ end
 
 
 "Remove damage status if a device has already been repaired"
-function process_repair_status!(mn_data)
+function _process_repair_status!(mn_data)
     if _IM.ismultinetwork(mn_data)
-        repairs = get_item_repairs(mn_data)
+        repairs = _get_item_repairs(mn_data)
         for (nw_repair,items) in repairs
             for (comp_name,comp_id) in items
                 for nw_network in keys(mn_data["nw"])
