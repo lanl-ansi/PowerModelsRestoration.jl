@@ -17,6 +17,7 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
     end
 
     Memento.info(_PM._LOGGER, "Iterative Restoration Algorithm starting...")
+    time_start = time()
 
     ## Run initial MLD problem
     Memento.info(_PM._LOGGER, "begin baseline Maximum Load Delivery")
@@ -95,6 +96,7 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
         end
     end
 
+    result_iterative["solve_time"] = time()-time_start
     return result_iterative
 end
 
