@@ -6,7 +6,7 @@
         @testset "5-bus case" begin
             result = PowerModelsRestoration.run_iterative_restoration(data, PowerModels.ACPPowerModel, juniper_solver, repair_periods=3)
 
-            @test result["termination_status"] == LOCALLY_SOLVED
+            @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
             @test isapprox(result["objective"], 1899.5; atol = 1e0)
             @test isapprox(length(keys(result["solution"]["nw"])), 9; atol=1e-1)
 
@@ -60,7 +60,7 @@
         @testset "5-bus case" begin
             result = PowerModelsRestoration.run_iterative_restoration(data, PowerModels.SOCWRPowerModel, juniper_solver, repair_periods=3)
 
-            @test result["termination_status"] == LOCALLY_SOLVED
+            @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
             @test isapprox(result["objective"], 1899.5; atol = 1e0)
             @test isapprox(length(keys(result["solution"]["nw"])), 9; atol=1e-1)
 
@@ -118,7 +118,7 @@
         @testset "5-bus case" begin
             result = PowerModelsRestoration.run_iterative_restoration(data, PowerModels.DCPPowerModel, cbc_solver, repair_periods=3)
 
-            @test result["termination_status"] == OPTIMAL
+            @test result["termination_status"] == PowerModels.OPTIMAL
             @test isapprox(result["objective"], 333.86; atol = 1e0)
             @test isapprox(length(keys(result["solution"]["nw"])), 13; atol=1e-1)
 
@@ -179,11 +179,11 @@
             # does it solve for ROP?
             mn_data = build_mn_data(data, replicates=2)
             result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
-            @test result["termination_status"] == OPTIMAL
+            @test result["termination_status"] == PowerModels.OPTIMAL
 
             # does it solve for iter?
             result = run_iterative_restoration(data, PowerModels.DCPPowerModel, cbc_solver; repair_periods=2)
-            @test result["termination_status"] == OPTIMAL
+            @test result["termination_status"] == PowerModels.OPTIMAL
 
             # is time_elapsed correct for each time period after 0?
             for nw_id in 1:8

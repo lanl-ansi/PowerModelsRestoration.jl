@@ -12,7 +12,7 @@
         update_status!(mn_data, result_rop["solution"])
 
         result_sim = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, ipopt_solver)
-        @test result_sim["termination_status"] == LOCALLY_SOLVED
+        @test result_sim["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result_sim["objective"], 53.14; atol = 1)
 
         #@test isapprox(gen_status(result_sim,"0","1"), gen_status(result_rop,"0","1"); atol=1e-2)
@@ -41,7 +41,7 @@
         update_status!(mn_data, result_rop["solution"])
 
         result_sim = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, ipopt_solver)
-        @test result_sim["termination_status"] == LOCALLY_SOLVED
+        @test result_sim["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result_sim["objective"], 53.09; atol = 1)
 
         #@test isapprox(gen_status(result_sim,"0","1"), gen_status(result_rop,"0","1"); atol=1e-2)
@@ -69,7 +69,7 @@
         update_status!(mn_data, result_rop["solution"])
 
         result_sim = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, ipopt_solver)
-        @test result_sim["termination_status"] == LOCALLY_SOLVED
+        @test result_sim["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result_sim["objective"], 53.15; atol = 1)
 
         # @test isapprox(gen_status(result_sim,"0","1"), gen_status(result_rop,"0","1"); atol=1e-2)

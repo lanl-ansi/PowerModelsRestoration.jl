@@ -5,7 +5,7 @@
         result = run_mld(case3_mld, PowerModels.ACPPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 321.0343994279289; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 1.0343967674927383; atol = 1e-1)
@@ -16,7 +16,7 @@
         result = run_mld(case3_mld_s, PowerModels.ACPPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 339.012705296994; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 0.795164947910047; atol = 1e-1)
@@ -28,7 +28,7 @@
         result = run_mld(case3_mld_uc, PowerModels.ACPPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 317.95051383124365; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 1.1343966796133428; atol = 1e-1)
@@ -40,7 +40,7 @@
         result = run_mld(case3_mld_lc, PowerModels.ACPPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 189.67617468355436; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 0.008694494772611786; atol = 1e-1)
@@ -54,7 +54,7 @@
         result = run_mld(case5_pti, PowerModels.ACPPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 2124.08; atol = 1e0)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 4.079313388707389; atol = 1e-2)
@@ -72,7 +72,7 @@
         result = run_mld(data, PowerModels.ACPPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 1.59311e5; atol = 1e0)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 4.06347415733921; atol = 1e-2)
@@ -91,7 +91,7 @@
         result = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 9152.70006919554; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 28.49999877675928; atol = 1e-0)
@@ -112,7 +112,7 @@ case24_ub = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)["objective"
 
         #println(result)
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 21.158217744648525; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 1.1582177246877814; atol = 1e-1)
@@ -122,7 +122,7 @@ case24_ub = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)["objective"
         result = run_mld(case3_mld_s, PowerModels.DCPPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 41.37051189714199; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 1.370511858660896; atol = 1e-1)
@@ -133,7 +133,7 @@ case24_ub = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)["objective"
         result = run_mld(case3_mld_uc, PowerModels.DCPPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 19.239460676642224; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 1.2582176367462893; atol = 1e-1)
@@ -144,7 +144,7 @@ case24_ub = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)["objective"
         result = run_mld(case3_mld_lc, PowerModels.DCPPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 10.58051212014409; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 0.5805121110548641; atol = 1e-1)
@@ -154,7 +154,7 @@ case24_ub = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)["objective"
         result = run_mld(case5_pti, PowerModels.DCPPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 124.1; atol = 1e0)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 4.099999509047602; atol = 1e-2)
@@ -172,7 +172,7 @@ case24_ub = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)["objective"
         result = run_mld(data, PowerModels.DCPPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 9311.0; atol = 1e0)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 4.099998420607658; atol = 1e-2)
@@ -192,7 +192,7 @@ case24_ub = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)["objective"
 
         #println(result)
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 1160.65; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 28.453537816101903; atol = 1e-0)
@@ -206,7 +206,7 @@ end
         result = run_mld(case3_mld, PowerModels.SOCWRPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 321.2196411074043; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 1.2196381783402782; atol = 1e-1)
@@ -218,7 +218,7 @@ end
         result = run_mld(case3_mld_s, PowerModels.SOCWRPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 339.60194869178946; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 0.7951648586134081; atol = 1e-1)
@@ -231,7 +231,7 @@ end
         result = run_mld(case3_mld_uc, PowerModels.SOCWRPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 320.14956871083746; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 1.319638090638242; atol = 1e-1)
@@ -244,7 +244,7 @@ end
         result = run_mld(case3_mld_lc, PowerModels.SOCWRPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 210.64079640410367; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 0.347705761474513; atol = 1e-1)
@@ -258,7 +258,7 @@ end
         result = run_mld(case24, PowerModels.SOCWRPowerModel, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 9152.700068450631; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 28.49999877675928; atol = 1e-0)
@@ -275,7 +275,7 @@ end
         result = run_mld(case3_mld, QCWRPowerModel, ipopt_solver)
 
         println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         #@test isapprox(result["objective"], 51.118520841468644; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 1.1185212567455372; atol = 1e-1)
@@ -287,7 +287,7 @@ end
         result = run_mld(case3_mld_s, QCWRPowerModel, ipopt_solver)
 
         println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         #@test isapprox(result["objective"], 49.01270212392994; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 0.795164852069185; atol = 1e-1)
@@ -300,7 +300,7 @@ end
         result = run_mld(case3_mld_uc, QCWRPowerModel, ipopt_solver)
 
         println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         #@test isapprox(result["objective"], 48.96619870361255; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 1.2185210778391826; atol = 1e-1)
@@ -313,7 +313,7 @@ end
         result = run_mld(case3_mld_lc, QCWRPowerModel, ipopt_solver)
 
         println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         #@test isapprox(result["objective"], 326.89562490859475; atol = 1e-2)
         println("active power: $(active_power_served(result))")
         #@test isapprox(active_power_served(result), 0.4128996074212094; atol = 1e-1)
@@ -327,7 +327,7 @@ end
         result = run_mld(case24, QCWRPowerModel, ipopt_solver)
 
         println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         #@test isapprox(result["objective"], 1926.6000112270171; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 28.499998760431113; atol = 1e-0)
@@ -343,7 +343,7 @@ end
         result = run_mld(case3_mld, PowerModels.SDPWRMPowerModel, scs_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == OPTIMAL
+        @test result["termination_status"] == PowerModels.OPTIMAL
         @test isapprox(result["objective"], 321.03573785052635; atol = 1e-1)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 1.0356333562919656; atol = 1e-1)
@@ -355,7 +355,7 @@ end
         result = run_mld(case3_mld_s, PowerModels.SDPWRMPowerModel, scs_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == OPTIMAL
+        @test result["termination_status"] == PowerModels.OPTIMAL
         @test isapprox(result["objective"], 339.608; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 0.7951417073393225; atol = 1e-1)
@@ -369,7 +369,7 @@ end
 #        result = run_mld(case3_mld_uc, PowerModels.SDPWRMPowerModel, scs_solver)
 
 #        #println(result["objective"])
-#        @test result["termination_status"] == OPTIMAL
+#        @test result["termination_status"] == PowerModels.OPTIMAL
 #        # UnknownError is seems to occur on Linux
 #        #@test result["status"] == :Infeasible || result["status"] == :UnknownError
 #        @test isapprox(result["objective"], 317.95315458497123; atol = 1e-2)
@@ -384,7 +384,7 @@ end
         result = run_mld(case3_mld_lc, PowerModels.SDPWRMPowerModel, scs_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == OPTIMAL
+        @test result["termination_status"] == PowerModels.OPTIMAL
         @test isapprox(result["objective"], 210.64571064033981; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 0.3477251597699522; atol = 1e-1)
@@ -399,7 +399,7 @@ end
     #    result = run_mld(case24, PowerModels.SDPWRMPowerModel, scs_solver)
     #    PowerModels.make_mixed_units(result["solution"])
 
-    #    @test result["termination_status"] == OPTIMAL
+    #    @test result["termination_status"] == PowerModels.OPTIMAL
     #    @test isapprox(result["objective"], 34.29; atol = 1e-2)
     #end
 end
