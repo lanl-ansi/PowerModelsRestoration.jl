@@ -171,7 +171,7 @@
 
         @testset "multi-item restore" begin
             # shunt damage and bus damage to the same component
-            data = PowerModels.parse_file("../test/data/case5_restoration_iterative_shunt.m")
+            data = PowerModels.parse_file("../test/data/case5_restoration_shunt.m")
             damaged_n = Dict("bus" => ["1"])
             damage_items!(data, damaged_n)
             propagate_damage_status!(data)
@@ -184,6 +184,7 @@
             # does it solve for iter?
             result = run_iterative_restoration(data, PowerModels.DCPPowerModel, cbc_solver; repair_periods=2)
             @test result["termination_status"] == PowerModels.OPTIMAL
+
 
             # is time_elapsed correct for each time period after 0?
             for nw_id in 1:8

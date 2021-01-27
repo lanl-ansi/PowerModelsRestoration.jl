@@ -1,5 +1,5 @@
 % used in tests of,
-% - restoration modeling without storage
+% - restoration modeling with a shunt on a damaged bus.  Requires `shedding` of shunt.
 
 function mpc = case5
 mpc.version = '2';
