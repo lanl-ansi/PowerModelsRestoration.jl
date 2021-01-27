@@ -122,7 +122,7 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
 
     ## do all repairs occur in one network?
     repairs = _get_item_repairs(restoration_network)
-    terminate_recursion = count(~isempty(nw_repairs) for (nw,nw_repairs) in repairs)==1
+    terminate_recursion = count(!isempty(nw_repairs) for (nw,nw_repairs) in repairs)==1
     if terminate_recursion
         ## All repairs acccur in same time period: either no impact on load served, or required for feasbility
         ## Rerun with with period for every device, with repairs fixed to final time period
@@ -179,7 +179,7 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
 
     for(nw_id, net) in sort(Dict{Int,Any}([(parse(Int, k), v) for (k,v) in restoration_network["nw"]]))
         net["time_elapsed"] = network["time_elapsed"] # is this the correct way to reset time-elapsed for each network?
-        if count_repairable_items(net) > 1 && ~terminate_problem && ~terminate_recursion
+        if count_repairable_items(net) > 1 && !terminate_problem && !terminate_recursion
             # Run another layer of recursion
             Memento.info(_PM._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(net)) damaged items and $(count_repairable_items(net)) repairable items")
 
