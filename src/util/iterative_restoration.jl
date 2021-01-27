@@ -311,7 +311,6 @@ function _build_rop_ir(pm::_PM.AbstractPowerModel)
         _PM.variable_shunt_admittance_factor(pm, nw=n, relax=true)
 
         constraint_restoration_cardinality_ub(pm, nw=n)
-        # constraint_restoration_cardinality_lb(pm, nw=n)
 
         constraint_model_voltage_damage(pm, nw=n)
 
