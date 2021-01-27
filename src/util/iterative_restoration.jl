@@ -108,7 +108,7 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
     restoration_solution = _run_rop_ir(restoration_network, model_constructor, optimizer, kwargs...)
 
     ## Was the network solved?
-    if restoration_solution["termination_status"]!= _MOI.OPTIMAL && restoration_solution["termination_status"]!= _MOI.LOCALLY_SOLVED
+    if restoration_solution["termination_status"]!= _PM.OPTIMAL && restoration_solution["termination_status"]!= _PM.LOCALLY_SOLVED
         Memento.warn(_PM._LOGGER, "subnetwork i was not solved, returning current solution")
         terminate_problem = true
     else
@@ -158,7 +158,7 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
         restoration_solution["solve_time"]+=solve_time
 
         # Was the network solved?
-        if restoration_solution["termination_status"]!= _MOI.OPTIMAL && restoration_solution["termination_status"]!= _MOI.LOCALLY_SOLVED
+        if restoration_solution["termination_status"]!= _PM.OPTIMAL && restoration_solution["termination_status"]!= _PM.LOCALLY_SOLVED
             Memento.warn(_PM._LOGGER, "subnetwork i was not solved, returning current solution")
             terminate_problem = true
         else
