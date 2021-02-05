@@ -3,7 +3,7 @@
         result = PowerModelsRestoration.run_ac_mld_uc(case3_mld, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 1.0344; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 1.0344; atol = 1e-1)
@@ -14,7 +14,7 @@
         result = PowerModelsRestoration.run_ac_mld_uc(case3_mld_uc, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 0.49999999; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 0.49999999; atol = 1e-1)
@@ -26,7 +26,7 @@
         result = PowerModelsRestoration.run_ac_mld_uc(case3_mld_lc, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 210.641; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 0.34770; atol = 1e-3)
@@ -43,7 +43,7 @@
         result = PowerModelsRestoration.run_ac_mld_uc(data, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 310.635; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 4.063481; atol = 1e-3)
@@ -68,7 +68,7 @@
         result = PowerModelsRestoration.run_ac_mld_uc(case24, ipopt_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 31.83; atol = 1e-1)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 28.5; atol = 1e-0)
@@ -90,7 +90,7 @@ end
         PowerModels.update_data!(mn_data, rop_result["solution"])
         result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 8834.38; atol = 1)
 
         @test isapprox(gen_status(result,"1","1"), gen_status(rop_result,"1","1"); atol=1e-6)
@@ -106,7 +106,7 @@ end
         PowerModels.update_data!(mn_data, rop_result["solution"])
         result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
 
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 8834.38; atol = 1e0)
 
         @test isapprox(gen_status(result,"1","1"), gen_status(rop_result,"1","1"); atol=1e-6)
@@ -126,7 +126,7 @@ end
         PowerModels.update_data!(mn_data, rop_result["solution"])
         result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         ## Not stable on mac
         # @test isapprox(result["objective"], 8073.94; atol = 1)
 
@@ -143,7 +143,7 @@ end
         PowerModels.update_data!(mn_data, rop_result["solution"])
         result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
 
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         ## Not stable on mac
         # @test isapprox(result["objective"], 8073.94; atol = 1e0)
 
@@ -161,7 +161,7 @@ end
     #     PowerModels.update_data!(mn_data, rop_result["solution"])
     #     result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.QCWRPowerModel, juniper_solver)
 
-    #     @test result["termination_status"] == LOCALLY_SOLVED
+    #     @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
     #     @test isapprox(result["objective"], 6168.399; atol = 1e-2)
 
     #     @test isapprox(gen_status(result,"1","1"), gen_status(rop_result,"1","1"); atol=1e-6)

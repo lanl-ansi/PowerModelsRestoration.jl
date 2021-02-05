@@ -13,10 +13,11 @@
 "solve restoration using iterative period length"
 function run_iterative_restoration(network, model_constructor, optimizer; repair_periods=2, kwargs...)
     if _IM.ismultinetwork(network)
-        Memento.error(_PM._LOGGER, "iterative restoration does not support multinetwork starting conditions")
+        Memento.error(_PM._LOGGER, "Iterative Restoration does not support multinetwork starting conditions")
     end
 
     Memento.info(_PM._LOGGER, "Iterative Restoration Algorithm starting...")
+    time_start = time()
 
     ## Run initial MLD problem
     Memento.info(_PM._LOGGER, "begin baseline Maximum Load Delivery")
@@ -38,7 +39,7 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
 
     Memento.info(_PM._LOGGER, "begin Iterative Restoration")
     result_iterative = _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
-    merge_solution!(result_iterative, result_mld)
+    _merge_solution!(result_iterative, result_mld)
 
     # this sets the status of components that were removed by
     # propagate_damage_status!, set_component_inactive!, propagate_topology_status!, ...
@@ -95,43 +96,108 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
         end
     end
 
+    result_iterative["solve_time"] = time()-time_start
     return result_iterative
 end
 
 
 
 function _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=2, kwargs...)
-
     ## Set up network data files
     restoration_network = replicate_restoration_network(network, count=repair_periods)
 
     ## Run ROP problem with lower bound on restoration cardinality and partial load restoration
     restoration_solution = _run_rop_ir(restoration_network, model_constructor, optimizer, kwargs...)
 
-    clean_status!(restoration_solution["solution"])
-    _PM.update_data!(restoration_network, restoration_solution["solution"]) # will update, loads, storage, etc....
-    update_damage_status!(restoration_network) #set status of items before/after repairs
-    delete!(restoration_network["nw"],"0")
+    ## Was the network solved?
+    if restoration_solution["termination_status"]!= _PM.OPTIMAL && restoration_solution["termination_status"]!= _PM.LOCALLY_SOLVED
+        Memento.warn(_PM._LOGGER, "subnetwork i was not solved, returning current solution")
+        terminate_problem = true
+    else
+        terminate_problem = false
+    end
 
+    clean_solution!(restoration_solution)
+    _PM.update_data!(restoration_network, restoration_solution["solution"])
+    clean_status!(restoration_network)
+    _process_repair_status!(restoration_network)
+
+    ## do all repairs occur in one network?
+    repairs = _get_item_repairs(restoration_network)
+    terminate_recursion = count(!isempty(nw_repairs) for (nw,nw_repairs) in repairs)==1
+    if terminate_recursion
+        ## All repairs acccur in same time period: either no impact on load served, or required for feasbility
+        ## Rerun with with period for every device, with repairs fixed to final time period
+        ## This ensures that dispatches will be viable (especially storage) for the duration of the repair set
+
+        # save solve_time for accumulation
+        solve_time = restoration_solution["solve_time"]
+
+        # make a repaired devices list for processing
+        repaired_devices = Dict(comp_name=>String[] for comp_name in restoration_comps)
+        for (nw_id, list) in repairs
+            for (comp_name, comp_id) in list
+                push!(repaired_devices[comp_name],comp_id)
+            end
+        end
+        repair_count=sum(length(comp_ids) for (comp_name,comp_ids) in repaired_devices)
+
+        restoration_network = replicate_restoration_network(network, count=repair_count)
+
+        # set all repaired components inactive before final time period
+        for net_id in 0:repair_count-1
+            set_component_inactive!(restoration_network["nw"]["$(net_id)"], repaired_devices)
+        end
+        # clear damage indicator for final time period
+        for comp_name in restoration_comps
+            for (comp_id,comp) in restoration_network["nw"]["$(repair_count)"][comp_name]
+                comp["damaged"]=0
+            end
+        end
+
+        # run 'restoration' on this network to solve powerflow
+        restoration_solution = _run_rop_ir(restoration_network, model_constructor, optimizer, kwargs...)
+        restoration_solution["solve_time"]+=solve_time
+
+        # Was the network solved?
+        if restoration_solution["termination_status"]!= _PM.OPTIMAL && restoration_solution["termination_status"]!= _PM.LOCALLY_SOLVED
+            Memento.warn(_PM._LOGGER, "subnetwork i was not solved, returning current solution")
+            terminate_problem = true
+        else
+            terminate_problem = false
+        end
+
+        clean_solution!(restoration_solution)
+        _PM.update_data!(restoration_network, restoration_solution["solution"])
+        clean_status!(restoration_network)
+        _process_repair_status!(restoration_network)
+    end
+
+    # copy network metadata, remove network data. There should be a better way of doing this.
     subnet_solution_set = deepcopy(restoration_solution)
     subnet_solution_set["solution"]["nw"] = Dict{String,Any}()
+    # do not run restoration on network "0"
+    delete!(restoration_network["nw"],"0")
 
-    for(nw_id, network) in sort(Dict{Int,Any}([(parse(Int, k), v) for (k,v) in restoration_network["nw"]]))
-        if count_repairable_items(network) > 1
-            Memento.info(_PM._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(network)) damaged items and $(count_repairable_items(network)) repairable items")
+    for(nw_id, net) in sort(Dict{Int,Any}([(parse(Int, k), v) for (k,v) in restoration_network["nw"]]))
+        net["time_elapsed"] = network["time_elapsed"] # is this the correct way to reset time-elapsed for each network?
+        if count_repairable_items(net) > 1 && !terminate_problem && !terminate_recursion
+            # Run another layer of recursion
+            Memento.info(_PM._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(net)) damaged items and $(count_repairable_items(net)) repairable items")
 
             Memento.info(_PM._LOGGER, "Starting sub network restoration")
+            # copy global keys to create single networks
             for k in keys(restoration_network)
                 if k != "nw"
-                    network[k] = restoration_network[k]
+                    net[k] = restoration_network[k]
                 end
-                network["multinetwork"] = false
             end
+            net["multinetwork"] = false
 
             Memento.info(_PM._LOGGER, "Start recursive call")
-            subnet_solution = _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
+            subnet_solution = _run_iterative_sub_network(net, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
 
-            ##  Rename solution nw_ids appropriately
+            # Rename solution nw_ids appropriately
             last_network = isempty(subnet_solution_set["solution"]["nw"]) ? 0 : maximum(parse.(Int,keys(subnet_solution_set["solution"]["nw"])))
             temp_solution = deepcopy(subnet_solution)
             temp_solution["solution"]["nw"] = Dict{String,Any}()
@@ -140,14 +206,13 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
                     temp_solution["solution"]["nw"]["$(last_network+parse(Int,id))"] = net
                 end
             end
-            merge_solution!(subnet_solution_set, temp_solution)
-
+            _merge_solution!(subnet_solution_set, temp_solution)
         else
-
+            # Final recursion layer, place network in solution set
             last_network = isempty(subnet_solution_set["solution"]["nw"]) ? 0 : maximum(parse.(Int,keys(subnet_solution_set["solution"]["nw"])))
-            subnet_solution_set["solution"]["nw"]["$(last_network+1)"] = network
+            subnet_solution_set["solution"]["nw"]["$(last_network+1)"] = net
 
-            Memento.info(_PM._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(network)) damaged items and $(count_repairable_items(network)) repairable items")
+            Memento.info(_PM._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(net)) damaged items and $(count_repairable_items(net)) repairable items")
             Memento.info(_PM._LOGGER, "sub_network does not need restoration sequencing")
         end
     end
@@ -157,7 +222,7 @@ end
 
 
 "Merge solution dictionaries and accumulate solvetime and objective"
-function merge_solution!(solution1, solution2)
+function _merge_solution!(solution1, solution2)
     Memento.info(_PM._LOGGER, "networks $(keys(solution2["solution"]["nw"])) finished with status $(solution2["termination_status"])")
 
     solution1["termination_status"] = max(solution1["termination_status"],solution2["termination_status"])
@@ -171,30 +236,52 @@ function merge_solution!(solution1, solution2)
     end
 end
 
+function _get_item_repairs(mn_data)
+    if !_IM.ismultinetwork(mn_data)
+        Memento.error(_PM._LOGGER, "get_item_repairs requires multinetwork.")
+    end
 
-" Update damage status for each time period based on whether the device has already been repaired"
-function update_damage_status!(mn_data)
-    if _IM.ismultinetwork(mn_data)
-        for (nw_id, network) in mn_data["nw"]
-            for (comp_type, comp_status) in _PM.pm_component_status
-                for (comp_id, comp) in network[comp_type]
-                    if nw_id != "0" #not items are repaired in "0", do not check in previous network for a change
-                        if comp[comp_status] != _PM.pm_component_status_inactive[comp_type] &&  # if comp is active
-                            mn_data["nw"]["$(parse(Int,nw_id)-1)"][comp_type][comp_id][comp_status] != _PM.pm_component_status_inactive[comp_type] # if comp was previously active
-                            if haskey(comp,"damaged") && comp["damaged"] == 1
-                                # therefore the comp was repaired in a former time_step, should be considered undamaged
-                                Memento.info(_PM._LOGGER, "$(comp_type) $(comp_id) was repaired before step $(nw_id). Setting damged state to 0.")
-                                comp["damaged"] = 0
-                            end
-                        end
+    repairs = Dict{String,Array{Tuple{String,String},1}}(nw=>[] for nw in keys(mn_data["nw"]))
+    for (nw_id, network) in mn_data["nw"]
+        for comp_name in restoration_comps
+            status_key = _PM.pm_component_status[comp_name]
+            for (comp_id, comp) in network[comp_name]
+                if nw_id != "0" #not items are repaired in "0", do not check in previous network for a change
+                    if comp[status_key] != _PM.pm_component_status_inactive[comp_name] &&  # if comp is active
+                        mn_data["nw"]["$(parse(Int,nw_id)-1)"][comp_name][comp_id][status_key] == _PM.pm_component_status_inactive[comp_name] # if comp was previously inactive
+                        push!(repairs[nw_id], (comp_name,comp_id))
                     end
                 end
             end
         end
-    else
-        Memento.error(_PM._LOGGER, "update_damage_status required multinetwork to identify is a device has been previously repaired.")
+    end
+
+    return repairs
+end
+
+
+"Remove damage status if a device has already been repaired"
+function _process_repair_status!(mn_data)
+    if !_IM.ismultinetwork(mn_data)
+        Memento.error(_PM._LOGGER, "get_item_repairs requires multinetwork")
+    end
+
+    repairs = _get_item_repairs(mn_data)
+    for (nw_repair,items) in repairs
+        for (comp_name,comp_id) in items
+            for nw_network in keys(mn_data["nw"])
+                if nw_repair < nw_network # is it still damaged in the time period the repair occurs
+                    comp = mn_data["nw"][nw_network][comp_name][comp_id]
+                    if haskey(comp,"damaged") && comp["damaged"]==1
+                        Memento.info(_PM._LOGGER, "$(comp_name) $(comp_id) was repaired at step $(nw_repair). Setting damaged state to 0 in network $(nw_network).")
+                        comp["damaged"]=0
+                    end
+                end
+            end
+        end
     end
 end
+
 
 ""
 function _run_rop_ir(file, model_constructor, optimizer; kwargs...)
@@ -224,7 +311,6 @@ function _build_rop_ir(pm::_PM.AbstractPowerModel)
         _PM.variable_shunt_admittance_factor(pm, nw=n, relax=true)
 
         constraint_restoration_cardinality_ub(pm, nw=n)
-        constraint_restoration_cardinality_lb(pm, nw=n)
 
         constraint_model_voltage_damage(pm, nw=n)
 

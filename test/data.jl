@@ -19,11 +19,13 @@
 
         @test isapprox(network["gen"]["4"]["damaged"], 0, atol=1e-4)
         @test isapprox(network["branch"]["7"]["damaged"], 0, atol=1e-4)
+        @test isapprox(network["storage"]["1"]["damaged"], 0, atol=1e-4)
 
         propagate_damage_status!(network)
 
         @test isapprox(network["gen"]["4"]["damaged"], 1, atol=1e-4)
         @test isapprox(network["branch"]["7"]["damaged"], 1, atol=1e-4)
+        @test isapprox(network["storage"]["1"]["damaged"], 1, atol=1e-4)
 
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         network_mn = replicate_restoration_network(network, count=2)
@@ -60,7 +62,7 @@
         @test "1" in comp_set["gen"]
         @test "4" in comp_set["bus"]
         @test "6" in comp_set["branch"]
-        @test ~( "2" in comp_set["storage"] )
+        @test !( "2" in comp_set["storage"] )
 
         network_mn = replicate_restoration_network(network, count=2)
         comp_set = get_damaged_items(network_mn)
@@ -68,7 +70,7 @@
         @test "1" in comp_set["nw"]["0"]["gen"]
         @test "4" in comp_set["nw"]["0"]["bus"]
         @test "6" in comp_set["nw"]["0"]["branch"]
-        @test ~( "2" in comp_set["nw"]["0"]["storage"] )
+        @test !( "2" in comp_set["nw"]["0"]["storage"] )
 
     end
 
@@ -79,7 +81,7 @@
         load_set = get_isolated_load(network)
 
         @test "3" in load_set["load"]
-        @test ~("2" in load_set["load"])
+        @test !("2" in load_set["load"])
 
         network_mn = replicate_restoration_network(network, count=2)
         set_component_inactive!(network_mn, Dict("bus" =>["1","2","3","4","10"]))
@@ -120,14 +122,14 @@
         set_component_inactive!(network, Dict("branch" => ["1"]))
         repairable_set = get_repairable_items(network)
         @test ("1" in repairable_set["gen"])
-        @test ~("1" in repairable_set["branch"])
+        @test !("1" in repairable_set["branch"])
 
         #should have same result in multinetwork
         mn_network = replicate_restoration_network(network,count=3)
         repairable_set = get_repairable_items(mn_network)
 
         @test ("1" in repairable_set["nw"]["2"]["gen"])
-        @test ~("1" in repairable_set["nw"]["2"]["branch"])
+        @test !("1" in repairable_set["nw"]["2"]["branch"])
     end
 
     @testset "count_active_items" begin
