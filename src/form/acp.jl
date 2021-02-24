@@ -33,7 +33,7 @@ function variable_bus_voltage_on_off(pm::_PM.AbstractACPModel; kwargs...)
     variable_bus_voltage_magnitude_on_off(pm; kwargs...)
 end
 
-function constraint_bus_voltage_on_off(pm::_PM.AbstractACPModel; nw::Int=pm.cnw, kwargs...)
+function constraint_bus_voltage_on_off(pm::_PM.AbstractACPModel; nw::Int=nw_id_default, kwargs...)
     for (i,bus) in _PM.ref(pm, nw, :bus)
         # TODO turn off voltage angle too?
         constraint_voltage_magnitude_on_off(pm, i; nw=nw)

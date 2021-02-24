@@ -157,7 +157,7 @@ function count_active_items(network::Dict{String, Any})
 
     active_set = get_active_items(network)
 
-    return sum(length(comp_ids) for (comp_type,comp_ids) in active_set)
+    return sum(length(comp_ids) for (comp_name,comp_ids) in active_set)
 end
 
 

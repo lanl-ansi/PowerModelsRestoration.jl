@@ -1,16 +1,16 @@
 ""
-function constraint_model_voltage_damage(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw)
+function constraint_model_voltage_damage(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default)
     constraint_model_voltage_damage(pm, nw)
 end
 
 "Limit the maximum number of items restored in each time-step"
-function constraint_restoration_cardinality_ub(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw, cumulative_repairs=_PM.ref(pm, nw, :repaired_total))
+function constraint_restoration_cardinality_ub(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, cumulative_repairs=_PM.ref(pm, nw, :repaired_total))
     constraint_restoration_cardinality_ub(pm, nw, cumulative_repairs)
 end
 
 
 "Limit the minimum number of items restored in each time-step"
-function constraint_restoration_cardinality_lb(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw, cumulative_repairs=_PM.ref(pm, nw, :repaired_total))
+function constraint_restoration_cardinality_lb(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, cumulative_repairs=_PM.ref(pm, nw, :repaired_total))
     constraint_restoration_cardinality_lb(pm, nw, cumulative_repairs)
 end
 
@@ -22,7 +22,7 @@ end
 
 
 ""
-function constraint_gen_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_gen_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     gen = _PM.ref(pm, nw, :gen, i)
 
     gen_damaged = haskey(_PM.ref(pm, nw, :gen_damage), i)
@@ -41,7 +41,7 @@ end
 
 
 ""
-function constraint_load_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_load_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     if haskey(_PM.ref(pm, nw, :load), i)
         load = _PM.ref(pm, nw, :load, i)
 
@@ -55,7 +55,7 @@ end
 
 
 ""
-function constraint_shunt_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_shunt_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     if haskey(_PM.ref(pm, nw, :shunt), i)
         shunt = _PM.ref(pm, nw, :shunt, i)
         bus_damaged = haskey(_PM.ref(pm, nw, :bus_damage), shunt["shunt_bus"])
@@ -68,7 +68,7 @@ end
 
 
 ""
-function constraint_branch_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_branch_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     branch = _PM.ref(pm, nw, :branch, i)
 
     branch_damaged = haskey(_PM.ref(pm, nw, :branch_damage), i)
@@ -93,7 +93,7 @@ end
 
 
 ""
-function constraint_ohms_yt_from_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_ohms_yt_from_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     branch = _PM.ref(pm, nw, :branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
@@ -123,7 +123,7 @@ end
 
 
 ""
-function constraint_ohms_yt_to_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_ohms_yt_to_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     branch = _PM.ref(pm, nw, :branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
@@ -154,7 +154,7 @@ end
 
 
 ""
-function constraint_voltage_angle_difference_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_voltage_angle_difference_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     branch = _PM.ref(pm, nw, :branch, i)
     f_idx = (i, branch["f_bus"], branch["t_bus"])
 
@@ -183,7 +183,7 @@ end
 Adds the (upper and lower) thermal limit constraints for the desired branch to the PowerModel.
 
 """
-function constraint_thermal_limit_from_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_thermal_limit_from_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     branch = _PM.ref(pm, nw, :branch, i)
 
     f_bus = branch["f_bus"]
@@ -202,7 +202,7 @@ end
 
 
 ""
-function constraint_thermal_limit_to_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_thermal_limit_to_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     branch = _PM.ref(pm, nw, :branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
@@ -220,7 +220,7 @@ end
 
 
 ""
-function constraint_storage_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_storage_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     storage = _PM.ref(pm, nw, :storage, i)
 
     storage_damaged = haskey(_PM.ref(pm, nw, :storage_damage), i)
@@ -248,7 +248,7 @@ function constraint_storage_damage(pm::_PM.AbstractPowerModel, i::Int; nw::Int=p
 end
 
 ""
-function constraint_bus_damage_soft(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_bus_damage_soft(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     bus = _PM.ref(pm, nw, :bus, i)
 
     constraint_bus_damage_soft(pm, nw, i, bus["vmin"], bus["vmax"])
@@ -256,7 +256,7 @@ end
 
 
 ""
-function constraint_voltage_magnitude_bounds_soft(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_voltage_magnitude_bounds_soft(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     bus = _PM.ref(pm, nw, :bus, i)
 
     constraint_voltage_magnitude_bounds_soft(pm, nw, i, bus["vmin"], bus["vmax"])
@@ -264,7 +264,7 @@ end
 
 
 ""
-function constraint_power_balance_shed(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_power_balance_shed(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     if !haskey(_PM.con(pm, nw), :kcl_p)
         _PM.con(pm, nw)[:kcl_p] = Dict{Int,JuMP.ConstraintRef}()
     end
@@ -291,17 +291,17 @@ function constraint_power_balance_shed(pm::_PM.AbstractPowerModel, i::Int; nw::I
 end
 
 
-constraint_bus_voltage_on_off(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw, kwargs...) = constraint_bus_voltage_on_off(pm, nw; kwargs...)
+constraint_bus_voltage_on_off(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, kwargs...) = constraint_bus_voltage_on_off(pm, nw; kwargs...)
 
 
-function constraint_voltage_magnitude_on_off(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_voltage_magnitude_on_off(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     bus = _PM.ref(pm, nw, :bus, i)
 
     constraint_voltage_magnitude_on_off(pm, nw, i, bus["vmin"], bus["vmax"])
 end
 
 
-function constraint_voltage_magnitude_sqr_on_off(pm::_PM.AbstractPowerModel, i::Int; nw::Int=pm.cnw)
+function constraint_voltage_magnitude_sqr_on_off(pm::_PM.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     bus = _PM.ref(pm, nw, :bus, i)
 
     constraint_voltage_magnitude_sqr_on_off(pm, nw, i, bus["vmin"], bus["vmax"])

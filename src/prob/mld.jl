@@ -125,8 +125,8 @@ function run_mld_smpl(pm::_PM.AbstractPowerModel)
     pg = _PM.var(pm, :pg)
     qg = _PM.var(pm, :qg)
 
-    z_demand = _PM.var(pm, pm.cnw, :z_demand)
-    z_shunt = _PM.var(pm, pm.cnw, :z_shunt)
+    z_demand = _PM.var(pm, nw_id_default, :z_demand)
+    z_shunt = _PM.var(pm, nw_id_default, :z_shunt)
 
     load_weight = Dict(i => get(load, "weight", 1.0) for (i,load) in _PM.ref(pm, :load))
 

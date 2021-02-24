@@ -4,7 +4,7 @@
     @testset "active and reactive" begin
         result = run_mld(case3_mld_s, PowerModels.ACPPowerModel, ipopt_solver)
 
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         for (i,bus) in result["solution"]["bus"]
             @test haskey(bus, "status")
             @test haskey(bus, "vm")
@@ -54,7 +54,7 @@
     @testset "active only" begin
         result = run_mld(case3_mld_s, PowerModels.DCPPowerModel, ipopt_solver)
 
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         for (i,bus) in result["solution"]["bus"]
             #if bus[PowerModels.pm_component_status["bus"]] != PowerModels.pm_component_status_inactive["bus"]
                 @test haskey(bus, "vm")

@@ -5,7 +5,7 @@
         result = run_mld_strg(case5_mld_strg, PowerModels.ACPPowerModel, juniper_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 2286.29; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 6.297338; atol = 1e-2)
@@ -17,7 +17,7 @@
     #     result = run_mld_strg_uc(case5_mld_strg_uc, PowerModels.ACPPowerModel, juniper_solver)
 
     #     #println(result["objective"])
-    #     @test result["termination_status"] == LOCALLY_SOLVED
+    #     @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
     #     @test isapprox(result["objective"], 2294.2098; atol = 1e-2)
     #     #println("active power: $(active_power_served(result))")
     #     @test isapprox(active_power_served(result), 7.1258; atol = 1e-1)
@@ -34,7 +34,7 @@
         result = run_mld_strg_uc(case5_mld_strg_only, PowerModels.ACPPowerModel, juniper_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 2080.2286; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 0.22888; atol = 1e-1)
@@ -51,7 +51,7 @@ end
         result = run_mld_strg(case5_mld_strg, PowerModels.SOCWRPowerModel, juniper_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 2286.3; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 6.297338; atol = 1e-2)
@@ -62,7 +62,7 @@ end
         result = run_mld_strg_uc(case5_mld_strg_uc, PowerModels.SOCWRPowerModel, juniper_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 2305.94; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 6.9476; atol = 1e-1)
@@ -79,7 +79,7 @@ end
         result = run_mld_strg_uc(case5_mld_strg_only, PowerModels.SOCWRPowerModel, juniper_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 2080.22; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 0.228540; atol = 1e-1)
@@ -97,7 +97,7 @@ end
         result = run_mld_strg(case5_mld_strg, PowerModels.DCPPowerModel, juniper_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 286.3198; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 6.31987; atol = 1e-1)
@@ -108,7 +108,7 @@ end
         result = run_mld_strg_uc(case5_mld_strg_uc, PowerModels.DCPPowerModel, juniper_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 326.3098; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 6.30989; atol = 1e-1)
@@ -125,7 +125,7 @@ end
         result = run_mld_strg_uc(case5_mld_strg_only, PowerModels.DCPPowerModel, juniper_solver)
 
         #println(result["objective"])
-        @test result["termination_status"] == LOCALLY_SOLVED
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 80.41996; atol = 1e-2)
         #println("active power: $(active_power_served(result))")
         @test isapprox(active_power_served(result), 0.4199800; atol = 1e-1)
@@ -143,7 +143,7 @@ end
     #     result = run_mld_strg(case5_mld_strg, PowerModels.SOCWRPowerModel, juniper_solver)
 
     #     #println(result["objective"])
-    #     @test result["termination_status"] == LOCALLY_SOLVED
+    #     @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
     #     @test isapprox(result["objective"], 286.6276942310463; atol = 1e-2)
     #     #println("active power: $(active_power_served(result))")
     #     @test isapprox(active_power_served(result), 6.683425000630671; atol = 1e-1)

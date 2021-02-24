@@ -1,5 +1,5 @@
 % used in tests of,
-% - restoration modeling with storage
+% - restoration modeling with a shunt on a damaged bus.  Requires `shedding` of shunt.
 
 function mpc = case5
 mpc.version = '2';
@@ -8,7 +8,7 @@ mpc.baseMVA = 100.0;
 %% bus data
 %	bus_i	type	Pd	Qd	Gs	Bs	area	Vm	Va	baseKV	zone	Vmax	Vmin
 mpc.bus = [
-	1	 2	 0.0	 0.0	 0.0	 0.0	 1	 1.00000	 2.80377	 230.0	 1	 1.10000	 0.90000;
+	1	 2	 0.0	 0.0	 0.0	 -5.0  	 1	 1.00000	 2.80377	 230.0	 1	 1.10000	 0.90000;
 	2	 1	 300.0	 98.61	 0.0	 0.0	 1	 1.08407	 -0.73465	 230.0	 1	 1.10000	 0.90000;
 	3	 2	 300.0	 98.61	 0.0	 0.0	 1	 1.00000	 -0.55972	 230.0	 1	 1.10000	 0.90000;
 	4	 3	 400.0	 131.47	 0.0	 0.0	 1	 1.00000	 0.00000	 230.0	 1	 1.10000	 0.90000;
@@ -16,10 +16,10 @@ mpc.bus = [
 ];
 %column_names%  damaged
 mpc.bus_damage = [
-	0;
-	0;
-	0;
 	1;
+	0;
+	0;
+	0;
 	0;
 ];
 
@@ -37,7 +37,7 @@ mpc.gen = [
 mpc.gen_damage = [
 	1;
 	1;
-	0;
+	1;
 	0;
 	0;
 ];
@@ -66,14 +66,13 @@ mpc.branch = [
 %column_names%  damaged
 mpc.branch_damage = [
 	1;
-	1;
-	1;
-	1;
+	0;
+	0;
+	0;
 	0;
 	0;
 	0;
 ];
-
 
 % hours
 mpc.time_elapsed = 1.0
@@ -86,6 +85,6 @@ mpc.storage = [
 ];
 %column_names%  damaged
 mpc.storage_damage = [
-	0;
+	1;
 	0;
 ];

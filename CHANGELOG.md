@@ -3,6 +3,8 @@
 ## Staged
 - Fixed bug in iterative restoration solution generation (#44)
 - Add support for InfrastructureModels multi-infrastructure functions.
+- Add const for supported components for repairs `restoration_comps`
+- Update `get_repairable_items`, `get_damaged_items`, `clear_damage_indicator` to use `restoration_comps`
 
 ## v0.5.0
 - Update to new function name convention of PowerModels v0.17 details in PR #40 (breaking)

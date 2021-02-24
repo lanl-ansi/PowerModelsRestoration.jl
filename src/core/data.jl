@@ -1,14 +1,21 @@
-function count_repairable_items(data::Dict{String, Any})
-    pm_data = _PM.get_pm_data(data)
 
-    if _IM.ismultinetwork(pm_data)
+"supported components for restoration"
+const restoration_comps = ["bus" "gen" "storage" "branch"]
+
+
+""
+function count_repairable_items(network::Dict{String, Any})
+    pm_network = _PM.get_pm_data(network)
+
+    if _IM.ismultinetwork(pm_network)
         repairable_count = Dict{String,Any}("nw" => Dict{String,Any}())
-        repairable_set = get_repairable_items(pm_data)
-        repairable_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_type,comp_ids) in repariable_network) for (nw, repariable_network) in repairable_set["nw"] )
+        repairable_set = get_repairable_items(pm_network)
+        repairable_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_name,comp_ids) in repariable_network) for (nw, repariable_network) in repairable_set["nw"] )
     else
-        repairable_set = get_repairable_items(pm_data)
-        return repairable_count = sum(length(comp_ids) for (comp_type,comp_ids) in repairable_set)
+        repairable_set = get_repairable_items(pm_network)
+        return repairable_count = sum(length(comp_ids) for (comp_name,comp_ids) in repairable_set)
     end
+
     return repairable_count
 end
 
@@ -19,6 +26,7 @@ function get_repairable_items(data::Dict{String, Any})
 
     if haskey(pm_data, "multinetwork") && pm_data["multinetwork"] == true
         repairs = Dict{String,Any}("nw"=>Dict{String,Any}())
+
         for (nw, net) in pm_data["nw"]
             repairs["nw"][nw] = _get_repairable_items(net)
         end
@@ -33,9 +41,11 @@ end
 ""
 function _get_repairable_items(network::Dict{String,Any})
     repairs = Dict{String, Vector{String}}()
-
-    for (comp_name, status_key) in _PM.pm_component_status
+    
+    for comp_name in restoration_comps
+        status_key = _PM.pm_component_status[comp_name]
         repairs[comp_name] = []
+
         for (comp_id, comp) in get(network, comp_name, Dict())
             if haskey(comp, status_key) && comp[status_key] != _PM.pm_component_status_inactive[comp_name] && haskey(comp, "damaged") && comp["damaged"] == 1
                 push!(repairs[comp_name], comp_id)
@@ -64,16 +74,16 @@ end
 
 
 "Count the number of items with a key \"damaged\" == 1 in a network"
-function count_damaged_items(data::Dict{String, Any})
-    pm_data = _PM.get_pm_data(data)
+function count_damaged_items(network::Dict{String, Any})
+    pm_network = _PM.get_pm_data(network)
 
-    if _IM.ismultinetwork(pm_data)
+    if _IM.ismultinetwork(pm_network)
         damaged_count = Dict{String,Any}("nw" => Dict{String,Any}())
-        damaged_set = get_damaged_items(pm_data)
-        damaged_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_type,comp_ids) in damage_network) for (nw, damage_network) in damaged_set["nw"] )
+        damaged_set = get_damaged_items(pm_network)
+        damaged_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_name,comp_ids) in damage_network) for (nw, damage_network) in damaged_set["nw"] )
     else
-        damaged_set = get_damaged_items(pm_data)
-        damaged_count = sum(length(comp_ids) for (comp_type,comp_ids) in damaged_set)
+        damaged_set = get_damaged_items(pm_network)
+        damaged_count = sum(length(comp_ids) for (comp_name,comp_ids) in damaged_set)
     end
 
     return damaged_count
@@ -86,6 +96,7 @@ function get_damaged_items(data::Dict{String,Any})
 
     if _IM.ismultinetwork(pm_data)
         comp_list = Dict{String,Any}("nw" => Dict{String,Any}())
+
         for (i, nw_data) in pm_data["nw"]
             comp_list["nw"][i] = _get_damaged_items(nw_data)
         end
@@ -100,14 +111,18 @@ end
 ""
 function _get_damaged_items(network::Dict{String,Any})
     comp_list = Dict{String, Array{String,1}}()
-    for (comp_type, comp_status) in _PM.pm_component_status
-        comp_list[comp_type] = []
-        for (comp_id, comp) in network[comp_type]
+
+    for comp_name in restoration_comps
+        status_key = _PM.pm_component_status[comp_name]
+        comp_list[comp_name] = []
+
+        for (comp_id, comp) in network[comp_name]
             if haskey(comp, "damaged") && comp["damaged"] == 1
-                push!(comp_list[comp_type], comp_id)
+                push!(comp_list[comp_name], comp_id)
             end
         end
     end
+
     return comp_list
 end
 
@@ -131,7 +146,7 @@ end
 
 ""
 function _get_isolated_load(network::Dict{String,Any})
-    load_list =  Dict{String, Array{String,1}}()
+    load_list = Dict{String, Array{String,1}}()
     load_list["load"] = []
 
     bus_status =  _PM.pm_component_status["bus"]
@@ -145,6 +160,7 @@ function _get_isolated_load(network::Dict{String,Any})
             push!(load_list["load"], load_id)
         end
     end
+
     return load_list
 end
 
@@ -168,9 +184,9 @@ end
 
 ""
 function _set_component_inactive!(network::Dict{String,Any}, comp_list::Dict{String, Array{String,1}})
-    for (comp_type, comp_ids) in comp_list
+    for (comp_name, comp_ids) in comp_list
         for comp_id in comp_ids
-            network[comp_type][comp_id][_PM.pm_component_status[comp_type]] = _PM.pm_component_status_inactive[comp_type]
+            network[comp_name][comp_id][_PM.pm_component_status[comp_name]] = _PM.pm_component_status_inactive[comp_name]
         end
     end
 end
@@ -191,7 +207,9 @@ end
 
 
 function _clear_damage_indicator!(network::Dict{String,Any})
-    for (comp_name, status_key) in _PM.pm_component_status
+    for comp_name in restoration_comps
+        status_key = _PM.pm_component_status[comp_name]
+
         for (i, comp) in get(network, comp_name, Dict())
             if haskey(comp, "damaged")
                 comp["damaged"] = 0
@@ -251,6 +269,7 @@ function _update_status!(network::Dict{String,Any}, solution::Dict{String, Any})
     for (comp_name, status_key) in _PM.pm_component_status
         if haskey(solution, comp_name) && haskey(network, comp_name)
             nw_comps = network[comp_name]
+            
             for (i, sol_comp) in solution[comp_name]
                 nw_comp = nw_comps[i]
                 nw_comp[status_key] = sol_comp[status_key]
@@ -376,6 +395,7 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
         Memento.error(_PM._LOGGER, "replicate_restoration_network can only be used on single networks")
     end
 
+    # TODO: Make deepcopy to prevent altering input network.
     clean_status!(pm_sn_data)
     propagate_damage_status!(pm_sn_data)
 
@@ -430,7 +450,7 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
     return mn_data
 end
 
-""
+"propagates the damaged indicator from buses to indicent branches, generators, shunts, and storage"
 function propagate_damage_status!(data::Dict{String,<:Any})
     pm_data = _PM.get_pm_data(data)
 
