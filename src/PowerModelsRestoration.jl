@@ -9,6 +9,7 @@ import Memento
 const _IM = InfrastructureModels
 const _PM = PowerModels
 
+include("core/types.jl")
 include("core/variable.jl")
 include("core/data.jl")
 include("core/constraint_template.jl")
@@ -24,7 +25,7 @@ include("prob/test.jl")
 
 include("form/shared.jl")
 include("form/acp.jl")
-include("form/acr.jl")
+include("form/acrq.jl")
 include("form/apo.jl")
 include("form/dcp.jl")
 include("form/wr.jl")
