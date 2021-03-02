@@ -24,7 +24,6 @@ include("prob/test.jl")
 
 include("form/shared.jl")
 include("form/acp.jl")
-include("form/acr.jl")
 include("form/apo.jl")
 include("form/dcp.jl")
 include("form/wr.jl")
