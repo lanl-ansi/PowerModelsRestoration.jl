@@ -9,7 +9,7 @@ function variable_bus_voltage_damage(pm::_PM.AbstractWRModel; kwargs...)
 end
 
 "this is the same as non-damaged version becouse ccms includes zero"
-function variable_storage_current_damage(pm::_PM.AbstractWRModel; nw::Int=pm.cnw)
+function variable_storage_current_damage(pm::_PM.AbstractWRModel; nw::Int=nw_id_default)
     _PM.variable_storage_current(pm, nw=nw)
     # buses = _PM.ref(pm, nw, :bus)
     # ub = Dict()
@@ -32,7 +32,7 @@ end
 
 
 ""
-function variable_bus_voltage_magnitude_sqr_violation(pm::_PM.AbstractPowerModel; nw::Int=pm.cnw)
+function variable_bus_voltage_magnitude_sqr_violation(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default)
     _PM.var(pm, nw)[:w_vio] = JuMP.@variable(pm.model,
         [i in _PM.ids(pm, nw, :bus)], base_name="$(nw)_w_vio",
         lower_bound = 0.0,
@@ -151,7 +151,7 @@ end
 
 
 ""
-function constraint_ohms_yt_from_damage(pm::_PM.AbstractWRModel, i::Int; nw::Int=pm.cnw)
+function constraint_ohms_yt_from_damage(pm::_PM.AbstractWRModel, i::Int; nw::Int=nw_id_default)
     branch = _PM.ref(pm, nw, :branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
@@ -181,7 +181,7 @@ end
 
 
 ""
-function constraint_ohms_yt_to_damage(pm::_PM.AbstractWRModel, i::Int; nw::Int=pm.cnw)
+function constraint_ohms_yt_to_damage(pm::_PM.AbstractWRModel, i::Int; nw::Int=nw_id_default)
     branch = _PM.ref(pm, nw, :branch, i)
     f_bus = branch["f_bus"]
     t_bus = branch["t_bus"]
@@ -220,7 +220,7 @@ function variable_bus_voltage_on_off(pm::_PM.AbstractWRModel; kwargs...)
 end
 
 
-function variable_bus_voltage_product_on_off(pm::_PM.AbstractWRModel; nw::Int=pm.cnw)
+function variable_bus_voltage_product_on_off(pm::_PM.AbstractWRModel; nw::Int=nw_id_default)
     wr_min, wr_max, wi_min, wi_max = _PM.ref_calc_voltage_product_bounds(_PM.ref(pm, nw, :buspairs))
 
     _PM.var(pm, nw)[:wr] = JuMP.@variable(pm.model,
@@ -239,7 +239,7 @@ function variable_bus_voltage_product_on_off(pm::_PM.AbstractWRModel; nw::Int=pm
 end
 
 
-function constraint_bus_voltage_product_on_off(pm::_PM.AbstractWRModels; nw::Int=pm.cnw)
+function constraint_bus_voltage_product_on_off(pm::_PM.AbstractWRModels; nw::Int=nw_id_default)
     wr_min, wr_max, wi_min, wi_max = _PM.ref_calc_voltage_product_bounds(_PM.ref(pm, nw, :buspairs))
 
     wr = _PM.var(pm, nw, :wr)

@@ -64,11 +64,11 @@ end
 
 ""
 function objective_min_restoration(pm::_PM.AbstractPowerModel)
-    @assert !_IM.ismultinetwork(pm)
-    z_storage = _PM.var(pm, pm.cnw, :z_storage)
-    z_gen = _PM.var(pm, pm.cnw, :z_gen)
-    z_branch = _PM.var(pm, pm.cnw, :z_branch)
-    z_bus = _PM.var(pm, pm.cnw, :z_bus)
+    @assert !_PM.ismultinetwork(pm)
+    z_storage = _PM.var(pm, nw_id_default, :z_storage)
+    z_gen = _PM.var(pm, nw_id_default, :z_gen)
+    z_branch = _PM.var(pm, nw_id_default, :z_branch)
+    z_bus = _PM.var(pm, nw_id_default, :z_bus)
 
     JuMP.@objective(pm.model, Min,
         sum(z_branch[i] for (i,branch) in _PM.ref(pm, :branch_damage))

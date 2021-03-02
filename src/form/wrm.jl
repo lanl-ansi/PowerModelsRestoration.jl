@@ -1,6 +1,6 @@
 
 
-function variable_bus_voltage_on_off(pm::_PM.AbstractWRMModel, nw::Int=pm.cnw; bounded = true, kwargs...)
+function variable_bus_voltage_on_off(pm::_PM.AbstractWRMModel, nw::Int=nw_id_default; bounded = true, kwargs...)
     wr_min, wr_max, wi_min, wi_max = _PM.ref_calc_voltage_product_bounds(_PM.ref(pm, nw, :buspairs))
 
     bus_count = length(_PM.ref(pm, nw, :bus))

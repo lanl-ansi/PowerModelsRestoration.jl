@@ -13,8 +13,8 @@ end
 
 
 
-function variable_bus_voltage_indicator(pm::_PM.AbstractDCPModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
-    report && _IM.sol_component_fixed(pm, nw, :bus, :status, _PM.ids(pm, nw, :bus), 1.0)
+function variable_bus_voltage_indicator(pm::_PM.AbstractDCPModel; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
+    report && _IM.sol_component_fixed(pm, _PM.pm_it_sym, nw, :bus, :status, _PM.ids(pm, nw, :bus), 1.0)
 end
 
 function variable_bus_voltage_on_off(pm::_PM.AbstractDCPModel; kwargs...)
@@ -22,12 +22,12 @@ function variable_bus_voltage_on_off(pm::_PM.AbstractDCPModel; kwargs...)
     variable_bus_voltage_magnitude_on_off(pm; kwargs...)
 end
 
-function variable_bus_voltage_magnitude_on_off(pm::_PM.AbstractDCPModel; nw::Int=pm.cnw, relax::Bool=false, report::Bool=true)
-    report && _IM.sol_component_fixed(pm, nw, :bus, :vm, _PM.ids(pm, nw, :bus), 1.0)
+function variable_bus_voltage_magnitude_on_off(pm::_PM.AbstractDCPModel; nw::Int=nw_id_default, relax::Bool=false, report::Bool=true)
+    report && _IM.sol_component_fixed(pm, _PM.pm_it_sym, nw, :bus, :vm, _PM.ids(pm, nw, :bus), 1.0)
 end
 
 
-function constraint_bus_voltage_on_off(pm::_PM.AbstractDCPModel; nw::Int=pm.cnw, kwargs...)
+function constraint_bus_voltage_on_off(pm::_PM.AbstractDCPModel; nw::Int=nw_id_default, kwargs...)
 end
 
 ""

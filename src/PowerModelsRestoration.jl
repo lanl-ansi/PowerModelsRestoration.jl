@@ -2,6 +2,7 @@ module PowerModelsRestoration
 
 import JuMP
 import InfrastructureModels
+import InfrastructureModels: nw_id_default
 import PowerModels
 import Memento
 

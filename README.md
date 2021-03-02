@@ -35,7 +35,7 @@ If you find the PowerModelsRestoration package useful in your work, we request t
 In addition, if the MLD problem from PowerModelsRestoration useful in your work, we kindly request that you cite the following [publication](https://ieeexplore.ieee.org/document/8494809):
 ```
 @article{8494809,
-  author={Carleton Coffrin and Russel Bent and Byron Tasseff and Kaarthik Sundar and Scott Backhaus},
+  author={Carleton Coffrin and Russell Bent and Byron Tasseff and Kaarthik Sundar and Scott Backhaus},
   title={Relaxations of AC Maximal Load Delivery for Severe Contingency Analysis},
   journal={IEEE Transactions on Power Systems},
   volume={34}, number={2}, pages={1450-1458},
