@@ -191,6 +191,15 @@
                 @test isapprox(result["solution"]["nw"]["$(nw_id)"]["time_elapsed"], data["time_elapsed"]; atol=1e-1)
             end
         end
+
+        @testset "totally damaged scenario" begin
+             # totally damaged 3_bus system, with missing time_elapsed value
+             data = PowerModels.parse_file("../test/data/case3_restoration_iterative.m")
+
+             result = run_iterative_restoration(data, PowerModels.DCPPowerModel, cbc_solver; repair_periods=2)
+             @test result["termination_status"] == PowerModels.OPTIMAL
+        end
+
     end
 
 end
