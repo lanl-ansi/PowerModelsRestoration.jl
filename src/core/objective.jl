@@ -98,22 +98,29 @@ function objective_max_loadability(pm::_PM.AbstractPowerModel)
     time_elapsed = Dict(n => get(_PM.ref(pm, n), :time_elapsed, 1) for n in nws)
 
     load_weight = Dict(n =>
-        Dict(i => get(load, "weight", 1.0) for (i,load) in _PM.ref(pm, n, :load)) 
+        Dict(i => get(load, "weight", 1.0) for (i,load) in _PM.ref(pm, n, :load))
     for n in nws)
 
     #println(load_weight)
 
-    M = Dict(n => 10*maximum([load_weight[n][i]*abs(load["pd"]) for (i,load) in _PM.ref(pm, n, :load)]) for n in nws)
+    M = Dict()
+    for n in nws
+        scaled_weight = [load_weight[n][i]*abs(load["pd"]) for (i,load) in _PM.ref(pm, n, :load)]
+        if isempty(scaled_weight)
+            scaled_weight = [1.0]
+        end
+        M[n] = 10*maximum(scaled_weight)
+    end
 
     return JuMP.@objective(pm.model, Max,
-        sum( 
-            ( 
+        sum(
+            (
             time_elapsed[n]*(
                 sum(M[n]*10*z_voltage[n][i] for (i,bus) in _PM.ref(pm, n, :bus)) +
                 sum(M[n]*z_gen[n][i] for (i,gen) in _PM.ref(pm, n, :gen)) +
                 sum(M[n]*z_shunt[n][i] for (i,shunt) in _PM.ref(pm, n, :shunt)) +
                 sum(load_weight[n][i]*abs(load["pd"])*z_demand[n][i] for (i,load) in _PM.ref(pm, n, :load))
-                ) 
+                )
             )
             for n in nws)
         )
@@ -141,23 +148,30 @@ function objective_max_loadability_strg(pm::_PM.AbstractPowerModel)
     time_elapsed = Dict(n => get(_PM.ref(pm, n), :time_elapsed, 1) for n in nws)
 
     load_weight = Dict(n =>
-        Dict(i => get(load, "weight", 1.0) for (i,load) in _PM.ref(pm, n, :load)) 
+        Dict(i => get(load, "weight", 1.0) for (i,load) in _PM.ref(pm, n, :load))
     for n in nws)
 
     #println(load_weight)
 
-    M = Dict(n => 10*maximum([load_weight[n][i]*abs(load["pd"]) for (i,load) in _PM.ref(pm, n, :load)]) for n in nws)
+    M = Dict()
+    for n in nws
+        scaled_weight = [load_weight[n][i]*abs(load["pd"]) for (i,load) in _PM.ref(pm, n, :load)]
+        if isempty(scaled_weight)
+            scaled_weight = [1.0]
+        end
+        M[n] = 10*maximum(scaled_weight)
+    end
 
     return JuMP.@objective(pm.model, Max,
-        sum( 
-            ( 
+        sum(
+            (
             time_elapsed[n]*(
                 sum(M[n]*10*z_voltage[n][i] for (i,bus) in _PM.ref(pm, n, :bus)) +
                 sum(M[n]*z_gen[n][i] for (i,gen) in _PM.ref(pm, n, :gen)) +
                 sum(M[n]*z_storage[n][i] for (i,storage) in _PM.ref(pm, n, :storage)) +
                 sum(M[n]*z_shunt[n][i] for (i,shunt) in _PM.ref(pm, n, :shunt)) +
                 sum(load_weight[n][i]*abs(load["pd"])*z_demand[n][i] for (i,load) in _PM.ref(pm, n, :load))
-                ) 
+                )
             )
             for n in nws)
         )
