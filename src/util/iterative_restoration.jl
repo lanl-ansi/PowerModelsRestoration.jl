@@ -180,7 +180,7 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
     delete!(restoration_network["nw"],"0")
 
     for(nw_id, net) in sort(Dict{Int,Any}([(parse(Int, k), v) for (k,v) in restoration_network["nw"]]))
-        net["time_elapsed"] = network["time_elapsed"] # is this the correct way to reset time-elapsed for each network?
+        net["time_elapsed"] = get(network,"time_elapsed",1.0) # is this the correct way to reset time-elapsed for each network?
         if count_repairable_items(net) > 1 && !terminate_problem && !terminate_recursion
             # Run another layer of recursion
             Memento.info(_PM._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(net)) damaged items and $(count_repairable_items(net)) repairable items")
