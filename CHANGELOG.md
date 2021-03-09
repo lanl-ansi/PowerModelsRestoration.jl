@@ -1,6 +1,13 @@
 # PowerModelsRestoration.jl Change Log
 
 ## Staged
+- nothing
+
+## v0.6.0
+- Add support for InfrastructureModels multi-infrastructure functions (breaking)
+- Update to PowerModels v0.17 (breaking)
+
+## v0.5.1
 - Fixed bug in iterative restoration solution generation (#44)
 - Add support for InfrastructureModels multi-infrastructure functions.
 - Add const for supported components for repairs `restoration_comps`
