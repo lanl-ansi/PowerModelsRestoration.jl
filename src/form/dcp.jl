@@ -69,7 +69,14 @@ function objective_max_loadability(pm::_PM.AbstractDCPModel)
         Dict(i => get(load, "weight", 1.0) for (i,load) in _PM.ref(pm, n, :load))
     for n in nws)
 
-    M = Dict(n => 10*maximum([load_weight[n][i]*abs(load["pd"]) for (i,load) in _PM.ref(pm, n, :load)]) for n in nws)
+    M = Dict()
+    for n in nws
+        scaled_weight = [load_weight[n][i]*abs(load["pd"]) for (i,load) in _PM.ref(pm, n, :load)]
+        if isempty(scaled_weight)
+            scaled_weight = [1.0]
+        end
+        M[n] = 10*maximum(scaled_weight)
+    end
 
     return JuMP.@objective(pm.model, Max,
         sum(
@@ -100,7 +107,14 @@ function objective_max_loadability_strg(pm::_PM.AbstractDCPModel)
         Dict(i => get(load, "weight", 1.0) for (i,load) in _PM.ref(pm, n, :load))
     for n in nws)
 
-    M = Dict(n => 10*maximum([load_weight[n][i]*abs(load["pd"]) for (i,load) in _PM.ref(pm, n, :load)]) for n in nws)
+    M = Dict()
+    for n in nws
+        scaled_weight = [load_weight[n][i]*abs(load["pd"]) for (i,load) in _PM.ref(pm, n, :load)]
+        if isempty(scaled_weight)
+            scaled_weight = [1.0]
+        end
+        M[n] = 10*maximum(scaled_weight)
+    end
 
     return JuMP.@objective(pm.model, Max,
         sum(

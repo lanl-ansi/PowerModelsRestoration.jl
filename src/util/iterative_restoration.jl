@@ -36,6 +36,11 @@ function run_iterative_restoration(network, model_constructor, optimizer; repair
     mn_network_mld["nw"]["0"] = mn_network_mld["nw"]["1"]
     delete!(mn_network_mld["nw"], "1")
     result_mld["solution"] = mn_network_mld
+    for (comp_type,status) in _PM.pm_component_status
+        if comp_type in keys(network_mld) && !(comp_type in keys(result_mld["solution"]["nw"]["0"]))
+            result_mld["solution"]["nw"]["0"][comp_type] = Dict{String,Any}()
+        end
+    end
 
     Memento.info(_PM._LOGGER, "begin Iterative Restoration")
     result_iterative = _run_iterative_sub_network(network, model_constructor, optimizer; repair_periods=repair_periods, kwargs...)
@@ -144,18 +149,8 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
 
         restoration_network = replicate_restoration_network(network, count=repair_count)
 
-        # set all repaired components inactive before final time period
-        for net_id in 0:repair_count-1
-            set_component_inactive!(restoration_network["nw"]["$(net_id)"], repaired_devices)
-        end
-        # clear damage indicator for final time period
-        for comp_name in restoration_comps
-            for (comp_id,comp) in restoration_network["nw"]["$(repair_count)"][comp_name]
-                comp["damaged"]=0
-            end
-        end
 
-        # run 'restoration' on this network to solve powerflow
+        # run multi-period restoration on this network to solve powerflow
         restoration_solution = _run_rop_ir(restoration_network, model_constructor, optimizer, kwargs...)
         restoration_solution["solve_time"]+=solve_time
 
@@ -180,7 +175,7 @@ function _run_iterative_sub_network(network, model_constructor, optimizer; repai
     delete!(restoration_network["nw"],"0")
 
     for(nw_id, net) in sort(Dict{Int,Any}([(parse(Int, k), v) for (k,v) in restoration_network["nw"]]))
-        net["time_elapsed"] = network["time_elapsed"] # is this the correct way to reset time-elapsed for each network?
+        net["time_elapsed"] = get(network,"time_elapsed",1.0) # is this the correct way to reset time-elapsed for each network?
         if count_repairable_items(net) > 1 && !terminate_problem && !terminate_recursion
             # Run another layer of recursion
             Memento.info(_PM._LOGGER, "sub_network $(nw_id) has $(count_damaged_items(net)) damaged items and $(count_repairable_items(net)) repairable items")
