@@ -240,7 +240,7 @@ function _get_item_repairs(mn_data)
     for (nw_id, network) in mn_data["nw"]
         for comp_name in restoration_comps
             status_key = _PM.pm_component_status[comp_name]
-            for (comp_id, comp) in network[comp_name]
+            for (comp_id, comp) in get(network,comp_name,Dict())
                 if nw_id != "0" #not items are repaired in "0", do not check in previous network for a change
                     if comp[status_key] != _PM.pm_component_status_inactive[comp_name] &&  # if comp is active
                         mn_data["nw"]["$(parse(Int,nw_id)-1)"][comp_name][comp_id][status_key] == _PM.pm_component_status_inactive[comp_name] # if comp was previously inactive
