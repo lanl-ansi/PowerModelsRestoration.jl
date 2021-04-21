@@ -59,8 +59,16 @@ function _run_iter_res(network,model_constructor,optimizer, t::Vector{Int}, repa
                 end
             end
 
-            repair_remainder = net["repaired_total"] - N_cumulative_repairs["$(nw_id)"] # repair_limit - actual_repairs_done
-            sub_sol = _run_iter_res(sub_net, model_constructor, optimizer, t_sub, repair_remainder; repair_periods, kwargs...)
+            # I don't believe this is consistent when there are more than 2 repair periods
+            if nw_id=="1"
+                repair_remainder = 0
+                sub_sol = _run_iter_res(sub_net, model_constructor, optimizer, t_sub, repair_remainder; repair_periods, kwargs...)
+            else
+                prev_nw_id = string(parse(Int,nw_id)-1)
+                repair_remainder = mn_network["nw"][prev_nw_id]["repaired_total"] - N_cumulative_repairs[prev_nw_id]
+                # repair_remainder = net["repaired_total"] - N_cumulative_repairs["$(nw_id)"] # repair_limit - actual_repairs_done
+                sub_sol = _run_iter_res(sub_net, model_constructor, optimizer, t_sub, repair_remainder; repair_periods, kwargs...)
+            end
             update_solution!(return_solution, sub_sol)
         else
             # Does this need to use update_solution?
@@ -230,11 +238,13 @@ function fill_missing_variables!(sol::Dict{String,<:Any}, network::Dict{String,<
 
     # Is there a way to do this based on formulation, any default comps?
     variable_fill = Dict(
-        "bus"=>Dict{String,Any}("va"=>0.0,"status"=>0.0, "bus_type"=>4, "vm"=>NaN),
-        "gen"=>Dict{String,Any}("gen_status"=>0.0,"pg"=>0.0, "qg"=>NaN),
-        "branch"=>Dict{String,Any}("qf"=>NaN,"qt"=>NaN,"br_status"=>0.0,"pt"=>0.0,"pf"=>0.0),
-        "dcline"=>Dict{String,Any}("qf"=>NaN,"qt"=>NaN,"br_status"=>0.0,"pt"=>0.0,"pf"=>0.0),
-        "load"=>Dict{String,Any}("status"=>0.0,"qd"=>0.0,"pd"=>0.0)
+        "bus"=>Dict{String,Any}("va"=>0.0,"status"=>0, "bus_type"=>4, "vm"=>NaN),
+        "gen"=>Dict{String,Any}("gen_status"=>0,"pg"=>0.0, "qg"=>NaN),
+        "branch"=>Dict{String,Any}("qf"=>NaN,"qt"=>NaN,"br_status"=>0,"pt"=>0.0,"pf"=>0.0),
+        "dcline"=>Dict{String,Any}("qf"=>NaN,"qt"=>NaN,"br_status"=>0,"pt"=>0.0,"pf"=>0.0),
+        "load"=>Dict{String,Any}("status"=>0.0,"qd"=>0.0,"pd"=>0.0),
+        "shunt"=>Dict{String,Any}("status"=>0, "gs"=>0.0, "bs"=>0.0),
+        #"storage"=>Dict{String,Any}("status"=>0) verify storage is working
     )
 
     for (nw_id, sol_net) in sol["solution"]["nw"]
