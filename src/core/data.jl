@@ -41,7 +41,7 @@ end
 ""
 function _get_repairable_items(network::Dict{String,Any})
     repairs = Dict{String, Vector{String}}()
-    
+
     for comp_name in restoration_comps
         status_key = _PM.pm_component_status[comp_name]
         repairs[comp_name] = []
@@ -103,7 +103,7 @@ function get_damaged_items(data::Dict{String,Any})
     else
         comp_list = _get_damaged_items(pm_data)
     end
-    
+
     return comp_list
 end
 
@@ -269,10 +269,14 @@ function _update_status!(network::Dict{String,Any}, solution::Dict{String, Any})
     for (comp_name, status_key) in _PM.pm_component_status
         if haskey(solution, comp_name) && haskey(network, comp_name)
             nw_comps = network[comp_name]
-            
+
             for (i, sol_comp) in solution[comp_name]
-                nw_comp = nw_comps[i]
-                nw_comp[status_key] = sol_comp[status_key]
+                if haskey(nw_comps, i)
+                    nw_comp = nw_comps[i]
+                    nw_comp[status_key] = sol_comp[status_key]
+                else
+                    @warn "Network does not have $(comp_name) $(i) but solution does"
+                end
             end
         else
             #TODO throw warning

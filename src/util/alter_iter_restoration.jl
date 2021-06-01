@@ -27,6 +27,13 @@ function _run_iter_res(network,model_constructor,optimizer, t::Vector{Int}, repa
 
     ## solve ROP
     solution = _run_rop_ir(mn_network, model_constructor, optimizer; kwargs...)
+    if solution["termination_status"]==_PM.INFEASIBLE
+        @show t_split
+        @show get_damaged_items(network)
+        @show get_repairable_items(network)
+        @show mn_network["nw"]["1"]["repaired_total"]
+        @show mn_network["nw"]["2"]["repaired_total"]
+    end
 
     ## Clean solution and apply result to network
     clean_status!(solution["solution"]) # replace stauts with bus_type for buses
@@ -40,11 +47,11 @@ function _run_iter_res(network,model_constructor,optimizer, t::Vector{Int}, repa
     return_solution = deepcopy(solution)
     return_solution["solution"]["nw"]=Dict{String,Any}() #clear networks in return
 
-    # println("Times: $(t) Repairs Available: $(count_repairable_items(network))")
-    # println("Assigned Split:")
-    # println("Times: $(t_split[1][1]) $(t_split[1][end]) Repair Limit: $(mn_network["nw"]["1"]["repaired_total"]) \t Times: $(t_split[2][1]) $(t_split[2][end]) Repair Limit: $(mn_network["nw"]["2"]["repaired_total"])")
-    # println("Actual Repairs 1: $(N_cumulative_repairs["1"]) \t Actual Repairs 2: $(N_cumulative_repairs["2"])")
-    # println()
+    println("Times: $(t) Repairs Available: $(count_repairable_items(network))")
+    println("Assigned Split:")
+    println("Times: $(t_split[1][1]) $(t_split[1][end]) Repair Limit: $(mn_network["nw"]["1"]["repaired_total"]) \t Times: $(t_split[2][1]) $(t_split[2][end]) Repair Limit: $(mn_network["nw"]["2"]["repaired_total"])")
+    println("Actual Repairs 1: $(N_cumulative_repairs["1"]) \t Actual Repairs 2: $(N_cumulative_repairs["2"])")
+    println()
 
     ## calc subproblem
     for (nw_id, net) in mn_network["nw"]
