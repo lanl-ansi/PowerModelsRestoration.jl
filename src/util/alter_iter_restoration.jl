@@ -1,145 +1,226 @@
 
-# only required for first stage to get the 0 period??
+
 function run_iter_res(network, model_constructor, optimizer; repair_periods=2, kwargs...)
     t_start = time()
-
-    repair_count = count_repairable_items(network)
-    t = collect(1:repair_count)
-    repair_remainder = 0
-    sol = _run_iter_res(network, model_constructor, optimizer, t, repair_remainder; repair_periods, kwargs...)
-
+    sol = _run_iter_res(network, model_constructor, optimizer; repair_periods, kwargs...)
     fill_missing_variables!(sol, network) # some networks do not have all variables if devices were status 0
-
     sol["solve_time"] = time()-t_start
     return sol
 end
 
 
 "recrusive call to iterative restoration"
-function _run_iter_res(network,model_constructor,optimizer, t::Vector{Int}, repair_remainder::Int; repair_periods=2, kwargs... )
+function _run_iter_res(network,model_constructor,optimizer; repair_periods=2, kwargs... )
+    mn_network = replicate_restoration_network(network, repair_periods, _PM._pm_global_keys)
 
-    # assign time periods into repair_periods
-    t_split = split_time_periods(t, repair_periods)
-
-    ## replicate network, set repairs per period
-    mn_network = replicate_network(network, repair_periods, _PM._pm_global_keys)
-    apply_repair_limits!(mn_network, t_split, repair_remainder)
-
-    ## solve ROP
+    ## solve ROP problem
     solution = _run_rop_ir(mn_network, model_constructor, optimizer; kwargs...)
-    if solution["termination_status"]==_PM.INFEASIBLE
-        @show t_split
-        @show get_damaged_items(network)
-        @show get_repairable_items(network)
-        @show mn_network["nw"]["1"]["repaired_total"]
-        @show mn_network["nw"]["2"]["repaired_total"]
-    end
 
     ## Clean solution and apply result to network
-    clean_status!(solution["solution"]) # replace stauts with bus_type for buses
-    N_cumulative_repairs = count_cumulative_repairs(solution)
+    clean_status!(solution["solution"]) # replace status with bus_type for buses
     apply_repairs!(mn_network, get_repairs(solution))
 
-    ## remove network "0" for recursion
-    delete!(mn_network["nw"],"0")
+    r_count = count_cumulative_repairs(solution)
+    ## IF (all repairs in period 2) OR (infeasible), then run ROP and return
+    if (r_count["1"]==0 && r_count["2"]!=0) || solution["termination_status"]==_PM.INFEASIBLE
 
-    ## return network
-    return_solution = deepcopy(solution)
-    return_solution["solution"]["nw"]=Dict{String,Any}() #clear networks in return
+        damage_count = count_repairable_items(network)
+        mn_network = replicate_restoration_network(network, damage_count, _PM._pm_global_keys)
 
-    println("Times: $(t) Repairs Available: $(count_repairable_items(network))")
-    println("Assigned Split:")
-    println("Times: $(t_split[1][1]) $(t_split[1][end]) Repair Limit: $(mn_network["nw"]["1"]["repaired_total"]) \t Times: $(t_split[2][1]) $(t_split[2][end]) Repair Limit: $(mn_network["nw"]["2"]["repaired_total"])")
-    println("Actual Repairs 1: $(N_cumulative_repairs["1"]) \t Actual Repairs 2: $(N_cumulative_repairs["2"])")
-    println()
+        Memento.info(_PM._LOGGER, "Starting a $(damage_count) period ROP problem")
+        solution = _run_rop_ir(mn_network, model_constructor, optimizer; kwargs...)
+        clean_status!(solution["solution"])
 
-    ## calc subproblem
-    for (nw_id, net) in mn_network["nw"]
-        t_sub = t_split[parse(Int,nw_id)] # time slot allocation for sub network
+        ## remove network "0" for recursion
+        delete!(solution["solution"]["nw"],"0")
+        return_solution = deepcopy(solution) # return network
 
-        # check termination conditions
-        if !(length(t_sub) == 1)# || repairable_count == 1) iterate down through non repairs to get individual networks?
-            sub_net = deepcopy(net)
-            for key in _PM._pm_global_keys
-                if haskey(network, key)
-                    sub_net[key] = network[key]
+    else # ELSE run iter on each network
+        delete!(mn_network["nw"],"0") # remove network "0" for recursion
+        return_solution = deepcopy(solution) # create return network
+        return_solution["solution"]["nw"]=Dict{String,Any}()
+
+        for (nw_id) in string.(sort(parse.(Int,collect(keys(mn_network["nw"])))))
+            net = mn_network["nw"][nw_id]
+
+            ## IF more than 1 repair in time period, run recursion
+            if count_repairable_items(net) != 1
+                sub_net = deepcopy(net)
+                for key in _PM._pm_global_keys
+                    if haskey(network, key)
+                        sub_net[key] = network[key]
+                    end
                 end
-            end
 
-            # I don't believe this is consistent when there are more than 2 repair periods
-            if nw_id=="1"
-                repair_remainder = 0
-                sub_sol = _run_iter_res(sub_net, model_constructor, optimizer, t_sub, repair_remainder; repair_periods, kwargs...)
-            else
-                prev_nw_id = string(parse(Int,nw_id)-1)
-                repair_remainder = mn_network["nw"][prev_nw_id]["repaired_total"] - N_cumulative_repairs[prev_nw_id]
-                # repair_remainder = net["repaired_total"] - N_cumulative_repairs["$(nw_id)"] # repair_limit - actual_repairs_done
-                sub_sol = _run_iter_res(sub_net, model_constructor, optimizer, t_sub, repair_remainder; repair_periods, kwargs...)
+                sub_sol = _run_iter_res(sub_net, model_constructor, optimizer; repair_periods, kwargs...)
+                return_keys = keys(return_solution["solution"]["nw"]) |> collect |> (y->parse.(Int,y))
+                if isempty(return_keys)
+                    current_net_id = 0
+                else
+                    current_net_id = maximum(return_keys)
+                end
+                for (sol_id, sol_net) in sub_sol["solution"]["nw"]
+                    return_solution["solution"]["nw"]["$(current_net_id+parse(Int,sol_id))"] = sol_net
+                end
+            else # add solution net to return
+                # Does this need to use update_solution?
+                return_keys = keys(return_solution["solution"]["nw"]) |> collect |> (y->parse.(Int,y))
+                if isempty(return_keys)
+                    current_net_id = 0
+                else
+                    current_net_id = maximum(return_keys)
+                end
+                return_solution["solution"]["nw"]["$(current_net_id+1)"] = solution["solution"]["nw"][nw_id]
             end
-            update_solution!(return_solution, sub_sol)
-        else
-            # Does this need to use update_solution?
-            return_solution["solution"]["nw"]["$(t_sub[1])"] = solution["solution"]["nw"]["$(nw_id)"]
         end
     end
 
-    return return_solution # temp
+    return return_solution
 end
 
 
-"calculate the time periods to associate with each network"
-function split_time_periods(t, repair_periods)
-    t_length=length(t)
-    time_slots = t_length/repair_periods
 
-    # calculat the split of time periods into networks
-    t_index = [[i for i in (p-1)*ceil(Int,time_slots)+1:ceil(Int,time_slots)*p if i <= t_length] for p in 1:repair_periods]
+# # only required for first stage to get the 0 period??
+# function run_iter_res(network, model_constructor, optimizer; repair_periods=2, kwargs...)
+#     t_start = time()
 
-    # use the time periods in t_index to index the periods in t into appropriate divisions
-    t_split = [[t[index] for index in period] for period in t_index]
-    return t_split
-end
+#     repair_count = count_repairable_items(network)
+#     t = collect(1:repair_count)
+#     repair_remainder = 0
+#     sol = _run_iter_res(network, model_constructor, optimizer, t, repair_remainder; repair_periods, kwargs...)
 
-"create count replicates of network in multi-network"
-function replicate_network(sn_data::Dict{String,<:Any}, count::Int, global_keys::Set{String})
-    pm_sn_data = _PM.get_pm_data(sn_data)
-    name = get(pm_sn_data, "name", "anonymous")
+#     fill_missing_variables!(sol, network) # some networks do not have all variables if devices were status 0
 
-    mn_data = Dict{String,Any}(
-        "nw" => Dict{String,Any}()
-    )
-    mn_data["multinetwork"] = true
-    pm_sn_data_tmp = deepcopy(pm_sn_data)
-    for k in global_keys
-        if haskey(pm_sn_data_tmp, k)
-            mn_data[k] = pm_sn_data_tmp[k]
-        end
-        # note this is robust to cases where k is not present in pm_sn_data_tmp
-        delete!(pm_sn_data_tmp, k)
-    end
-
-    mn_data["name"] = "$(count) period restoration of $(name)"
-    for n in 0:count
-        mn_data["nw"]["$n"] = deepcopy(pm_sn_data_tmp)
-    end
-
-    return mn_data
-end
+#     sol["solve_time"] = time()-t_start
+#     return sol
+# end
 
 
-"""
-Calculate the maximum repairs in each period of the multinetwork using the number of
-time periods, and the number of repairs in the previous level of the recursion.
-"""
-function apply_repair_limits!(mn_network, t, N_0_remainder)
-    mn_network["nw"]["0"]["repaired_total"] = 0
-    mn_network["nw"]["1"]["repaired_total"] = length(t[1])+N_0_remainder
+# "recrusive call to iterative restoration"
+# function _run_iter_res(network,model_constructor,optimizer, t::Vector{Int}, repair_remainder::Int; repair_periods=2, kwargs... )
 
-    for id in 2:maximum(parse.(Int,keys(mn_network["nw"])))
-        N_max = length(t[id]) + mn_network["nw"]["$(id-1)"]["repaired_total"]
-        mn_network["nw"]["$(id)"]["repaired_total"] = N_max
-    end
-end
+#     # assign time periods into repair_periods
+#     t_split = split_time_periods(t, repair_periods)
+
+#     ## replicate network, set repairs per period
+#     mn_network = replicate_network(network, repair_periods, _PM._pm_global_keys)
+#     apply_repair_limits!(mn_network, t_split, repair_remainder)
+
+#     ## solve ROP
+#     solution = _run_rop_ir(mn_network, model_constructor, optimizer; kwargs...)
+#     if solution["termination_status"]==_PM.INFEASIBLE
+#         @show t_split
+#         @show get_damaged_items(network)
+#         @show get_repairable_items(network)
+#         @show mn_network["nw"]["1"]["repaired_total"]
+#         @show mn_network["nw"]["2"]["repaired_total"]
+#     end
+
+#     ## Clean solution and apply result to network
+#     clean_status!(solution["solution"]) # replace stauts with bus_type for buses
+#     N_cumulative_repairs = count_cumulative_repairs(solution)
+#     apply_repairs!(mn_network, get_repairs(solution))
+
+#     ## remove network "0" for recursion
+#     delete!(mn_network["nw"],"0")
+
+#     ## return network
+#     return_solution = deepcopy(solution)
+#     return_solution["solution"]["nw"]=Dict{String,Any}() #clear networks in return
+
+#     println("Times: $(t) Repairs Available: $(count_repairable_items(network))")
+#     println("Assigned Split:")
+#     println("Times: $(t_split[1][1]) $(t_split[1][end]) Repair Limit: $(mn_network["nw"]["1"]["repaired_total"]) \t Times: $(t_split[2][1]) $(t_split[2][end]) Repair Limit: $(mn_network["nw"]["2"]["repaired_total"])")
+#     println("Actual Repairs 1: $(N_cumulative_repairs["1"]) \t Actual Repairs 2: $(N_cumulative_repairs["2"])")
+#     println()
+
+#     ## calc subproblem
+#     for (nw_id, net) in mn_network["nw"]
+#         t_sub = t_split[parse(Int,nw_id)] # time slot allocation for sub network
+
+#         # check termination conditions
+#         if !(length(t_sub) == 1)# || repairable_count == 1) iterate down through non repairs to get individual networks?
+#             sub_net = deepcopy(net)
+#             for key in _PM._pm_global_keys
+#                 if haskey(network, key)
+#                     sub_net[key] = network[key]
+#                 end
+#             end
+
+#             # I don't believe this is consistent when there are more than 2 repair periods
+#             if nw_id=="1"
+#                 repair_remainder = 0
+#                 sub_sol = _run_iter_res(sub_net, model_constructor, optimizer, t_sub, repair_remainder; repair_periods, kwargs...)
+#             else
+#                 prev_nw_id = string(parse(Int,nw_id)-1)
+#                 repair_remainder = mn_network["nw"][prev_nw_id]["repaired_total"] - N_cumulative_repairs[prev_nw_id]
+#                 # repair_remainder = net["repaired_total"] - N_cumulative_repairs["$(nw_id)"] # repair_limit - actual_repairs_done
+#                 sub_sol = _run_iter_res(sub_net, model_constructor, optimizer, t_sub, repair_remainder; repair_periods, kwargs...)
+#             end
+#             update_solution!(return_solution, sub_sol)
+#         else
+#             # Does this need to use update_solution?
+#             return_solution["solution"]["nw"]["$(t_sub[1])"] = solution["solution"]["nw"]["$(nw_id)"]
+#         end
+#     end
+
+#     return return_solution # temp
+# end
+
+
+# "calculate the time periods to associate with each network"
+# function split_time_periods(t, repair_periods)
+#     t_length=length(t)
+#     time_slots = t_length/repair_periods
+
+#     # calculat the split of time periods into networks
+#     t_index = [[i for i in (p-1)*ceil(Int,time_slots)+1:ceil(Int,time_slots)*p if i <= t_length] for p in 1:repair_periods]
+
+#     # use the time periods in t_index to index the periods in t into appropriate divisions
+#     t_split = [[t[index] for index in period] for period in t_index]
+#     return t_split
+# end
+
+# "create count replicates of network in multi-network"
+# function replicate_network(sn_data::Dict{String,<:Any}, count::Int, global_keys::Set{String})
+#     pm_sn_data = _PM.get_pm_data(sn_data)
+#     name = get(pm_sn_data, "name", "anonymous")
+
+#     mn_data = Dict{String,Any}(
+#         "nw" => Dict{String,Any}()
+#     )
+#     mn_data["multinetwork"] = true
+#     pm_sn_data_tmp = deepcopy(pm_sn_data)
+#     for k in global_keys
+#         if haskey(pm_sn_data_tmp, k)
+#             mn_data[k] = pm_sn_data_tmp[k]
+#         end
+#         # note this is robust to cases where k is not present in pm_sn_data_tmp
+#         delete!(pm_sn_data_tmp, k)
+#     end
+
+#     mn_data["name"] = "$(count) period restoration of $(name)"
+#     for n in 0:count
+#         mn_data["nw"]["$n"] = deepcopy(pm_sn_data_tmp)
+#     end
+
+#     return mn_data
+# end
+
+
+# """
+# Calculate the maximum repairs in each period of the multinetwork using the number of
+# time periods, and the number of repairs in the previous level of the recursion.
+# """
+# function apply_repair_limits!(mn_network, t, N_0_remainder)
+#     mn_network["nw"]["0"]["repaired_total"] = 0
+#     mn_network["nw"]["1"]["repaired_total"] = length(t[1])+N_0_remainder
+
+#     for id in 2:maximum(parse.(Int,keys(mn_network["nw"])))
+#         N_max = length(t[id]) + mn_network["nw"]["$(id-1)"]["repaired_total"]
+#         mn_network["nw"]["$(id)"]["repaired_total"] = N_max
+#     end
+# end
 
 
 "get repairs in each period of the solution data"
@@ -192,7 +273,7 @@ end
 
 
 """
-    update device status and remove damaged indicator if item was repaired
+    update device status and remove damaged indicator if item was repaired in network 3
     Before:
     | nw_id   |  1  |  2  |  3  |  4  |
     | ------- | --- | --- | --- | --- |
