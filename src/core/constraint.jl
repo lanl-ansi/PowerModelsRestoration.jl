@@ -74,7 +74,7 @@ end
 
 ""
 function constraint_bus_energized(pm::_PM.AbstractPowerModel,  i::Int, nw_1::Int, nw_2::Int)
-    if haskey(_PM.ref(pm, nw_1, :gen_damage), i)
+    if haskey(_PM.ref(pm, nw_1, :bus_damage), i)
         z_bus_1 = _PM.var(pm, nw_1, :z_bus, i)
         z_bus_2 = _PM.var(pm, nw_2, :z_bus, i)
 
