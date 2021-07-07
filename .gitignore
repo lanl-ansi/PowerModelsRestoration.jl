@@ -9,4 +9,4 @@ docs/.documenter
 .project
 .tags
 Manifest.toml
-.vscode/*
+.vscode
