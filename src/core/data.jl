@@ -228,7 +228,7 @@ function clean_solution!(solution::Dict{String,<:Any})
                     for k in keys(comp)
                         if comp[k] === nothing
                             comp[k] = 0
-                        elseif isnan(comp[k])
+                        elseif typeof(comp[k])<:Number && isnan(comp[k])
                             comp[k] = 0
                         end
                     end
@@ -239,7 +239,7 @@ function clean_solution!(solution::Dict{String,<:Any})
                 for k in keys(comp)
                     if comp[k] === nothing
                         comp[k] = 0
-                    elseif isnan(comp[k])
+                    elseif typeof(comp[k])<:Number && isnan(comp[k])
                         comp[k] = 0
                     end
                 end

@@ -18,16 +18,16 @@
 
         
         clean_solution!(solution)
-        @test !isnan(solution["bus"]["1"]["status"])
-        @test !isnan(solution["gen"]["1"]["status"])
-        @test !isnan(solution["load"]["1"]["status"])
-        @test !isnan(solution["branch"]["1"]["status"])
+        @test !isnan(solution["solution"]["bus"]["1"]["status"])
+        @test !isnan(solution["solution"]["gen"]["1"]["status"])
+        @test !isnan(solution["solution"]["load"]["1"]["status"])
+        @test !isnan(solution["solution"]["branch"]["1"]["status"])
 
         clean_solution!(mn_solution)
-        @test !isnan(mn_solution["nw"]["1"]["bus"]["1"]["status"])
-        @test !isnan(mn_solution["nw"]["1"]["gen"]["1"]["status"])
-        @test !isnan(mn_solution["nw"]["2"]["load"]["1"]["status"])
-        @test !isnan(mn_solution["nw"]["2"]["branch"]["1"]["status"])
+        @test !isnan(mn_solution["solution"]["nw"]["1"]["bus"]["1"]["status"])
+        @test !isnan(mn_solution["solution"]["nw"]["1"]["gen"]["1"]["status"])
+        @test !isnan(mn_solution["solution"]["nw"]["2"]["load"]["1"]["status"])
+        @test !isnan(mn_solution["solution"]["nw"]["2"]["branch"]["1"]["status"])
     end
 
     @testset "damage_items" begin
