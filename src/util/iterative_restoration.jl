@@ -14,6 +14,12 @@
 function run_iterative_restoration(network, model_constructor, optimizer; kwargs...)
     t_start = time()
     sol = _run_iterative_restoration(network, model_constructor, optimizer; kwargs...)
+
+    # if sol["primal_status"] != _PM.FEASIBLE_POINT is this the answer??
+    #     # set repair as final points
+    #     sol["solution"] = set_final_period_repairs(network)["solution"]
+    # end
+
     fill_missing_variables!(sol, network) # some networks do not have all variables if devices were status 0
     sol["solve_time"] = time()-t_start
     return sol
