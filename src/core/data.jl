@@ -4,7 +4,7 @@ const restoration_comps = ["bus" "gen" "storage" "branch"]
 
 
 ""
-function count_repairable_items(network::Dict{String, Any})
+function count_repairable_items(network::Dict{String, <:Any})
     pm_network = _PM.get_pm_data(network)
 
     if _IM.ismultinetwork(pm_network)
@@ -21,7 +21,7 @@ end
 
 
 ""
-function get_repairable_items(data::Dict{String, Any})
+function get_repairable_items(data::Dict{String, <:Any})
     pm_data = _PM.get_pm_data(data)
 
     if haskey(pm_data, "multinetwork") && pm_data["multinetwork"] == true
@@ -39,7 +39,7 @@ end
 
 
 ""
-function _get_repairable_items(network::Dict{String,Any})
+function _get_repairable_items(network::Dict{String,<:Any})
     repairs = Dict{String, Vector{String}}()
 
     for comp_name in restoration_comps
@@ -74,7 +74,7 @@ end
 
 
 "Count the number of items with a key \"damaged\" == 1 in a network"
-function count_damaged_items(network::Dict{String, Any})
+function count_damaged_items(network::Dict{String, <:Any})
     pm_network = _PM.get_pm_data(network)
 
     if _IM.ismultinetwork(pm_network)
@@ -91,7 +91,7 @@ end
 
 
 ""
-function get_damaged_items(data::Dict{String,Any})
+function get_damaged_items(data::Dict{String,<:Any})
     pm_data = _PM.get_pm_data(data)
 
     if _IM.ismultinetwork(pm_data)
@@ -109,7 +109,7 @@ end
 
 
 ""
-function _get_damaged_items(network::Dict{String,Any})
+function _get_damaged_items(network::Dict{String,<:Any})
     comp_list = Dict{String, Array{String,1}}()
 
     for comp_name in restoration_comps
@@ -128,7 +128,7 @@ end
 
 
 ""
-function get_isolated_load(data::Dict{String,Any})
+function get_isolated_load(data::Dict{String,<:Any})
     pm_data = _PM.get_pm_data(data)
 
     if _IM.ismultinetwork(pm_data)
@@ -145,7 +145,7 @@ end
 
 
 ""
-function _get_isolated_load(network::Dict{String,Any})
+function _get_isolated_load(network::Dict{String,<:Any})
     load_list = Dict{String, Array{String,1}}()
     load_list["load"] = []
 
@@ -166,11 +166,11 @@ end
 
 
 ""
-function set_component_inactive!(data::Dict{String,Any}, comp_list::Dict{String, Array{String,1}})
+function set_component_inactive!(data::Dict{String,<:Any}, comp_list::Dict{String, Array{String,1}})
     pm_data = _PM.get_pm_data(data)
 
     if _IM.ismultinetwork(pm_data)
-        items = Dict{String,Any}("nw" => Dict{String,Any}())
+        # items = Dict{String,Any}("nw" => Dict{String,Any}())
         for (i, nw_data) in pm_data["nw"]
             _set_component_inactive!(nw_data, comp_list)
         end
@@ -183,7 +183,7 @@ end
 
 
 ""
-function _set_component_inactive!(network::Dict{String,Any}, comp_list::Dict{String, Array{String,1}})
+function _set_component_inactive!(network::Dict{String,<:Any}, comp_list::Dict{String, Array{String,1}})
     for (comp_name, comp_ids) in comp_list
         for comp_id in comp_ids
             network[comp_name][comp_id][_PM.pm_component_status[comp_name]] = _PM.pm_component_status_inactive[comp_name]
@@ -193,7 +193,7 @@ end
 
 
 "Clear damage indicator and replace with status=0"
-function clear_damage_indicator!(data::Dict{String, Any})
+function clear_damage_indicator!(data::Dict{String, <:Any})
     pm_data = _PM.get_pm_data(data)
 
     if _IM.ismultinetwork(pm_data)
@@ -206,7 +206,7 @@ function clear_damage_indicator!(data::Dict{String, Any})
 end
 
 
-function _clear_damage_indicator!(network::Dict{String,Any})
+function _clear_damage_indicator!(network::Dict{String,<:Any})
     for comp_name in restoration_comps
         status_key = _PM.pm_component_status[comp_name]
 
@@ -220,7 +220,7 @@ end
 
 
 "Replace NaN and Nothing with 0 in multinetwork solutions"
-function clean_solution!(solution::Dict{String,Any})
+function clean_solution!(solution::Dict{String,<:Any})
     for comp_type in keys(_PM.pm_component_status)
         if haskey(solution["solution"], "nw")
             for (n, net) in solution["solution"]["nw"]
@@ -250,7 +250,7 @@ end
 
 
 "updates status in the data model with values from a sparse solution dict"
-function update_status!(data::Dict{String, Any}, solution::Dict{String, Any})
+function update_status!(data::Dict{String, <:Any}, solution::Dict{String, <:Any})
     pm_data = _PM.get_pm_data(data)
 
     @assert _IM.ismultinetwork(pm_data) == _IM.ismultinetwork(solution)
@@ -265,7 +265,7 @@ function update_status!(data::Dict{String, Any}, solution::Dict{String, Any})
     end
 end
 
-function _update_status!(network::Dict{String,Any}, solution::Dict{String, Any})
+function _update_status!(network::Dict{String,<:Any}, solution::Dict{String, <:Any})
     for (comp_name, status_key) in _PM.pm_component_status
         if haskey(solution, comp_name) && haskey(network, comp_name)
             nw_comps = network[comp_name]
@@ -336,7 +336,7 @@ end
 
 # Required because PowerModels assumes integral status values
 "Replace non-integer status codes for devices, maps bus status to bus_type"
-function clean_status!(data::Dict{String,Any})
+function clean_status!(data::Dict{String,<:Any})
     pm_data = _PM.get_pm_data(data)
 
     if _IM.ismultinetwork(pm_data)
@@ -348,7 +348,7 @@ function clean_status!(data::Dict{String,Any})
     end
 end
 
-function _clean_status!(network::Dict{String,Any})
+function _clean_status!(network::Dict{String,<:Any})
     for (i, bus) in get(network, "bus", Dict())
         if haskey(bus, "status")
             status = bus["status"] = round(Int, bus["status"])
