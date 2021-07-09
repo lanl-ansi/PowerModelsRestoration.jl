@@ -4,6 +4,8 @@
     @testset "clean_solution" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         mn_network = replicate_restoration_network(network, count=2)
+        solution = Dict("solution"=>network)
+        mn_solution = Dict("solution"=>mn_network)
 
         for comp_type in ["bus","gen","load","branch"]
             network[comp_type]["1"]["status"] = NaN
@@ -13,18 +15,19 @@
                 net[comp_type]["1"]["status"] = NaN
             end
         end
-        
-        clean_solution!(network)
-        @test !isnan(network["bus"]["1"]["status"])
-        @test !isnan(network["gen"]["1"]["status"])
-        @test !isnan(network["load"]["1"]["status"])
-        @test !isnan(network["branch"]["1"]["status"])
 
-        clean_solution!(mn_network)
-        @test !isnan(mn_network["nw"]["1"]["bus"]["1"]["status"])
-        @test !isnan(mn_network["nw"]["1"]["gen"]["1"]["status"])
-        @test !isnan(mn_network["nw"]["2"]["load"]["1"]["status"])
-        @test !isnan(mn_network["nw"]["2"]["branch"]["1"]["status"])
+        
+        clean_solution!(solution)
+        @test !isnan(solution["bus"]["1"]["status"])
+        @test !isnan(solution["gen"]["1"]["status"])
+        @test !isnan(solution["load"]["1"]["status"])
+        @test !isnan(solution["branch"]["1"]["status"])
+
+        clean_solution!(mn_solution)
+        @test !isnan(mn_solution["nw"]["1"]["bus"]["1"]["status"])
+        @test !isnan(mn_solution["nw"]["1"]["gen"]["1"]["status"])
+        @test !isnan(mn_solution["nw"]["2"]["load"]["1"]["status"])
+        @test !isnan(mn_solution["nw"]["2"]["branch"]["1"]["status"])
     end
 
     @testset "damage_items" begin
