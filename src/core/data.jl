@@ -221,26 +221,26 @@ end
 
 "Replace NaN and Nothing with 0 in multinetwork solutions"
 function clean_solution!(solution::Dict{String,Any})
-    for item_type in ["gen", "storage", "branch","load","shunt"]
+    for comp_type in keys(_PM.pm_component_status)
         if haskey(solution["solution"], "nw")
             for (n, net) in solution["solution"]["nw"]
-                for (i,item) in get(net, item_type, Dict())
-                    for k in keys(item)
-                        if item[k] === nothing
-                            item[k] = 0
-                        elseif isnan(item[k])
-                            item[k] = 0
+                for (i,comp) in get(net, comp_type, Dict())
+                    for k in keys(comp)
+                        if comp[k] === nothing
+                            comp[k] = 0
+                        elseif isnan(comp[k])
+                            comp[k] = 0
                         end
                     end
                 end
             end
         else
-            for (i,item) in get(solution["solution"], item_type, Dict())
-                for k in keys(item)
-                    if item[k] === nothing
-                        item[k] = 0
-                    elseif isnan(item[k])
-                        item[k] = 0
+            for (i,comp) in get(solution["solution"], comp_type, Dict())
+                for k in keys(comp)
+                    if comp[k] === nothing
+                        comp[k] = 0
+                    elseif isnan(comp[k])
+                        comp[k] = 0
                     end
                 end
             end
