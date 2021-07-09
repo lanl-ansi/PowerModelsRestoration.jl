@@ -1,6 +1,32 @@
 ## Test data processing functions
 @testset "Data" begin
 
+    @testset "clean_solution" begin
+        network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
+        mn_network = replicate_restoration_network(network, count=2)
+
+        for comp_type in ["bus","gen","load","branch"]
+            network[comp_type]["1"]["status"] = NaN
+        end
+        for (nwid, net) in mn_network["nw"]
+            for comp_type in ["bus","gen","load","branch"]
+                net[comp_type]["1"]["status"] = NaN
+            end
+        end
+        
+        clean_solution!(network)
+        @test !isnan(network["bus"]["1"]["status"])
+        @test !isnan(network["gen"]["1"]["status"])
+        @test !isnan(network["load"]["1"]["status"])
+        @test !isnan(network["branch"]["1"]["status"])
+
+        clean_solution!(mn_network)
+        @test !isnan(mn_network["nw"]["1"]["bus"]["1"]["status"])
+        @test !isnan(mn_network["nw"]["1"]["gen"]["1"]["status"])
+        @test !isnan(mn_network["nw"]["2"]["load"]["1"]["status"])
+        @test !isnan(mn_network["nw"]["2"]["branch"]["1"]["status"])
+    end
+
     @testset "damage_items" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         @test isapprox(network["gen"]["5"]["damaged"], 0, atol=1e-4)
