@@ -34,7 +34,9 @@ function _run_iterative_restoration(network,model_constructor,optimizer; kwargs.
 
     r_count = count_cumulative_repairs(solution)
     ## IF (all repairs in period 2) OR (infeasible), then run ROP and return
-    if (r_count["1"]==0 && r_count["2"]!=0) || solution["termination_status"]==_PM.INFEASIBLE
+    if (r_count["1"]==0 && r_count["2"]!=0) || 
+        solution["termination_status"] !=_PM.OPTIMAL ||
+        solution["termination_status"] !=_PM.LOCALLY_OPTIMAL
 
         damage_count = count_repairable_items(network)
         mn_network = replicate_restoration_network(network, damage_count, _PM._pm_global_keys)
