@@ -11,10 +11,37 @@ function utilization_heuristic_restoration(data::Dict{String,<:Any})
     d_comp_cost = [util_value(data,comp_type,comp_id) for (comp_type,comp_id) in d_comp_vec]
     d_comp_vec = [d_comp_vec[i] for i in sortperm(d_comp_cost)] # reordered damaged component vector
 
-    # create repair order structure
-    restoration_order = Dict{String,Any}(
-        "$id"=>Dict(d_comp_vec[id][1]=>[d_comp_vec[id][2]]) for id in 1:length(d_comp_vec)
+
+    restoration_period = Dict{Tuple{String, String},Any}(
+        (d_comp_vec[id])=>id for id in 1:length(d_comp_vec)
     )
+
+    # Create precedent repair requirements
+    repair_constraints = calculate_repair_precedance(data)
+    # apply precendet repair requirments
+    updated = true
+    while updated
+        updated = false
+        for (r_comp, precedance_comps) in repair_constraints
+            precendent_repair_periods = [restoration_period[pr_comp] for pr_comp in precedance_comps]
+            if !isempty(precendent_repair_periods)
+                final_precedent_repair = maximum(precendent_repair_periods)
+            else
+                final_precedent_repair = 0
+            end
+            if restoration_period[r_comp] < final_precedent_repair
+                println("Changing $r_comp repair from $(restoration_period[r_comp]) to $final_precedent_repair")
+                updated = true
+                restoration_period[r_comp] = final_precedent_repair
+            end
+        end
+    end
+
+    # create repair order structure
+    restoration_order = Dict{String,Any}("$nwid"=>Tuple{String,String}[] for nwid in 1:length(d_comp_vec))
+    for (comp,nwid) in restoration_period
+        push!(restoration_order["$(nwid)"], comp)
+    end
 
     return restoration_order
 end
@@ -54,4 +81,32 @@ end
 
 function util_value_storage(data::Dict{String,<:Any}, comp_id::String)
     return data["storage"][comp_id]["energy"]
+end
+
+
+function calculate_repair_precedance(data)
+    repair_constraints = Dict{Tuple{String, String},Any}()
+    for (comp_type, comp_status_key) in _PM.pm_component_status
+        if haskey(data,comp_type)
+            for (comp_id,comp) in data[comp_type]
+                if get(data[comp_type][comp_id],"damaged",0) == 1
+                    if comp_type=="branch"
+                        repair_constraints[(comp_type,comp_id)] = [("bus","$(comp["f_bus"])"),("bus","$(comp["t_bus"])")]
+                    elseif comp_type=="dcline"
+                        repair_constraints[(comp_type,comp_id)] = [("bus","$(comp["f_bus"])"),("bus","$(comp["t_bus"])")]
+                    elseif comp_type=="gen"
+                        repair_constraints[(comp_type,comp_id)] = [("bus","$(comp["gen_bus"])")]
+                    elseif comp_type=="storage"
+                        repair_constraints[(comp_type,comp_id)] = [("bus","$(comp["gen_bus"])")]
+                    elseif comp_type=="bus"
+                        repair_constraints[(comp_type,comp_id)] = Tuple{String,String}[]
+                    else
+                        Memento.error(_PM._LOGGER, "Component $comp_type does not have a supported repair precedance. Setting no precedance")
+                        repair_constraints[(comp_type,comp_id)] = Tuple{String,String}[]
+                    end
+                end
+            end
+        end
+    end
+    return repair_constraints
 end
