@@ -38,9 +38,10 @@ function utilization_heuristic_restoration(data::Dict{String,<:Any})
     end
 
     # create repair order structure
-    restoration_order = Dict{String,Any}("$nwid"=>Tuple{String,String}[] for nwid in 1:length(d_comp_vec))
-    for (comp,nwid) in restoration_period
-        push!(restoration_order["$(nwid)"], comp)
+    restoration_order = Dict{String,Any}("$nwid"=>Dict{String,Any}(comp_type=>String[] for comp_type in restoration_comps) for nwid in 1:length(d_comp_vec))
+    for ((comp_type,comp_id),nwid) in restoration_period
+        push!(restoration_order["$(nwid)"][comp_type], comp_id)
+        # push!(restoration_order["$(nwid)"], comp)
     end
 
     return restoration_order
