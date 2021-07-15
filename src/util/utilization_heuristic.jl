@@ -23,7 +23,7 @@ function utilization_heuristic_restoration(data::Dict{String,<:Any})
     while updated
         updated = false
         for (r_comp, precedance_comps) in repair_constraints
-            precendent_repair_periods = [restoration_period[pr_comp] for pr_comp in precedance_comps]
+            precendent_repair_periods = [get(restoration_period,pr_comp,0) for pr_comp in precedance_comps]
             if !isempty(precendent_repair_periods)
                 final_precedent_repair = maximum(precendent_repair_periods)
             else
@@ -41,7 +41,6 @@ function utilization_heuristic_restoration(data::Dict{String,<:Any})
     restoration_order = Dict{String,Any}("$nwid"=>Dict{String,Any}(comp_type=>String[] for comp_type in restoration_comps) for nwid in 1:length(d_comp_vec))
     for ((comp_type,comp_id),nwid) in restoration_period
         push!(restoration_order["$(nwid)"][comp_type], comp_id)
-        # push!(restoration_order["$(nwid)"], comp)
     end
 
     return restoration_order
