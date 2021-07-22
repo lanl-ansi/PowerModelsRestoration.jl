@@ -34,23 +34,43 @@ function _run_iterative_restoration(network,model_constructor,optimizer; kwargs.
     ## solve ROP problem
     solution = _run_rop_ir(mn_network, model_constructor, optimizer; kwargs...)
 
+    # collect stats on solution
+    solution["stats"] = Dict(
+        :termination_status => [solution["termination_status"]],
+        :primal_status => [solution["primal_status"]],
+        :solve_time => [solution["solve_time"]],
+        :item_count => [count_repairable_items(network)],
+        :period_count=>[repair_periods],
+        :alt_condition=>[]
+    )
+
     ## Clean solution and apply result to network
     clean_status!(solution["solution"]) # replace status with bus_type for buses
     apply_repairs!(mn_network, get_repairs(solution))
 
     r_count = count_cumulative_repairs(solution)
     ## IF (all repairs in period 2) OR (primal is not feasible), then run ROP and return
-    if (r_count["1"]==0 && r_count["2"]!=0) || 
+    if (r_count["1"]==0 && r_count["2"]!=0) ||
         solution["primal_status"] !=_PM.FEASIBLE_POINT
 
-        damage_count = count_repairable_items(network)
-        mn_network = replicate_restoration_network(network, damage_count, _PM._pm_global_keys)
+        repair_periods = count_repairable_items(network)
+        mn_network = replicate_restoration_network(network, repair_periods, _PM._pm_global_keys)
 
-        Memento.warn(_PM._LOGGER, "Starting a $(damage_count) period ROP problem")
+        Memento.warn(_PM._LOGGER, "Starting a $(repair_periods) period ROP problem")
         solution = _run_rop_ir(mn_network, model_constructor, optimizer; kwargs...)
-        clean_status!(solution["solution"])
+
+        # collect stats on solution
+        solution["stats"] = Dict(
+            :termination_status => [solution["termination_status"]],
+            :primal_status => [solution["primal_status"]],
+            :solve_time => [solution["solve_time"]],
+            :item_count => [count_repairable_items(network)],
+            :period_count=>[repair_periods],
+            :alt_condition=>[ (r_count["1"]==0 && r_count["2"]!=0) ? "all repairs in period 2" : "Infeasible primal"]
+        )
 
         ## remove network "0" for recursion
+        clean_status!(solution["solution"])
         delete!(solution["solution"]["nw"],"0")
         return_solution = deepcopy(solution) # return network
 
@@ -74,6 +94,7 @@ function _run_iterative_restoration(network,model_constructor,optimizer; kwargs.
                 sub_sol = _run_iterative_restoration(sub_net, model_constructor, optimizer; kwargs...)
                 update_solution!(return_solution,sub_sol) # accumulate objective, solve status, etc.
 
+                # collect return networks
                 return_keys = keys(return_solution["solution"]["nw"]) |> collect |> (y->parse.(Int,y))
                 if isempty(return_keys)
                     current_net_id = 0
@@ -83,6 +104,12 @@ function _run_iterative_restoration(network,model_constructor,optimizer; kwargs.
                 for (sol_id, sol_net) in sub_sol["solution"]["nw"]
                     return_solution["solution"]["nw"]["$(current_net_id+parse(Int,sol_id))"] = sol_net
                 end
+
+                # collect stats from each sub sol
+                for stat in keys(return_solution["stats"])
+                    append!(return_solution["stats"][stat], sub_sol["stats"][stat])
+                end
+
             else # add solution net to return
                 # Does this need to use update_solution?
                 return_keys = keys(return_solution["solution"]["nw"]) |> collect |> (y->parse.(Int,y))
