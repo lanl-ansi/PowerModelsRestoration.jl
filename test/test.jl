@@ -21,6 +21,7 @@ damage_items!(data, Dict("branch"=>[id for (id, branch) in data["branch"]]))
 rad_heuristic(data, model_constructor, optimizer)
 
 
+solution = run_iterative_restoration(data, model_constructor, optimizer)
 
 repair_ordering = utilization_heuristic_restoration(data)
 partition_count = 3
@@ -37,7 +38,7 @@ for r_id in 1:partition_count
     end
     partition_repairs[r_id]=r_dict
 end
-        
+
 partition_repairs
 
 # data_mn = replicate_restoration_network(data, count=partition_count)
@@ -49,7 +50,7 @@ new_repair_ordering = Dict{String,Any}()
 for (r_id, repairs) in partition_repairs
     r_data = deepcopy(data)
 
-    # apply repair orders approraityle 
+    # apply repair orders approraityle
     for (r_id_it, repairs_it) in partition_repairs
         if r_id_it < r_id #repaired before r_id, then status =1 damage = 0
             for (comp_type, comp_ids) in repairs_it
