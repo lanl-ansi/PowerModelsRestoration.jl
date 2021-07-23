@@ -15,11 +15,6 @@ function run_iterative_restoration(network, model_constructor, optimizer; time_l
     t_start = time()
     sol = _run_iterative_restoration(network, model_constructor, optimizer, time_limit; kwargs...)
 
-    # if sol["primal_status"] != _PM.FEASIBLE_POINT is this the answer??
-    #     # set repair as final points
-    #     sol["solution"] = set_final_period_repairs(network)["solution"]
-    # end
-
     fill_missing_variables!(sol, network) # some networks do not have all variables if devices were status 0
     sol["solve_time"] = time()-t_start
     return sol
@@ -58,18 +53,27 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
     ## IF (all repairs in period 2) OR (primal is not feasible), then run ROP and return
     if (r_count["1"]==0 && r_count["2"]!=0) ||
         solution["primal_status"] !=_PM.FEASIBLE_POINT
+    
+        if   solution["primal_status"] !=_PM.FEASIBLE_POINT
+            Memento.warn(_PMG.LOGGER, "Primal status is not feasible.")
+        else
+            Memento.warn(_PMG.LOGGER, "All repairs in final time period.")
+        end
+        Memento.warn(_PM._LOGGER, "Running a $(count_repairable_items(network)) period recovery using Utilization Heuristic")
 
-        repair_periods = count_repairable_items(network)
-        mn_network = replicate_restoration_network(network, repair_periods, _PM._pm_global_keys)
+        # run utilization
+        restoration_order = utilization_heuristic_restoration(network)
+        case_mn = replicate_restoration_network(network, count=length(keys(restoration_order)))
+        apply_restoration_sequence!(case_mn, restoration_order)
+        delete!(case_mn["nw"], "0")
 
-        Memento.warn(_PM._LOGGER, "Starting a $(repair_periods) period ROP problem")
+        # update time limit
         remaining_time_limit = time_limit - (time()-t)
         solver_time_limit = remaining_time_limit/2
         _update_optimizer_time_limit!(optimizer, solver_time_limit)
 
-        solution = _run_rop_ir(mn_network, model_constructor, optimizer, ; kwargs...)
-
-        # collect stats on solution
+        # RRP to get load served
+        solution = run_restoration_redispatch(case_mn, model_constructor, optimizer)
         solution["stats"] = Dict(
             :termination_status => [solution["termination_status"]],
             :primal_status => [solution["primal_status"]],
@@ -79,11 +83,7 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
             :alt_condition=>[ (r_count["1"]==0 && r_count["2"]!=0) ? "all repairs in period 2" : "Infeasible primal"]
         )
 
-            ## remove network "0" for recursion
-            clean_status!(solution["solution"])
-            delete!(solution["solution"]["nw"],"0")
-            return_solution = deepcopy(solution) # return network
-
+        return_solution = deepcopy(solution)
     else # ELSE run iter on each network
         delete!(mn_network["nw"],"0") # remove network "0" for recursion
         return_solution = deepcopy(solution) # create return network
