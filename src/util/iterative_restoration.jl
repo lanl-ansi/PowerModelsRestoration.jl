@@ -11,9 +11,9 @@
 
 
 
-function run_iterative_restoration(network, model_constructor, optimizer; kwargs...)
+function run_iterative_restoration(network, model_constructor, optimizer; time_limit::Float64=3600.0, kwargs...)
     t_start = time()
-    sol = _run_iterative_restoration(network, model_constructor, optimizer; kwargs...)
+    sol = _run_iterative_restoration(network, model_constructor, optimizer, time_limit; kwargs...)
 
     # if sol["primal_status"] != _PM.FEASIBLE_POINT is this the answer??
     #     # set repair as final points
@@ -27,7 +27,13 @@ end
 
 
 "recrusive call to iterative restoration"
-function _run_iterative_restoration(network,model_constructor,optimizer; kwargs... )
+function _run_iterative_restoration(network,model_constructor,optimizer, time_limit; kwargs... )
+    
+    # record starting time
+    t = time()
+    solver_time_limit = time_limit/2
+    _update_optimizer_time_limit!(optimizer, solver_time_limit)
+
     repair_periods=2
     mn_network = replicate_restoration_network(network, repair_periods, _PM._pm_global_keys)
 
@@ -57,7 +63,11 @@ function _run_iterative_restoration(network,model_constructor,optimizer; kwargs.
         mn_network = replicate_restoration_network(network, repair_periods, _PM._pm_global_keys)
 
         Memento.warn(_PM._LOGGER, "Starting a $(repair_periods) period ROP problem")
-        solution = _run_rop_ir(mn_network, model_constructor, optimizer; kwargs...)
+        remaining_time_limit = time_limit - (time()-t)
+        solver_time_limit = remaining_time_limit/2
+        _update_optimizer_time_limit!(optimizer, solver_time_limit)
+
+        solution = _run_rop_ir(mn_network, model_constructor, optimizer, ; kwargs...)
 
         # collect stats on solution
         solution["stats"] = Dict(
@@ -69,10 +79,10 @@ function _run_iterative_restoration(network,model_constructor,optimizer; kwargs.
             :alt_condition=>[ (r_count["1"]==0 && r_count["2"]!=0) ? "all repairs in period 2" : "Infeasible primal"]
         )
 
-        ## remove network "0" for recursion
-        clean_status!(solution["solution"])
-        delete!(solution["solution"]["nw"],"0")
-        return_solution = deepcopy(solution) # return network
+            ## remove network "0" for recursion
+            clean_status!(solution["solution"])
+            delete!(solution["solution"]["nw"],"0")
+            return_solution = deepcopy(solution) # return network
 
     else # ELSE run iter on each network
         delete!(mn_network["nw"],"0") # remove network "0" for recursion
@@ -91,7 +101,8 @@ function _run_iterative_restoration(network,model_constructor,optimizer; kwargs.
                     end
                 end
 
-                sub_sol = _run_iterative_restoration(sub_net, model_constructor, optimizer; kwargs...)
+                remaining_time_limit = time_limit - (time()-t)
+                sub_sol = _run_iterative_restoration(sub_net, model_constructor, optimizer, remaining_time_limit; kwargs...)
                 update_solution!(return_solution,sub_sol) # accumulate objective, solve status, etc.
 
                 # collect return networks
@@ -251,6 +262,24 @@ function fill_missing_variables!(sol::Dict{String,<:Any}, network::Dict{String,<
             end
         end
     end
+end
+
+
+"updates the solve time limit of an optimizer"
+function _update_optimizer_time_limit!(optimizer::MathOptInterface.OptimizerWithAttributes, time_limit::Real)
+        new_params = typeof((optimizer.params))()
+    for param in optimizer.params
+        if param[1] != MathOptInterface.TimeLimitSec()
+            push!(new_params, param)
+        end
+    end
+    empty!(optimizer.params) 
+    for param in new_params
+        push!(optimizer.params, param)
+    end
+    push!(optimizer.params, (MathOptInterface.TimeLimitSec()=>time_limit))
+
+    return optimizer
 end
 
 
