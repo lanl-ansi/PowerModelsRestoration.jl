@@ -55,9 +55,9 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
         solution["primal_status"] !=_PM.FEASIBLE_POINT
     
         if   solution["primal_status"] !=_PM.FEASIBLE_POINT
-            Memento.warn(_PMG.LOGGER, "Primal status is not feasible.")
+            Memento.warn(_PM.LOGGER, "Primal status is not feasible.")
         else
-            Memento.warn(_PMG.LOGGER, "All repairs in final time period.")
+            Memento.warn(_PM.LOGGER, "All repairs in final time period.")
         end
         Memento.warn(_PM._LOGGER, "Running a $(count_repairable_items(network)) period recovery using Utilization Heuristic")
 
