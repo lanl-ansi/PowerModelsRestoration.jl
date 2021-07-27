@@ -16,7 +16,10 @@ model_constructor = DCPPowerModel
 
 pms_path = joinpath(dirname(pathof(PowerModels)), "..")
 data = PowerModels.parse_file("$(pms_path)/test/data/matpower/case5.m")
-damage_items!(data, Dict("branch"=>[id for (id, branch) in data["branch"]]))
+damage_items!(data, Dict("bus"=>[id for (id, bus) in data["bus"]]))
+propagate_damage_status!(data)
+
+run_iterative_restoration(data, SOCWRPowerModel, optimizer, time_limit=1.0)
 
 rad_heuristic(data, model_constructor, optimizer)
 
