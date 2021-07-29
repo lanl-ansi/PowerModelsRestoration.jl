@@ -7,6 +7,7 @@ function rad_heuristic(data, model_constructor, optimizer; kwargs...)
 
     # for different paritions until complete
     for partition_count in [4,3,2]
+        display(repair_ordering)
         items_per_partition = length(repair_ordering)/partition_count
 
         partition_repairs = Dict{Int,Any}()
@@ -20,13 +21,14 @@ function rad_heuristic(data, model_constructor, optimizer; kwargs...)
             end
             partition_repairs[r_id]=r_dict
         end
-                
+        # @show parition_repairs
+
         ## Solve subperiod ROP problems
         new_repair_ordering = Dict{String,Any}()
         for (r_id, repairs) in partition_repairs
             r_data = deepcopy(data)
-        
-            # apply repair orders approraityle 
+
+            # apply repair orders approraityle
             for (r_id_it, repairs_it) in partition_repairs
                 if r_id_it < r_id #repaired before r_id, then status =1 damage = 0
                     for (comp_type, comp_ids) in repairs_it
@@ -46,20 +48,23 @@ function rad_heuristic(data, model_constructor, optimizer; kwargs...)
                      # repairs to be order in this stage
                 end
             end
-        
+
             # solve ROP
             repair_periods=count_repairable_items(r_data)
             mn_network = replicate_restoration_network(r_data, repair_periods, PowerModels._pm_global_keys)
             solution = PowerModelsRestoration._run_rop_ir(mn_network, model_constructor, optimizer; kwargs...)
             println(solution["termination_status"])
             clean_status!(solution["solution"])
-        
+
+            @show count_repairable_items(r_data)
+            @show round(Int,(r_id-1)*items_per_partition)
+
             # insert reordered reapirs into  reapirs
             r_repairs =  get_repairs(solution)
             for (rr_id, repairs) in r_repairs
                 if rr_id != "0"
                     nw_id = round(Int,(r_id-1)*items_per_partition)+parse(Int,rr_id)
-        
+
                     new_repair_ordering["$nw_id"] = Dict(comp_type=>String[] for comp_type in restoration_comps)
                     for (comp_type,comp_id) in repairs
                         push!(new_repair_ordering["$nw_id"][comp_type],comp_id)
