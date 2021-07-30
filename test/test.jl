@@ -16,12 +16,15 @@ model_constructor = DCPPowerModel
 
 pms_path = joinpath(dirname(pathof(PowerModels)), "..")
 data = PowerModels.parse_file("$(pms_path)/test/data/matpower/case5.m")
-damage_items!(data, Dict("bus"=>[id for (id, bus) in data["bus"]]))
+damage_items!(data, Dict("branch"=>[id for (id, branch) in data["branch"]]))
 propagate_damage_status!(data)
 
 # run_iterative_restoration(data, SOCWRPowerModel, optimizer, time_limit=1.0)
 
-rad_heuristic(data, model_constructor, optimizer)
+restoration_order = rad_heuristic(data, model_constructor, optimizer)
+data_mn = replicate_restoration_network(data, count=maximum(parse.(Int,collect(keys(restoration_order)))))
+apply_restoration_sequence!(data_mn, restoration_order)
+print_summary_restoration(data_mn)
 
 
 solution = run_iterative_restoration(data, model_constructor, optimizer)
@@ -31,6 +34,7 @@ partition_count = 3
 items_per_partition = length(repair_ordering)/partition_count
 
 partition_repairs = Dict{Int,Any}()
+partition_networks = Dict{Int,Any}()
 for r_id in 1:partition_count
     nw_ids = round(Int,(r_id-1)*items_per_partition)+1:round(Int,(r_id)*items_per_partition)
     r_dict = Dict(k=>String[] for (k,v) in repair_ordering["1"])
@@ -40,10 +44,18 @@ for r_id in 1:partition_count
         end
     end
     partition_repairs[r_id]=r_dict
+    partition_networks[r_id]=collect(nw_ids)
 end
+# @show parition_repairs
 
-partition_repairs
-
+## Solve subperiod ROP problems
+new_repair_ordering = deepcopy(repair_ordering)
+for (nwid, nw) in new_repair_ordering
+    for (comp_type,comp_ids) in nw
+        empty!(comp_ids)
+    end
+end
+new_repair_ordering
 # data_mn = replicate_restoration_network(data, count=partition_count)
 # apply_restoration_sequence!(data_mn,partition_repairs)
 

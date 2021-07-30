@@ -1,16 +1,19 @@
 
+using DataStructures
+
 
 function rad_heuristic(data, model_constructor, optimizer; kwargs...)
 
     # initial ordering (utilization heuristic)
     repair_ordering = utilization_heuristic_restoration(data)
+    display(SortedDict(parse(Int,k)=>v for (k,v) in repair_ordering))
 
     # for different paritions until complete
-    for partition_count in [4,3,2]
-        display(repair_ordering)
+    for partition_count in [5,4,3,2]
         items_per_partition = length(repair_ordering)/partition_count
 
         partition_repairs = Dict{Int,Any}()
+        partition_networks = Dict{Int,Any}()
         for r_id in 1:partition_count
             nw_ids = round(Int,(r_id-1)*items_per_partition)+1:round(Int,(r_id)*items_per_partition)
             r_dict = Dict(k=>String[] for (k,v) in repair_ordering["1"])
@@ -20,12 +23,20 @@ function rad_heuristic(data, model_constructor, optimizer; kwargs...)
                 end
             end
             partition_repairs[r_id]=r_dict
+            partition_networks[r_id]=collect(nw_ids)
         end
-        # @show parition_repairs
+
+        # create new ordering dict
+        new_repair_ordering = deepcopy(repair_ordering)
+        for (nwid, nw) in new_repair_ordering
+            for (comp_type,comp_ids) in nw
+                empty!(comp_ids)
+            end
+        end
 
         ## Solve subperiod ROP problems
-        new_repair_ordering = Dict{String,Any}()
         for (r_id, repairs) in partition_repairs
+            network_ids = sort(partition_networks[r_id])
             r_data = deepcopy(data)
 
             # apply repair orders approraityle
@@ -50,20 +61,17 @@ function rad_heuristic(data, model_constructor, optimizer; kwargs...)
             end
 
             # solve ROP
-            repair_periods=count_repairable_items(r_data)
+            repair_periods=length(network_ids)
             mn_network = replicate_restoration_network(r_data, repair_periods, PowerModels._pm_global_keys)
             solution = PowerModelsRestoration._run_rop_ir(mn_network, model_constructor, optimizer; kwargs...)
             println(solution["termination_status"])
             clean_status!(solution["solution"])
 
-            @show count_repairable_items(r_data)
-            @show round(Int,(r_id-1)*items_per_partition)
-
             # insert reordered reapirs into  reapirs
             r_repairs =  get_repairs(solution)
             for (rr_id, repairs) in r_repairs
                 if rr_id != "0"
-                    nw_id = round(Int,(r_id-1)*items_per_partition)+parse(Int,rr_id)
+                    nw_id = network_ids[parse(Int,rr_id)]
 
                     new_repair_ordering["$nw_id"] = Dict(comp_type=>String[] for comp_type in restoration_comps)
                     for (comp_type,comp_id) in repairs
@@ -73,7 +81,7 @@ function rad_heuristic(data, model_constructor, optimizer; kwargs...)
             end
         end
         repair_ordering = deepcopy(new_repair_ordering)
-        display(repair_ordering)
+        display(SortedDict(parse(Int,k)=>v for (k,v) in repair_ordering))
     end
     return repair_ordering
 end
