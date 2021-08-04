@@ -38,6 +38,7 @@ print_summary_restoration(solution["solution"])
 ##
 # Random partition sizing
 repair_ordering = utilization_heuristic_restoration(data)
+repair_ordering = final_period_restoration(data)
 
 network_count=length(keys(repair_ordering))
 partition_min = 3
