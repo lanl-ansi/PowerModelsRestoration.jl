@@ -5,49 +5,76 @@ using DataStructures
 function rad_heuristic(data, model_constructor, optimizer; kwargs...)
 
     ## creat stats
-    iteration_counter = 0
-    stats = Dict()
-    stats["repair_list"] = SortedDict{Int,Array{String}}()
-    stats["ENS"] = Float64[]
-    stats["improvement"] = Float64[]
-    stats["solve_time"] = Float64[]
-    stats["termination_status"] = MathOptInterface.TerminationStatusCode[]
-    stats["primal_status"] = MathOptInterface.ResultStatusCode[]
+    solution = Dict{String,Any}(
+        "objective_lb" => 0.0,
+        # "optimizer" => ,
+        # "termination_status" => ,
+        # "dual_status" => ,
+        # "primal_status" => ,
+        "objective" => 0.0,
+        "solution" => Dict{String,Any}(),
+        # "stats" => Dict{String,Any}(),
+        "solve_time" => 0.0
+    )
+    stats = Dict{String,Any}(
+        "repair_list" => SortedDict{Int,Array{String}}(),
+        "ENS" => Float64[],
+        "improvement" => Float64[],
+        "solve_time" => Float64[],
+        "termination_status" => MathOptInterface.TerminationStatusCode[],
+        "primal_status" => MathOptInterface.ResultStatusCode[]
+    )
 
     # initial ordering (utilization heuristic)
     repair_ordering = utilization_heuristic_restoration(data)
     ens_dict = Dict(k=>sum(load["pd"] for (id,load) in data["load"]) for k in keys(repair_ordering))
 
+    solution["solution"] = replicate_restoration_network(data,count=length(keys(repair_ordering)))
+    solution["solution"] = apply_restoration_sequence!(solution["solution"],repair_ordering)
+    delete!(solution["solution"]["nw"],"0")
+
+
     ## Update stats
+    iteration_counter = 0
     stats["repair_list"][iteration_counter] = get_repair_list(deepcopy(repair_ordering))
     iteration_counter +=1
 
-    # Randomize paritions TODO
-    network_count = length(keys(repair_ordering))
-    PARTION_SIZE = 3
-    partition_count = round(Int, network_count/PARTION_SIZE, RoundUp)
+    # Randomize paritions settings
+    network_count=length(keys(repair_ordering))
+    partition_min = 2
+    partition_max = 4
 
     # Setup information
     iterations_with_no_improvement = 0
     iteration_counter = 1
     t_start = time()
 
-    while (iterations_with_no_improvement < 2) && ((time()-t_start) < 10.0)
-    # for partition_count in [5,4,3,2]
-        items_per_partition = length(repair_ordering)/partition_count
+    while (iterations_with_no_improvement < 10) && ((time()-t_start) < 10.0)
+
+        partitions = Int[]
+        partition_count = 0
+        while partition_count < network_count
+            partition_range = min((network_count-partition_count),partition_min):min((network_count-partition_count),partition_max)
+            push!(partitions,rand(partition_range))
+            partition_count = sum(partitions)
+        end
+        @show partitions
+        sum(partitions)
+
+        nwids = sort([parse(Int,k) for k in keys(repair_ordering)], rev=true)
 
         partition_repairs = Dict{Int,Any}()
         partition_networks = Dict{Int,Any}()
-        for r_id in 1:partition_count
-            nw_ids = round(Int,(r_id-1)*items_per_partition)+1:round(Int,(r_id)*items_per_partition)
-            r_dict = Dict(k=>String[] for (k,v) in repair_ordering["1"])
-            for nw_id in nw_ids
-                for (comp_type,comp_data) in r_dict
+        for  i in eachindex(partitions)
+            partition_size = partitions[i]
+            partition_networks[i] = [pop!(nwids) for j in 1:partition_size]
+
+            partition_repairs[i] = Dict(k=>String[] for k in restoration_comps)
+            for nw_id in partition_networks[i]
+                for (comp_type,comp_data) in partition_repairs[i]
                     append!(comp_data, repair_ordering["$nw_id"][comp_type])
                 end
             end
-            partition_repairs[r_id]=r_dict
-            partition_networks[r_id]=collect(nw_ids)
         end
 
         # create new ordering dict
@@ -87,15 +114,15 @@ function rad_heuristic(data, model_constructor, optimizer; kwargs...)
             # solve ROP
             repair_periods=length(network_ids)
             mn_network = _new_replicate_restoration_network(r_data, repair_periods, PowerModels._pm_global_keys)
-            solution = PowerModelsRestoration._run_rop_ir(mn_network, model_constructor, optimizer; kwargs...)
-            clean_solution!(solution)
-            clean_status!(solution["solution"])
+            rad_solution = PowerModelsRestoration._run_rop_ir(mn_network, model_constructor, optimizer; kwargs...)
+            clean_solution!(rad_solution)
+            clean_status!(rad_solution["solution"])
 
             # Collect stats
             total_load = sum(load["pd"] for (id,load) in r_data["load"])
-            served_load = Dict(nwid=>0.0 for nwid in keys(solution["solution"]["nw"]) if nwid != "0" )
+            served_load = Dict(nwid=>0.0 for nwid in keys(rad_solution["solution"]["nw"]) if nwid != "0" )
             for nwid in keys(served_load)
-                for (id,load) in get(solution["solution"]["nw"][nwid],"load",Dict())
+                for (id,load) in get(rad_solution["solution"]["nw"][nwid],"load",Dict())
                     served_load[nwid] += load["pd"]
                 end
             end
@@ -106,16 +133,16 @@ function rad_heuristic(data, model_constructor, optimizer; kwargs...)
 
             push!(stats["ENS"], sum(values(new_ens)))
             push!(stats["improvement"], sum(values(old_ens))-sum(values(new_ens)))
-            push!(stats["solve_time"], solution["solve_time"])
-            push!(stats["termination_status"], solution["termination_status"])
-            push!(stats["primal_status"], solution["primal_status"])
+            push!(stats["solve_time"], rad_solution["solve_time"])
+            push!(stats["termination_status"], rad_solution["termination_status"])
+            push!(stats["primal_status"], rad_solution["primal_status"])
 
 
             # insert reordered reapirs into new ordering if conditions are met
-            if (solution["primal_status"]==MathOptInterface.FEASIBLE_POINT) && (sum(values(new_ens)) < sum(values(old_ens)))
+            if (rad_solution["primal_status"]==MathOptInterface.FEASIBLE_POINT) && (sum(values(new_ens)) < sum(values(old_ens)))
                 #add new repair orders
                 iterations_with_no_improvement = 0
-                r_repairs =  get_repairs(solution)
+                r_repairs =  get_repairs(rad_solution)
                 for (rr_id, repairs) in r_repairs
                     if rr_id != "0"
                         nw_id = network_ids[parse(Int,rr_id)]
@@ -131,6 +158,15 @@ function rad_heuristic(data, model_constructor, optimizer; kwargs...)
                 for (old_key,new_key) in zip(sort(parse.(Int,collect(keys(old_ens)))), sort(parse.(Int,collect(keys(new_ens)))))
                     ens_dict["$old_key"] = new_ens["$new_key"]
                 end
+
+                # update solution["solution"] dict
+                for rr_id in keys(r_repairs)
+                    if rr_id != "0"
+                        nw_id = network_ids[parse(Int,rr_id)]
+                        _PM.update_data!(solution["solution"]["nw"]["$nw_id"], rad_solution["solution"]["nw"]["$rr_id"])
+                    end
+                end
+
                 Memento.info(_PM._LOGGER, "better order succeded")
                 Memento.info(_PM._LOGGER, "new ENS: $(sum(values(new_ens)))")
                 Memento.info(_PM._LOGGER, "old ENS: $(sum(values(old_ens)))")
@@ -140,7 +176,7 @@ function rad_heuristic(data, model_constructor, optimizer; kwargs...)
                     new_repair_ordering["$nwid"] = deepcopy(repair_ordering["$nwid"])
                 end
                 Memento.warn(_PM._LOGGER, "better order failed")
-                Memento.info(_PM._LOGGER, "Primal status: $(solution["primal_status"])")
+                Memento.info(_PM._LOGGER, "Primal status: $(rad_solution["primal_status"])")
                 Memento.info(_PM._LOGGER, "new ENS: $(sum(values(new_ens)))")
                 Memento.info(_PM._LOGGER, "old ENS: $(sum(values(old_ens)))")
             end
@@ -157,7 +193,10 @@ function rad_heuristic(data, model_constructor, optimizer; kwargs...)
         iteration_counter += 1
 
     end
-    return repair_ordering,stats
+
+    solution["stats"] = stats
+    solution["repair_ordering"] = repair_ordering
+    return solution
 end
 
 
@@ -173,21 +212,6 @@ function get_repair_list(restoration_order)
     return repair_list
 end
 
-# ""
-# function calc_unserved_load_pd(data_mn::Dict{String,Any}, net::Dict{String,Any})
-#     served_load = calc_load_served_pd(data_mn)
-#     total_load = sum(load["pd"] for (id,load) in net["load"])*length(keys(data_mn["nw"]))
-#     return total_load-served_load
-# end
-
-# ""
-# function calc_load_served_pd(data_mn::Dict{String,Any})
-#     load_served = 0.0
-#     for (nwid, net) in data_mn["nw"]
-#         load_served+=sum(load["pd"] for (id,load) in net["load"])
-#     end
-#     return load_served
-# end
 
 "Transforms a single network into a multinetwork with several deepcopies of the original network. Indexed from 0. DOES NOT REDUCE COUNT"
 function _new_replicate_restoration_network(sn_data::Dict{String,<:Any}; count::Int=1, global_keys::Set{String}=Set{String}())
@@ -211,10 +235,9 @@ function _new_replicate_restoration_network(sn_data::Dict{String,<:Any}, count::
     name = get(pm_sn_data, "name", "anonymous")
 
     mn_data = Dict{String,Any}(
-        "nw" => Dict{String,Any}()
+        "nw" => Dict{String,Any}(),
+        "multinetwork" => true
     )
-
-    mn_data["multinetwork"] = true
 
     pm_sn_data_tmp = deepcopy(pm_sn_data)
     for k in global_keys
@@ -228,27 +251,18 @@ function _new_replicate_restoration_network(sn_data::Dict{String,<:Any}, count::
 
     total_repairs = count_repairable_items(pm_sn_data)
 
-    # if count > total_repairs
-    #     Memento.warn(_PM._LOGGER, "More restoration steps than repairable components.  Reducing restoration steps to $(total_repairs).")
-    #     count = trunc(Int,total_repairs)
-    # end
-
     mn_data["name"] = "$(count) period restoration of $(name)"
-
     for n in 0:count
         mn_data["nw"]["$n"] = deepcopy(pm_sn_data_tmp)
     end
 
-    repairs_per_period = total_repairs/count
-
     mn_data["nw"]["0"]["repairs"] = 0
     mn_data["nw"]["0"]["repaired_total"] = 0
-
     for n in 1:count
-        if repairs_per_period*(n) < total_repairs
-            mn_data["nw"]["$n"]["repairs"] = max(n,round(Int, repairs_per_period*n - mn_data["nw"]["$(n-1)"]["repaired_total"]))
+        if n < count
+            mn_data["nw"]["$n"]["repairs"] = n > total_repairs ? 0 : 1
         else
-            mn_data["nw"]["$n"]["repairs"] = max(n,round(Int, total_repairs - mn_data["nw"]["$(n-1)"]["repaired_total"]))
+            mn_data["nw"]["$n"]["repairs"] = max(total_repairs-count+1,0)
         end
 
         mn_data["nw"]["$(n-1)"]["time_elapsed"] = mn_data["nw"]["$n"]["repairs"] * get(mn_data["nw"]["$(n-1)"], "time_elapsed", 1.0)
