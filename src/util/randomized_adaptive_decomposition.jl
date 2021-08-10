@@ -249,6 +249,8 @@ function rad_restoration(data, model_constructor, optimizer;
     solution["stats"] = stats
     solution["repair_ordering"] = repair_ordering
     solution["solve_time"] = time()-t_start
+    solution["termination_status"] = time()-t_start>time_limit ? MathOptInterface.TIME_LIMIT : MathOptInterface.LOCALLY_SOLVED
+    solution["primal_status"] = MathOptInterface.FEASIBLE_POINT # what if entire problem is infeasible?? How to tell?
     return solution
 end
 
