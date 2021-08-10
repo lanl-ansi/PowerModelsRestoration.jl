@@ -4,6 +4,8 @@ Pkg.add("JuMP")
 Pkg.add("Gurobi")
 Pkg.develop("PowerModelsRestoration")
 Pkg.add("DataStructures")
+Pkg.add("Setfield")
+Pkg.add("VegaLite")
 
 using PowerModelsRestoration
 using DataStructures
@@ -16,18 +18,37 @@ model_constructor = DCPPowerModel
 
 ##
 
-pms_path = joinpath(dirname(pathof(PowerModels)), "..")
-data = PowerModels.parse_file("$(pms_path)/test/data/matpower/case5.m")
-damage_items!(data, Dict("bus"=>[id for (id, bus) in data["bus"]]))
+# pms_path = joinpath(dirname(pathof(PowerModels)), "..")
+pglib_path = "$(homedir())/Documents/PowerDev/pglib-opf"
+data = PowerModels.parse_file("$(pglib_path)/pglib_opf_case39_epri.m")
+damage_items!(data, Dict("branch"=>[id for (id, branch) in data["branch"]]))
 # damage_items!(data, Dict("bus"=>["1","2","3"]))
 propagate_damage_status!(data)
 
 # solution = run_iterative_restoration(data, DCPPowerModel, optimizer, time_limit=10.0)
 
-solution = rad_heuristic(data, model_constructor, optimizer)
-display(solution["stats"]["repair_list"])
+solution = rad_heuristic(data, model_constructor, optimizer; time_limit = 1000.0)
+# display(solution["stats"]["repair_list"])
 
-# SortedDict(parse(Int,k)=>v for (k,v) in restoration_order)
+# # SortedDict(parse(Int,k)=>v for (k,v) in restoration_order)
+# data_mn = PowerModelsRestoration._new_replicate_restoration_network(data, 2, PowerModels._pm_global_keys)
+
+# data_mn = replicate_restoration_network(data, count=count_damaged_items(data))
+# sol = PowerModelsRestoration._run_rop_ir(data_mn, DCPPowerModel, Gurobi.Optimizer)
+print_summary_restoration(solution["solution"])
+
+using VegaLite
+atl = solution["stats"]["average_time_limit"]
+afi = solution["stats"]["average_fail_to_improve"]
+ens = solution["stats"]["ENS"]
+stl = solution["stats"]["solver_time_limit"]
+mps = solution["stats"]["partition_max"]
+
+p1 = @vlplot(:line, x=1:length(atl), y=atl, title="Termination: Time Limit")
+p2 = @vlplot(:line, x=1:length(afi), y=afi, title="Fail to Improve")
+p3 = @vlplot(:line, x=1:length(ens), y=ens, title="ENS")
+p3 = @vlplot(:line, x=1:length(stl), y=stl, title="Solver Time Limit")
+p3 = @vlplot(:line, x=1:length(pms), y=pms, title="Maximum Partition Size")
 
 
 # data_mn = replicate_restoration_network(data, count=maximum(parse.(Int,collect(keys(solution["repair_ordering"])))))
@@ -180,3 +201,4 @@ solution["stats"]["ENS"]
 #     # get_repairs(solution) |> println
 # end
 # @show new_repair_ordering
+
