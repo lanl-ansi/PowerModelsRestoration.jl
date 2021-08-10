@@ -1,8 +1,16 @@
 
 using DataStructures
 
-
-function rad_heuristic(data, model_constructor, optimizer; time_limit::Float64=3600.0, kwargs...)
+function rad_heuristic(data, model_constructor, optimizer;
+        time_limit::Float64=3600.0,
+        averaging_window::Int = 100,
+        partition_min::Int = 2,
+        partition_max::Int = 5,
+        iteration_with_no_improvement_limit::Int=10,
+        fail_to_improve_limit::Float64=0.8,
+        fail_time_limit::Float64=0.8,
+        kwargs...
+    )
 
     ## creat stats
     solution = Dict{String,Any}(
@@ -27,17 +35,8 @@ function rad_heuristic(data, model_constructor, optimizer; time_limit::Float64=3
         "repair_count"=>Float64[],
     )
 
-    ## Adapative parameters
-    average_time_limit = 0.0
-    average_fail_to_improve = 0.0
-    averaging_window = 100
-    solver_time_limit = time_limit/averaging_window
-    _update_optimizer_time_limit!(optimizer, solver_time_limit)
-
     # ## Randomize partitions settings
     network_count = count_damaged_items(data)
-    partition_min = 2
-    partition_max = 5
 
     ## Start algorithm
     t_start = time()
@@ -59,11 +58,16 @@ function rad_heuristic(data, model_constructor, optimizer; time_limit::Float64=3
     iterations_with_no_improvement = 0
     iteration_counter = 1
 
-    while (iterations_with_no_improvement < 10) && ((time()-t_start) < time_limit)
+    ## Adapative parameters
+    average_time_limit = 0.0
+    average_fail_to_improve = 0.0
+    solver_time_limit = time_limit/averaging_window
+
+    while (iterations_with_no_improvement < iteration_with_no_improvement_limit) && ((time()-t_start) < time_limit)
 
         ## Adapative changes to time limit and parition max
-        if average_fail_to_improve > 0.8
-            if average_time_limit > 0.8
+        if average_fail_to_improve > fail_to_improve_limit
+            if average_time_limit > fail_time_limit
                 solver_time_limit = solver_time_limit*2
                 average_time_limit = 0.7
             else
