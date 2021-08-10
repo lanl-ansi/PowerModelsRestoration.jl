@@ -1,7 +1,7 @@
 
 using DataStructures
 
-function rad_heuristic(data, model_constructor, optimizer;
+function rad_restoration(data, model_constructor, optimizer;
         time_limit::Float64=3600.0,
         averaging_window::Int = 100,
         partition_min::Int = 2,
