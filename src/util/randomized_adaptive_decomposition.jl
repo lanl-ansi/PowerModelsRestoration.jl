@@ -134,7 +134,7 @@ function rad_restoration(data, model_constructor, optimizer;
             end
 
             ## solve ROP
-            _update_optimizer_time_limit!(optimizer, minimum(solver_time_limit,maximum(0,time()-t_start)))
+            _update_optimizer_time_limit!(optimizer, min(solver_time_limit,max(0,time()-t_start)))
             repair_periods=length(network_ids)
             mn_network = _new_replicate_restoration_network(r_data, repair_periods, PowerModels._pm_global_keys)
             rad_solution = PowerModelsRestoration._run_rop_ir(mn_network, model_constructor, optimizer; kwargs...)

@@ -27,7 +27,7 @@ propagate_damage_status!(data)
 
 # solution = run_iterative_restoration(data, DCPPowerModel, optimizer, time_limit=10.0)
 
-solution = rad_heuristic(data, model_constructor, optimizer; time_limit = 1000.0)
+solution = rad_restoration(data, model_constructor, optimizer; time_limit = 1000.0)
 # display(solution["stats"]["repair_list"])
 
 # # SortedDict(parse(Int,k)=>v for (k,v) in restoration_order)
