@@ -1,17 +1,19 @@
-Pkg.activate(temp=true)
-Pkg.add("PowerModels")
-Pkg.add("JuMP")
-Pkg.add("Gurobi")
-Pkg.develop("PowerModelsRestoration")
-Pkg.add("DataStructures")
-Pkg.add("Setfield")
-Pkg.add("VegaLite")
+Pkg.activate(".")
+# Pkg.develop("PowerModels")
+# Pkg.add("JuMP")
+# Pkg.add("Gurobi")
+# Pkg.develop("PowerModelsRestoration")
+# Pkg.add("DataStructures")
+# Pkg.add("Setfield")
+# Pkg.add("VegaLite")
 
 using PowerModelsRestoration
 using DataStructures
 using PowerModels
 using Gurobi
 using JuMP
+# using Combinatorics
+# using ProgressMeter
 
 optimizer = optimizer_with_attributes(Gurobi.Optimizer, "OutputFlag"=>0)
 model_constructor = DCPPowerModel
@@ -20,13 +22,13 @@ model_constructor = DCPPowerModel
 
 # pms_path = joinpath(dirname(pathof(PowerModels)), "..")
 pglib_path = "$(homedir())/Documents/PowerDev/pglib-opf"
-data = PowerModels.parse_file("$(pglib_path)/pglib_opf_case39_epri.m")
+data = PowerModels.parse_file("$(pglib_path)/pglib_opf_case14_ieee.m")
 damage_items!(data, Dict("branch"=>[id for (id, branch) in data["branch"]]))
 # damage_items!(data, Dict("bus"=>["1","2","3"]))
 propagate_damage_status!(data)
 
 # solution = run_iterative_restoration(data, DCPPowerModel, optimizer, time_limit=10.0)
-
+data = PowerModels.parse_file("../../RestorationCLI\\data\\experiment_data\\case240api_20.m")
 solution = rad_restoration(data, model_constructor, optimizer; time_limit = 1000.0)
 # display(solution["stats"]["repair_list"])
 
@@ -44,11 +46,11 @@ ens = solution["stats"]["ENS"]
 stl = solution["stats"]["solver_time_limit"]
 mps = solution["stats"]["partition_max"]
 
-p1 = @vlplot(:line, x=1:length(atl), y=atl, title="Termination: Time Limit")
-p2 = @vlplot(:line, x=1:length(afi), y=afi, title="Fail to Improve")
-p3 = @vlplot(:line, x=1:length(ens), y=ens, title="ENS")
-p3 = @vlplot(:line, x=1:length(stl), y=stl, title="Solver Time Limit")
-p3 = @vlplot(:line, x=1:length(pms), y=pms, title="Maximum Partition Size")
+p1 = @vlplot(:line, x=1:length(atl), y=atl, title="Termination: Time Limit")    #|> save("termination_time_limit.pdf")
+p2 = @vlplot(:line, x=1:length(afi), y=afi, title="Fail to Improve")            #|> save("fail_to_improve.pdf")
+p3 = @vlplot(:line, x=1:length(ens), y=ens, title="ENS")                        #|> save("ENS.pdf")
+p3 = @vlplot(:line, x=1:length(stl), y=stl, title="Solver Time Limit")          #|> save("solver_time_limit.pdf")
+p3 = @vlplot(:line, x=1:length(mps), y=mps, title="Maximum Partition Size")     #|> save("maximum_partition_size.pdf")
 
 
 # data_mn = replicate_restoration_network(data, count=maximum(parse.(Int,collect(keys(solution["repair_ordering"])))))
@@ -56,7 +58,7 @@ p3 = @vlplot(:line, x=1:length(pms), y=pms, title="Maximum Partition Size")
 print_summary_restoration(solution["solution"])
 
 ##
-pglib_path = "C:\\Users\\noahx\\Documents\\PowerDev\\pglib-opf\\api"
+pglib_path = ""
 data = parse_file(string(pglib_path,"/pglib_opf_case118_ieee__api.m"))
 damage_items!(data, Dict("branch"=>[id for (id, branch) in data["branch"]]))
 # damage_items!(data, Dict("bus"=>["1","2","3"]))
@@ -202,3 +204,138 @@ solution["stats"]["ENS"]
 # end
 # @show new_repair_ordering
 
+
+
+# ## Test out infeasilibty of -brx rop problems
+
+
+# using PowerModels, Gurobi, PowerModelsRestoration
+
+# optimizer = optimizer_with_attributes(Gurobi.Optimizer, "OutputFlag"=>0)
+
+
+# # data["branch"]["2"]["br_x"] = -data["branch"]["2"]["br_x"]
+# data["branch"]["1"]["damaged"] = 1
+# # data["branch"]["2"]["damaged"] = 1
+
+# data_mn = replicate_restoration_network(data,count=2)
+# solution = run_rop(data_mn,DCPPowerModel,optimizer)
+
+
+# run_mn_opf(data_mn,DCPPowerModel,optimizer)
+
+# using Random
+
+# br_id = 5
+# br_id = 2
+# br_id = 1
+# data = PowerModels.parse_file("C:\\Users\\noahx\\Documents\\PowerDev/pglib-opf/api/pglib_opf_case60_c__api.m")
+# # data["branch"]["$br_id"]["br_x"] = -data["branch"]["$br_id"]["br_x"]
+# scen = 1.0
+# branch_count = length(keys(data["branch"]))
+# branch_ids = collect(keys(data["branch"]))
+# permutated_ids = branch_ids[randperm(length(branch_ids))]
+# damaged_ids = permutated_ids[1:round(Int,branch_count*scen)]
+# damage_items!(data,Dict("branch"=>damaged_ids))
+# count_repairable_items(data)
+
+# run_opf(data,DCPPowerModel,optimizer) #negative br_x is feasible
+
+# data["branch"]["$br_id"]["br_status"] = 0
+# run_opf(data,DCPPowerModel,optimizer) # removing branch 1 is feasible
+
+# # ROP with damaged branch 1 is infeasible
+# data["branch"]["$br_id"]["br_status"] = 1
+# data["branch"]["$br_id"]["damaged"] = 1
+# data_mn = replicate_restoration_network(data,count=count_repairable_items(data))
+# solution = run_rop(data_mn,DCPPowerModel,optimizer)
+
+# solution = run_ots(data, DCPPowerModel,optimizer)
+
+
+# silence()
+# br_ids = 5:20
+# combos = collect(combinations(br_ids))
+
+# @progress for i ∈  size(combos)[1]
+#     br_set
+#     data = PowerModels.parse_file("C:\\Users\\noahx\\Documents\\PowerDev/pglib-opf/pglib_opf_case14_ieee.m")
+#     for id ∈ br_set
+#         data["branch"]["$id"]["br_x"] = -data["branch"]["$id"]["br_x"]
+#     end
+#     solution = run_ots(data, DCPPowerModel,optimizer)
+#     branch_off = false
+#     for id ∈ br_set
+#         if solution["primal_status"]==FEASIBLE_POINT && solution["solution"]["branch"]["$id"]["br_status"]==0
+#             println(br_set)
+#             push!(result, string(br_set))
+#         else
+#             println("fail")
+#             push!(result,"fail")
+#         end
+#     end
+# end
+# [k for k in result if k != "fail"] |> println
+
+# using ProgressLogging
+
+# silence()
+# br_ids = 5:20
+# combos = collect(combinations(br_ids))
+# result = Vector{Vector{Int}}(undef, size(combos)[1])
+# @progress for i in 1:size(combos)[1]
+#     br_set = combos[i]
+#     data = PowerModels.parse_file("C:\\Users\\noahx\\Documents\\PowerDev/pglib-opf/pglib_opf_case14_ieee.m")
+#     for id ∈ br_set
+#         data["branch"]["$id"]["br_x"] = -data["branch"]["$id"]["br_x"]
+#     end
+#     solution = run_ots(data, DCPPowerModel,optimizer)
+#     if solution["primal_status"]==FEASIBLE_POINT
+#         off = [br_id for  (br_id, branch) in solution["solution"]["branch"] if branch["br_status"]==0]
+#     end
+#     println(br_set)
+#     println(off)
+#     result[i] = intersect(br_set,off)
+# end
+# [k for k in result if !isempty(k)]
+
+
+# b = 1
+# va_fr = 1
+# va_to = 0.5
+# vad_max = 2
+# vad_min = -2
+# z = 0
+
+
+
+## Test heuristic result and redispatch results
+
+data = PowerModels.parse_file("C:\\Users\\noahx\\Documents\\PowerDev\\RestorationCLI\\data\\experiment_data\\case39api_50.m")
+
+solution = rad_restoration(data, model_constructor, optimizer; time_limit = 1000.0)
+load = sum(sum(load["pd"] for (id,load) in net["load"] ) for (nwid,net) in solution["solution"]["nw"])
+
+case = deepcopy(data)
+clean_status!(data)
+case_mn = replicate_restoration_network(case, count=length(keys(solution["solution"]["nw"])))
+update_status!(case_mn, solution["solution"])
+
+sol2 = run_restoration_redispatch(case_mn, DCPPowerModel, optimizer)
+load2 = sum(sum(load["pd"] for (id,load) in net["load"] ) for (nwid,net) in solution["solution"]["nw"])
+load_diff = load-load2
+
+
+
+solution = run_iterative_restoration(data, model_constructor, optimizer; time_limit = 1000.0)
+load = sum(sum(load["pd"] for (id,load) in net["load"] ) for (nwid,net) in solution["solution"]["nw"])
+
+case = deepcopy(data)
+clean_solution!(solution)
+clean_status!(data)
+case_mn = replicate_restoration_network(case, count=length(keys(solution["solution"]["nw"])))
+update_status!(case_mn, solution["solution"])
+
+sol2 = run_restoration_redispatch(case_mn, DCPPowerModel, optimizer)
+load2 = sum(sum(load["pd"] for (id,load) in net["load"] ) for (nwid,net) in solution["solution"]["nw"])
+load_diff = load-load2
