@@ -23,7 +23,7 @@ end
 
 "recrusive call to iterative restoration"
 function _run_iterative_restoration(network,model_constructor,optimizer, time_limit; kwargs... )
-    
+
     # record starting time
     t = time()
     solver_time_limit = time_limit/2
@@ -53,7 +53,7 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
     ## IF (all repairs in period 2) OR (primal is not feasible), then run ROP and return
     if (r_count["1"]==0 && r_count["2"]!=0) ||
         solution["primal_status"] !=_PM.FEASIBLE_POINT
-    
+
         if   solution["primal_status"] !=_PM.FEASIBLE_POINT
             Memento.warn(_PM._LOGGER, "Primal status is not feasible.")
         else
@@ -82,6 +82,10 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
             :period_count=>[repair_periods],
             :alt_condition=>[ (r_count["1"]==0 && r_count["2"]!=0) ? "all repairs in period 2" : "Infeasible primal"]
         )
+
+        # fill missing items removed for status=0 in redispatch
+        fill_missing_variables!(solution, network)
+        update_status!(solution["solution"], case_mn)
 
         return_solution = deepcopy(solution)
     else # ELSE run iter on each network
@@ -273,7 +277,7 @@ function _update_optimizer_time_limit!(optimizer::MathOptInterface.OptimizerWith
             push!(new_params, param)
         end
     end
-    empty!(optimizer.params) 
+    empty!(optimizer.params)
     for param in new_params
         push!(optimizer.params, param)
     end
