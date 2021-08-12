@@ -33,6 +33,7 @@ function rad_restoration(data, model_constructor, optimizer;
         "partition_max"=>Float64[],
         "partition_size"=>Float64[],
         "repair_count"=>Float64[],
+        "feasible_period"=>Dict{Int,Bool}(),
     )
 
     # ## Randomize partitions settings
@@ -53,6 +54,7 @@ function rad_restoration(data, model_constructor, optimizer;
     iteration_counter = 0
     stats["repair_list"][iteration_counter] = get_repair_list(deepcopy(repair_ordering))
     iteration_counter +=1
+    stats["feasible_period"] = Dict{Int,Bool}(parse(Int,nwid)=>false for nwid ∈ keys(repair_ordering))
 
     ## Setup information
     iterations_with_no_improvement = 0
@@ -63,7 +65,8 @@ function rad_restoration(data, model_constructor, optimizer;
     average_fail_to_improve = 0.0
     solver_time_limit = time_limit/averaging_window
 
-    while (iterations_with_no_improvement < iteration_with_no_improvement_limit) && ((time()-t_start) < time_limit)
+    # while (iteration with no improvement is under the limit OR not every network has a feasible power flow) AND we are under the time limit
+    while ((iterations_with_no_improvement < iteration_with_no_improvement_limit) || !minimum(values(stats["feasible_period"]))) && ((time()-t_start) < time_limit)
 
         ## Adapative changes to time limit and parition max
         if average_fail_to_improve > fail_to_improve_limit
@@ -156,6 +159,10 @@ function rad_restoration(data, model_constructor, optimizer;
                 end
                 new_ens = Dict(nwid=>(total_load - served_load[nwid]) for nwid in keys(served_load))
 
+                # a feasible pwoer flow was found for these networks
+                for nwid ∈ network_ids
+                    stats["feasible_period"][nwid] = true
+                end
 
                 ## insert reordered repairs into new ordering if conditions are met
                 if (sum(values(new_ens)) < sum(values(old_ens)))
@@ -249,8 +256,8 @@ function rad_restoration(data, model_constructor, optimizer;
     solution["stats"] = stats
     solution["repair_ordering"] = repair_ordering
     solution["solve_time"] = time()-t_start
-    solution["termination_status"] = time()-t_start>time_limit ? MathOptInterface.TIME_LIMIT : MathOptInterface.LOCALLY_SOLVED
-    solution["primal_status"] = MathOptInterface.FEASIBLE_POINT # what if entire problem is infeasible?? How to tell?
+    solution["primal_status"] = minimum(collect(values(stats["feasible_period"]))) ? MathOptInterface.FEASIBLE_POINT : MathOptInterface.NO_SOLUTION
+    solution["termination_status"] = time()-t_start>time_limit ? MathOptInterface.TIME_LIMIT : solution["primal_status"]==MathOptInterface.FEASIBLE_POINT ?  MathOptInterface.LOCALLY_SOLVED :  MathOptInterface.LOCALLY_INFEASIBLE
     return solution
 end
 
