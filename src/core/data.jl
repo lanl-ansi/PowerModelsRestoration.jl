@@ -127,6 +127,60 @@ function _get_damaged_items(network::Dict{String,<:Any})
 end
 
 
+"Count the number of items with a key status of inactive in a network"
+function count_inactive_items(network::Dict{String, <:Any})
+    pm_network = _PM.get_pm_data(network)
+
+    if _IM.ismultinetwork(pm_network)
+        damaged_count = Dict{String,Any}("nw" => Dict{String,Any}())
+        damaged_set = get_inactive_items(pm_network)
+        damaged_count["nw"] = Dict{String,Any}(nw => sum(length(comp_ids) for (comp_name,comp_ids) in damage_network) for (nw, damage_network) in damaged_set["nw"] )
+    else
+        damaged_set = get_inactive_items(pm_network)
+        damaged_count = sum(length(comp_ids) for (comp_name,comp_ids) in damaged_set)
+    end
+
+    return damaged_count
+end
+
+
+""
+function get_inactive_items(data::Dict{String,<:Any})
+    pm_data = _PM.get_pm_data(data)
+
+    if _IM.ismultinetwork(pm_data)
+        comp_list = Dict{String,Any}("nw" => Dict{String,Any}())
+
+        for (i, nw_data) in pm_data["nw"]
+            comp_list["nw"][i] = _get_inactive_items(nw_data)
+        end
+    else
+        comp_list = _get_inactive_items(pm_data)
+    end
+
+    return comp_list
+end
+
+
+""
+function _get_inactive_items(network::Dict{String,<:Any})
+    comp_list = Dict{String, Array{String,1}}()
+
+    for comp_type in restoration_comps
+        status_key = _PM.pm_component_status[comp_type]
+        comp_list[comp_type] = []
+
+        for (comp_id, comp) in network[comp_type]
+            if haskey(comp, status_key) && comp[status_key] == _PM.pm_component_status_inactive[comp_type]
+                push!(comp_list[comp_type], comp_id)
+            end
+        end
+    end
+
+    return comp_list
+end
+
+
 ""
 function get_isolated_load(data::Dict{String,<:Any})
     pm_data = _PM.get_pm_data(data)
