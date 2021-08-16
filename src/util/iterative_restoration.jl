@@ -144,19 +144,26 @@ end
 
 "get repairs in each period of the solution data"
 function get_repairs(solution)
-    if !_IM.ismultinetwork(solution["solution"])
+    if haskey(solution,"solution")
+        network = solution["solution"]
+    else
+        network = solution
+    end
+
+    if !_IM.ismultinetwork(network)
         Memento.error(_PM._LOGGER, "get_repairs requires multinetwork.")
     end
 
-    repairs = Dict{String,Array{Tuple{String,String},1}}(nw=>[] for nw in keys(solution["solution"]["nw"]))
-    for (nw_id, network) in solution["solution"]["nw"]
+    # repairs = Dict{String,Array{Tuple{String,String},1}}(nw=>[] for nw in keys(network["nw"]))
+    repairs = Dict{String,Any}("$nwid"=>Dict{String,Any}(comp_type=>String[] for comp_type in restoration_comps) for nwid in keys(network["nw"]))
+    for (nw_id, net) in network["nw"]
         for comp_type in restoration_comps
             status_key = _PM.pm_component_status[comp_type]
-            for (comp_id, comp) in get(network, comp_type, Dict())
-                if nw_id != "0" #not items are repaired in "0", do not check in previous network for a change
+            for (comp_id, comp) in get(net, comp_type, Dict())
+                if nw_id != "0" #not items are repaired in "0", do not check in previous net for a change
                     if comp[status_key] != _PM.pm_component_status_inactive[comp_type] &&  # if comp is active
-                        solution["solution"]["nw"]["$(parse(Int,nw_id)-1)"][comp_type][comp_id][status_key] == _PM.pm_component_status_inactive[comp_type] # if comp was previously inactive
-                        push!(repairs[nw_id], (comp_type,comp_id))
+                        network["nw"]["$(parse(Int,nw_id)-1)"][comp_type][comp_id][status_key] == _PM.pm_component_status_inactive[comp_type] # if comp was previously inactive
+                        push!(repairs[nw_id][comp_type], comp_id)
                     end
                 end
             end
@@ -169,7 +176,7 @@ end
 "get a count of the repairs in each period of the solution data"
 function count_repairs(solution)
     repairs = get_repairs(solution)
-    repair_count = Dict{String,Int}(nw=>length(repair_list) for (nw, repair_list) in repairs )
+    repair_count = Dict{String,Int}(nw=>sum(length(comp_repairs) for (comp_type,comp_repairs) in nw_repairs) for (nw, nw_repairs) in repairs )
     return repair_count
 end
 
@@ -207,8 +214,9 @@ end
     | damaged |  1  |  1  |  1  |  0  |
 """
 function apply_repairs!(data, repairs)
-    for (repair_nw_id, repair_list) in repairs
-        for (comp_type, comp_id) in repair_list
+    for (repair_nw_id, nw_repairs) in repairs
+        for (comp_type, comp_ids) in nw_repairs
+            for comp_id in comp_ids
             status_key = _PM.pm_component_status[comp_type]
             for (nw_id, net) in data["nw"]
                 if  nw_id < repair_nw_id
@@ -218,6 +226,7 @@ function apply_repairs!(data, repairs)
                 end
             end
         end
+    end
     end
     return data
 end
