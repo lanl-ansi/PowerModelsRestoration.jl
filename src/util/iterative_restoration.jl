@@ -25,8 +25,9 @@ end
 function _run_iterative_restoration(network,model_constructor,optimizer, time_limit; kwargs... )
 
     # record starting time
-    t = time()
+    t_start = time()
     solver_time_limit = time_limit/2
+    remaining_time_limit = max(0.1, time_limit-(time()-t_start))
     _update_optimizer_time_limit!(optimizer, solver_time_limit)
 
     repair_periods=2
@@ -47,30 +48,77 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
 
     ## Clean solution and apply result to network
     clean_status!(solution["solution"]) # replace status with bus_type for buses
-    apply_repairs!(mn_network, get_repairs(solution))
 
-    r_count = count_cumulative_repairs(solution)
-    ## IF (all repairs in period 2) OR (primal is not feasible), then run ROP and return
-    if (r_count["1"]==0 && r_count["2"]!=0) ||
-        solution["primal_status"] !=_PM.FEASIBLE_POINT
 
-        if   solution["primal_status"] !=_PM.FEASIBLE_POINT
-            Memento.warn(_PM._LOGGER, "Primal status is not feasible.")
-        else
-            Memento.warn(_PM._LOGGER, "All repairs in final time period.")
-        end
+    ## IF primal infeasible, run Utilization for a repair ordering and continue
+    if solution["primal_status"] ==_PM.FEASIBLE_POINT
+        apply_repairs!(mn_network, get_repairs(solution))
+    else
+        Memento.warn(_PM._LOGGER, "Primal status is not feasible.")
         Memento.warn(_PM._LOGGER, "Running a $(count_repairable_items(network)) period recovery using Utilization Heuristic")
 
+        util_restoration_order = utilization_heuristic_restoration(network)
+
+        restoration_order = Dict{String,Any}("$nwid"=>Dict{String,Any}(comp_type=>String[] for comp_type in restoration_comps) for nwid in 0:2)
+        l = maximum(parse.(Int,collect(keys(util_restoration_order))))
+        m = round(Int,l/2)
+        net_keys = [1:m,m+1:l]
+        for r_id in axes(net_keys,1)
+            for nw_id in net_keys[r_id]
+                for comp_type in keys(restoration_order["$r_id"])
+                    append!(restoration_order["$r_id"][comp_type],util_restoration_order["$nw_id"][comp_type])
+                end
+            end
+        end
+
+        mn_network = replicate_restoration_network(network, count=2)
+        apply_repairs!(mn_network, restoration_order)
+
+        ## if result will have single repair in a period, run RRP to create a reporting solution
+        ## DOES THIS WORK PROPERLY?!
+        if count_repairable_items(mn_network["nw"]["1"]) ≤ 1 || count_repairable_items(mn_network["nw"]["2"]) ≤ 1
+            Memento.warn(_PM._LOGGER, "Running a $(count_repairable_items(network)) component recovery")
+
+            # update time limit
+            remaining_time_limit = max(0.1, time_limit-(time()-t_start))
+            solver_time_limit = remaining_time_limit/2
+            _update_optimizer_time_limit!(optimizer, solver_time_limit)
+
+            # RRP to get load served
+            solution = run_restoration_redispatch(mn_network, model_constructor, optimizer)
+            solution["stats"] = Dict(
+                :termination_status => [solution["termination_status"]],
+                :primal_status => [solution["primal_status"]],
+                :solve_time => [solution["solve_time"]],
+                :item_count => [count_repairable_items(network)],
+                :period_count=>[repair_periods],
+                :alt_condition=>["Util recovery caused small network"]
+            )
+
+            # fill missing items removed for status=0 in redispatch
+            fill_missing_variables!(solution, network)
+            update_status!(solution["solution"], mn_network)
+        end
+    end
+
+
+
+    r_count = count_cumulative_repairs(mn_network)
+    ## IF (all repairs in period 2) OR (Exceeding time limit) then run Redispatch and return
+    if (r_count["1"]==0 && r_count["2"]!=0)
+        Memento.warn(_PM._LOGGER, "All repairs in final time period.")
+        Memento.warn(_PM._LOGGER, "Running a $(count_repairable_items(network)) period recovery")
+
+        # update time limit
+        remaining_time_limit = max(10.0, time_limit-(time()-t_start))
+        solver_time_limit = remaining_time_limit/2
+        _update_optimizer_time_limit!(optimizer, solver_time_limit)
+
         # run utilization
-        restoration_order = utilization_heuristic_restoration(network)
+        restoration_order = final_period_restoration(network)
         case_mn = replicate_restoration_network(network, count=length(keys(restoration_order)))
         apply_restoration_sequence!(case_mn, restoration_order)
         delete!(case_mn["nw"], "0")
-
-        # update time limit
-        remaining_time_limit = time_limit - (time()-t)
-        solver_time_limit = remaining_time_limit/2
-        _update_optimizer_time_limit!(optimizer, solver_time_limit)
 
         # RRP to get load served
         solution = run_restoration_redispatch(case_mn, model_constructor, optimizer)
@@ -80,14 +128,48 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
             :solve_time => [solution["solve_time"]],
             :item_count => [count_repairable_items(network)],
             :period_count=>[repair_periods],
-            :alt_condition=>[ (r_count["1"]==0 && r_count["2"]!=0) ? "all repairs in period 2" : "Infeasible primal"]
+            :alt_condition=>["all repairs in period 2"]
         )
 
         # fill missing items removed for status=0 in redispatch
         fill_missing_variables!(solution, network)
         update_status!(solution["solution"], case_mn)
-
         return_solution = deepcopy(solution)
+
+    elseif time()-t_start > time_limit
+
+        recovery_time_limit = 10.0
+
+        Memento.warn(_PM._LOGGER, "Time Limit Exceeded, setting repairs to final period")
+        Memento.warn(_PM._LOGGER, "Running a $(count_repairable_items(network)) redispatch with a limit of $recovery_time_limit")
+
+        # update time limit
+        remaining_time_limit = max(recovery_time_limit, time_limit-(time()-t_start))
+        solver_time_limit = remaining_time_limit/2
+        _update_optimizer_time_limit!(optimizer, solver_time_limit)
+
+        # run utilization
+        restoration_order = final_period_restoration(network)
+        case_mn = replicate_restoration_network(network, count=length(keys(restoration_order)))
+        apply_restoration_sequence!(case_mn, restoration_order)
+        delete!(case_mn["nw"], "0")
+
+        # RRP to get load served
+        solution = run_restoration_redispatch(case_mn, model_constructor, optimizer)
+        solution["stats"] = Dict(
+            :termination_status => [solution["termination_status"]],
+            :primal_status => [solution["primal_status"]],
+            :solve_time => [solution["solve_time"]],
+            :item_count => [count_repairable_items(network)],
+            :period_count=>[repair_periods],
+            :alt_condition=>["ordering exceeeded time limit"]
+        )
+
+        # fill missing items removed for status=0 in redispatch
+        fill_missing_variables!(solution, network)
+        update_status!(solution["solution"], case_mn)
+        return_solution = deepcopy(solution)
+
     else # ELSE run iter on each network
         delete!(mn_network["nw"],"0") # remove network "0" for recursion
         return_solution = deepcopy(solution) # create return network
@@ -97,7 +179,7 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
             net = mn_network["nw"][nw_id]
 
             ## IF more than 1 repair in time period, run recursion
-            if count_repairable_items(net) != 1
+            if count_repairable_items(net) ≤ 1
                 sub_net = deepcopy(net)
                 for key in _PM._pm_global_keys
                     if haskey(network, key)
@@ -105,7 +187,7 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
                     end
                 end
 
-                remaining_time_limit = time_limit - (time()-t)
+                remaining_time_limit = max(0.1, time_limit-(time()-t_start))
                 sub_sol = _run_iterative_restoration(sub_net, model_constructor, optimizer, remaining_time_limit; kwargs...)
                 update_solution!(return_solution,sub_sol) # accumulate objective, solve status, etc.
 
@@ -217,16 +299,16 @@ function apply_repairs!(data, repairs)
     for (repair_nw_id, nw_repairs) in repairs
         for (comp_type, comp_ids) in nw_repairs
             for comp_id in comp_ids
-            status_key = _PM.pm_component_status[comp_type]
-            for (nw_id, net) in data["nw"]
-                if  nw_id < repair_nw_id
-                    net[comp_type][comp_id][status_key] = _PM.pm_component_status_inactive[comp_type]
-                elseif nw_id > repair_nw_id
-                    net[comp_type][comp_id]["damaged"] = 0
+                status_key = _PM.pm_component_status[comp_type]
+                for (nw_id, net) in data["nw"]
+                    if  nw_id < repair_nw_id
+                        net[comp_type][comp_id][status_key] = _PM.pm_component_status_inactive[comp_type]
+                    elseif nw_id > repair_nw_id
+                        net[comp_type][comp_id]["damaged"] = 0
+                    end
                 end
             end
         end
-    end
     end
     return data
 end
