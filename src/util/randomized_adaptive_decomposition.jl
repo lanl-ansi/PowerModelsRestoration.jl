@@ -79,6 +79,7 @@ function rad_restoration(data, model_constructor, optimizer;
             else
                 partition_max = min(round(partition_max*1.1),max_partition_max)
             end
+            iterations_with_no_improvement = 0
         end
 
         partitions = Int[]
