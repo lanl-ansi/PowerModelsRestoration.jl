@@ -59,6 +59,7 @@ function rad_restoration(data, model_constructor, optimizer;
     ## Setup information
     iterations_with_no_improvement = 0
     iteration_counter = 1
+    max_partition_max = round(Int,network_count/2)
 
     ## Adapative parameters
     average_time_limit = 0.0
@@ -74,7 +75,7 @@ function rad_restoration(data, model_constructor, optimizer;
                 solver_time_limit = solver_time_limit*2
                 average_time_limit = 0.7
             else
-                partition_max = round(partition_max*1.1)
+                partition_max = min(round(partition_max*1.9),max_partition_max)
             end
             average_fail_to_improve = 0.7
         end
