@@ -15,32 +15,33 @@ using JuMP
 # using Combinatorics
 # using ProgressMeter
 
-optimizer = optimizer_with_attributes(Gurobi.Optimizer, "OutputFlag"=>0)
+optimizer = optimizer_with_attributes(Gurobi.Optimizer, "OutputFlag"=>0, "MIPGap"=>0.01)
 model_constructor = DCPPowerModel
 
 ##
 
 # pms_path = joinpath(dirname(pathof(PowerModels)), "..")
 pglib_path = "$(homedir())/Documents/PowerDev/pglib-opf"
-data = PowerModels.parse_file("$(pglib_path)/pglib_opf_case14_ieee.m")
+data = PowerModels.parse_file("$(pglib_path)/pglib_opf_case118_ieee.m")
 damage_items!(data, Dict("branch"=>[id for (id, branch) in data["branch"]]))
-# damage_items!(data, Dict("bus"=>["1","2","3"]))
+# damage_items!(data, Dict("branch"=>["$id" for id in 1:50]))
 propagate_damage_status!(data)
 
-# solution = run_iterative_restoration(data, DCPPowerModel, optimizer, time_limit=10.0)
-data = PowerModels.parse_file("../../RestorationCLI\\data\\experiment_data\\case240api_20.m")
-solution = rad_restoration(data, model_constructor, optimizer; time_limit = 1000.0)
+solution = run_iterative_restoration(data, DCPPowerModel, optimizer, time_limit=10.0)
+
+# data = PowerModels.parse_file("../../RestorationCLI\\data\\experiment_data\\case240api_20.m")
+# solution = rad_restoration(data, model_constructor, optimizer; time_limit = 10.0)
 # display(solution["stats"]["repair_list"])
 
 # # SortedDict(parse(Int,k)=>v for (k,v) in restoration_order)
 # data_mn = PowerModelsRestoration._new_replicate_restoration_network(data, 2, PowerModels._pm_global_keys)
 
-# data_mn = replicate_restoration_network(data, count=count_damaged_items(data))
-# sol = PowerModelsRestoration._run_rop_ir(data_mn, DCPPowerModel, Gurobi.Optimizer)
-print_summary_restoration(solution["solution"])
+# data_mn = replicate_restoration_network(data, count=2)#count_damaged_items(data))
+sol = PowerModelsRestoration._run_rop_ir(data_mn, DCPPowerModel, Gurobi.Optimizer)
+# print_summary_restoration(solution["solution"])
 
 using VegaLite
-atl = solution["stats"]["average_time_limit"]
+atl = solution["stats"]["average_termination_time_limit"]
 afi = solution["stats"]["average_fail_to_improve"]
 ens = solution["stats"]["ENS"]
 stl = solution["stats"]["solver_time_limit"]
@@ -310,32 +311,49 @@ solution["stats"]["ENS"]
 
 
 ## Test heuristic result and redispatch results
+# data = PowerModels.parse_file("C:\\Users\\noahx\\Documents\\PowerDev\\RestorationCLI\\data\\experiment_data\\case39api_50.m")
 
-data = PowerModels.parse_file("C:\\Users\\noahx\\Documents\\PowerDev\\RestorationCLI\\data\\experiment_data\\case39api_50.m")
+# solution = rad_restoration(data, model_constructor, optimizer; time_limit = 1000.0)
+# load = sum(sum(load["pd"] for (id,load) in net["load"] ) for (nwid,net) in solution["solution"]["nw"])
 
-solution = rad_restoration(data, model_constructor, optimizer; time_limit = 1000.0)
-load = sum(sum(load["pd"] for (id,load) in net["load"] ) for (nwid,net) in solution["solution"]["nw"])
+# case = deepcopy(data)
+# clean_status!(data)
+# case_mn = replicate_restoration_network(case, count=length(keys(solution["solution"]["nw"])))
+# update_status!(case_mn, solution["solution"])
 
-case = deepcopy(data)
-clean_status!(data)
-case_mn = replicate_restoration_network(case, count=length(keys(solution["solution"]["nw"])))
-update_status!(case_mn, solution["solution"])
-
-sol2 = run_restoration_redispatch(case_mn, DCPPowerModel, optimizer)
-load2 = sum(sum(load["pd"] for (id,load) in net["load"] ) for (nwid,net) in solution["solution"]["nw"])
-load_diff = load-load2
-
+# sol2 = run_restoration_redispatch(case_mn, DCPPowerModel, optimizer)
+# load2 = sum(sum(load["pd"] for (id,load) in net["load"] ) for (nwid,net) in solution["solution"]["nw"])
+# load_diff = load-load2
 
 
-solution = run_iterative_restoration(data, model_constructor, optimizer; time_limit = 1000.0)
-load = sum(sum(load["pd"] for (id,load) in net["load"] ) for (nwid,net) in solution["solution"]["nw"])
 
-case = deepcopy(data)
-clean_solution!(solution)
-clean_status!(data)
-case_mn = replicate_restoration_network(case, count=length(keys(solution["solution"]["nw"])))
-update_status!(case_mn, solution["solution"])
+# solution = run_iterative_restoration(data, model_constructor, optimizer; time_limit = 1000.0)
+# load = sum(sum(load["pd"] for (id,load) in net["load"] ) for (nwid,net) in solution["solution"]["nw"])
 
-sol2 = run_restoration_redispatch(case_mn, DCPPowerModel, optimizer)
-load2 = sum(sum(load["pd"] for (id,load) in net["load"] ) for (nwid,net) in solution["solution"]["nw"])
-load_diff = load-load2
+# case = deepcopy(data)
+# clean_solution!(solution)
+# clean_status!(data)
+# case_mn = replicate_restoration_network(case, count=length(keys(solution["solution"]["nw"])))
+# update_status!(case_mn, solution["solution"])
+
+# sol2 = run_restoration_redispatch(case_mn, DCPPowerModel, optimizer)
+# load2 = sum(sum(load["pd"] for (id,load) in net["load"] ) for (nwid,net) in solution["solution"]["nw"])
+# load_diff = load-load2
+
+
+## Test util 2 period problem
+network = data
+util_restoration_order = utilization_heuristic_restoration(network)
+
+restoration_order = Dict{String,Any}("$nwid"=>Dict{String,Any}(comp_type=>String[] for comp_type in restoration_comps) for nwid in 1:2)
+l = maximum(parse.(Int,collect(keys(util_restoration_order))))
+m = round(Int,l/2)
+net_keys = [1:m,m:l]
+for r_id in axes(net_keys,1)
+    for nw_id in net_keys[r_id]
+        for comp_type in keys(restoration_order["$r_id"])
+            append!(restoration_order["$r_id"][comp_type],util_restoration_order["$nw_id"][comp_type])
+        end
+    end
+end
+restoration_order
