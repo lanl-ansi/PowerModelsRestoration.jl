@@ -179,7 +179,7 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
             net = mn_network["nw"][nw_id]
 
             ## IF more than 1 repair in time period, run recursion
-            if count_repairable_items(net) ≤ 1
+            if count_repairable_items(net) > 1
                 sub_net = deepcopy(net)
                 for key in _PM._pm_global_keys
                     if haskey(network, key)
