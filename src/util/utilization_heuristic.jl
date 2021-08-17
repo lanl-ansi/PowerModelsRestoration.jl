@@ -7,7 +7,7 @@ function utilization_heuristic_restoration(data::Dict{String,<:Any})
         Memento.error(_PM._LOGGER, "utilization_heuristic_restoration requires a single network.")
     end
 
-    d_comp_vec = vcat([[(comp_type,comp_id) for comp_id in comp_ids] for (comp_type,comp_ids) in get_damaged_items(data)]...)
+    d_comp_vec = vcat([[(comp_type,comp_id) for comp_id in comp_ids] for (comp_type,comp_ids) in get_repairable_items(data)]...)
     d_comp_cost = [util_value(data,comp_type,comp_id) for (comp_type,comp_id) in d_comp_vec]
     d_comp_vec = [d_comp_vec[i] for i in sortperm(d_comp_cost)] # reordered damaged component vector
 
@@ -23,16 +23,18 @@ function utilization_heuristic_restoration(data::Dict{String,<:Any})
     while updated
         updated = false
         for (r_comp, precedance_comps) in repair_constraints
-            precendent_repair_periods = [get(restoration_period,pr_comp,0) for pr_comp in precedance_comps]
-            if !isempty(precendent_repair_periods)
-                final_precedent_repair = maximum(precendent_repair_periods)
-            else
-                final_precedent_repair = 0
-            end
-            if restoration_period[r_comp] < final_precedent_repair
-                println("Changing $r_comp repair from $(restoration_period[r_comp]) to $final_precedent_repair")
-                updated = true
-                restoration_period[r_comp] = final_precedent_repair
+            if r_comp in d_comp_vec
+                precendent_repair_periods = [get(restoration_period,pr_comp,0) for pr_comp in precedance_comps]
+                if !isempty(precendent_repair_periods)
+                    final_precedent_repair = maximum(precendent_repair_periods)
+                else
+                    final_precedent_repair = 0
+                end
+                if restoration_period[r_comp] < final_precedent_repair
+                    println("Changing $r_comp repair from $(restoration_period[r_comp]) to $final_precedent_repair")
+                    updated = true
+                    restoration_period[r_comp] = final_precedent_repair
+                end
             end
         end
     end

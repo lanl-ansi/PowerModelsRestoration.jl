@@ -1,5 +1,6 @@
 
 using DataStructures
+using Statistics
 
 function rad_restoration(data, model_constructor, optimizer;
         time_limit::Float64=3600.0,
@@ -28,7 +29,7 @@ function rad_restoration(data, model_constructor, optimizer;
         "termination_status" => MathOptInterface.TerminationStatusCode[],
         "primal_status" => MathOptInterface.ResultStatusCode[],
         "average_fail_to_improve"=>Float64[],
-        "average_time_limit"=>Float64[],
+        "average_termination_time_limit"=>Float64[],
         "solver_time_limit"=>Float64[],
         "partition_max"=>Float64[],
         "partition_size"=>Float64[],
@@ -59,10 +60,13 @@ function rad_restoration(data, model_constructor, optimizer;
     ## Setup information
     iterations_with_no_improvement = 0
     iteration_counter = 1
+    max_partition_max = round(Int,network_count/2)
 
     ## Adapative parameters
-    average_time_limit = 0.0
+    average_termination_time_limit = 0.0
     average_fail_to_improve = 0.0
+    fail_to_improve = []
+    termination_time_limit = []
     solver_time_limit = time_limit/averaging_window
 
     # while (iteration with no improvement is under the limit OR not every network has a feasible power flow) AND we are under the time limit
@@ -70,13 +74,12 @@ function rad_restoration(data, model_constructor, optimizer;
 
         ## Adapative changes to time limit and parition max
         if average_fail_to_improve > fail_to_improve_limit
-            if average_time_limit > fail_time_limit
-                solver_time_limit = solver_time_limit*2
-                average_time_limit = 0.7
+            if average_termination_time_limit > fail_time_limit
+                solver_time_limit = solver_time_limit*2.0
             else
-                partition_max = round(partition_max*1.1)
+                partition_max = min(round(partition_max*1.1),max_partition_max)
             end
-            average_fail_to_improve = 0.7
+            iterations_with_no_improvement = 0
         end
 
         partitions = Int[]
@@ -137,7 +140,7 @@ function rad_restoration(data, model_constructor, optimizer;
             end
 
             ## solve ROP
-            _update_optimizer_time_limit!(optimizer, min(solver_time_limit,max(0,time()-t_start)))
+            _update_optimizer_time_limit!(optimizer, min(solver_time_limit,max(0,time_limit-(time()-t_start))))
             repair_periods=length(network_ids)
             mn_network = _new_replicate_restoration_network(r_data, repair_periods, PowerModels._pm_global_keys)
             rad_solution = PowerModelsRestoration._run_rop_ir(mn_network, model_constructor, optimizer; kwargs...)
@@ -215,22 +218,21 @@ function rad_restoration(data, model_constructor, optimizer;
 
             ## update running averages
             if (sum(values(new_ens)) < sum(values(old_ens)))
-                average_fail_to_improve = average_fail_to_improve*(averaging_window-1)/averaging_window + 0/averaging_window
+                push!(fail_to_improve, false)
             else
+                push!(fail_to_improve, true)
                 average_fail_to_improve = average_fail_to_improve*(averaging_window-1)/averaging_window + 1/averaging_window
             end
             if rad_solution["termination_status"]!=MathOptInterface.TIME_LIMIT
-                average_time_limit = average_time_limit*(averaging_window-1)/averaging_window + 0/averaging_window
+                push!(termination_time_limit, false)
             else
-                average_time_limit = average_time_limit*(averaging_window-1)/averaging_window + 1/averaging_window
+                push!(termination_time_limit, true)
             end
 
 
             push!(stats["solve_time"], rad_solution["solve_time"])
             push!(stats["termination_status"], rad_solution["termination_status"])
             push!(stats["primal_status"], rad_solution["primal_status"])
-            push!(stats["average_fail_to_improve"], average_fail_to_improve)
-            push!(stats["average_time_limit"], average_time_limit)
             push!(stats["ENS"], sum(values(ens_dict)))
             push!(stats["sub_ENS"], sum(values(new_ens)))
             push!(stats["improvement"], sum(values(old_ens))-sum(values(new_ens)))
@@ -240,6 +242,13 @@ function rad_restoration(data, model_constructor, optimizer;
             push!(stats["repair_count"], count_repairable_items(r_data))
         end
 
+        # Calc average and reset
+        average_fail_to_improve = mean(fail_to_improve)
+        average_termination_time_limit = mean(termination_time_limit)
+        fail_to_improve = []
+        termination_time_limit = []
+        push!(stats["average_fail_to_improve"], average_fail_to_improve)
+        push!(stats["average_termination_time_limit"], average_termination_time_limit)
 
         iterations_with_no_improvement += 1
         Memento.info(_PM._LOGGER, "iterations_with_no_improvement: $iterations_with_no_improvement")
