@@ -29,15 +29,15 @@ propagate_damage_status!(data)
 
 solution = run_iterative_restoration(data, DCPPowerModel, optimizer, time_limit=10.0)
 
-# data = PowerModels.parse_file("../../RestorationCLI\\data\\experiment_data\\case240api_20.m")
-# solution = rad_restoration(data, model_constructor, optimizer; time_limit = 10.0)
+data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\experiment_data\\case60api_40.m")
+solution = rad_restoration(data, model_constructor, optimizer; time_limit = 120.0)
 # display(solution["stats"]["repair_list"])
 
 # # SortedDict(parse(Int,k)=>v for (k,v) in restoration_order)
 # data_mn = PowerModelsRestoration._new_replicate_restoration_network(data, 2, PowerModels._pm_global_keys)
 
-# data_mn = replicate_restoration_network(data, count=2)#count_damaged_items(data))
-sol = PowerModelsRestoration._run_rop_ir(data_mn, DCPPowerModel, Gurobi.Optimizer)
+# data_mn = replicate_restoration_network(data, count=count_damaged_items(data))
+# sol = PowerModelsRestoration.run_rop(data_mn, DCPPowerModel, Gurobi.Optimizer)
 # print_summary_restoration(solution["solution"])
 
 using VegaLite
