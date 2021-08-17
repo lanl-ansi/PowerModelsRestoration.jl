@@ -27,10 +27,12 @@ damage_items!(data, Dict("branch"=>[id for (id, branch) in data["branch"]]))
 # damage_items!(data, Dict("branch"=>["$id" for id in 1:50]))
 propagate_damage_status!(data)
 
-solution = run_iterative_restoration(data, DCPPowerModel, optimizer, time_limit=10.0)
+# solution = run_iterative_restoration(data, DCPPowerModel, optimizer, time_limit=10.0)
 
-data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\experiment_data\\case60api_40.m")
+# data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\experiment_data\\case60api_10.m")
+data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\simple_data.m")
 solution = rad_restoration(data, model_constructor, optimizer; time_limit = 120.0)
+solution = run_iterative_restoration(data, model_constructor, optimizer; time_limit=120.0)
 # display(solution["stats"]["repair_list"])
 
 # # SortedDict(parse(Int,k)=>v for (k,v) in restoration_order)
