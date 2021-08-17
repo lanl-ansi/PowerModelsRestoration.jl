@@ -60,7 +60,7 @@ function rad_restoration(data, model_constructor, optimizer;
     ## Setup information
     iterations_with_no_improvement = 0
     iteration_counter = 1
-    max_partition_max = round(Int,network_count/2)
+    max_partition_max = max(partition_min+1,round(Int,network_count/2))
     partition_max = min(partition_max, max_partition_max)
 
 
@@ -95,6 +95,7 @@ function rad_restoration(data, model_constructor, optimizer;
         partition_count = 0
         while partition_count < network_count
             partition_range = min((network_count-partition_count),partition_min):min((network_count-partition_count),partition_max)
+            @show partition_range
             push!(partitions,rand(partition_range))
             partition_count = sum(partitions)
         end
