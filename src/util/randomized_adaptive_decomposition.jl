@@ -61,6 +61,8 @@ function rad_restoration(data, model_constructor, optimizer;
     iterations_with_no_improvement = 0
     iteration_counter = 1
     max_partition_max = round(Int,network_count/2)
+    partition_max = min(partition_max, max_partition_max)
+
 
     ## Adapative parameters
     average_termination_time_limit = 0.0
@@ -73,13 +75,20 @@ function rad_restoration(data, model_constructor, optimizer;
     while ((iterations_with_no_improvement < iteration_with_no_improvement_limit) || !minimum(values(stats["feasible_period"]))) && ((time()-t_start) < time_limit)
 
         ## Adapative changes to time limit and parition max
+        updated = false
         if average_fail_to_improve > fail_to_improve_limit
             if average_termination_time_limit > fail_time_limit
                 solver_time_limit = solver_time_limit*2.0
+                updated = true
             else
-                partition_max = min(round(partition_max*1.1),max_partition_max)
+                if partition_max != max_partition_max
+                    partition_max = min(round(partition_max*1.1),max_partition_max)
+                    updated = true
+                end
             end
-            iterations_with_no_improvement = 0
+            if updated
+                iterations_with_no_improvement = 0
+            end
         end
 
         partitions = Int[]
@@ -178,7 +187,7 @@ function rad_restoration(data, model_constructor, optimizer;
 
                             new_repair_ordering["$nw_id"] = Dict(comp_type=>String[] for comp_type in restoration_comps)
                             for (comp_type,comp_id) in repairs
-                                push!(new_repair_ordering["$nw_id"][comp_type],comp_id)
+                                push!(new_repair_ordering["$nw_id"][comp_type],comp_id...)
                             end
                         end
                     end
