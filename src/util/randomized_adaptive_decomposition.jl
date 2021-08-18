@@ -38,7 +38,7 @@ function rad_restoration(data, model_constructor, optimizer;
     )
 
     # ## Randomize partitions settings
-    network_count = count_damaged_items(data)
+    network_count = count_repairable_items(data)
 
     ## Start algorithm
     t_start = time()
@@ -95,7 +95,6 @@ function rad_restoration(data, model_constructor, optimizer;
         partition_count = 0
         while partition_count < network_count
             partition_range = min((network_count-partition_count),partition_min):min((network_count-partition_count),partition_max)
-            @show partition_range
             push!(partitions,rand(partition_range))
             partition_count = sum(partitions)
         end
