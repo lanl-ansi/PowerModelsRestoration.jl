@@ -15,7 +15,7 @@ using JuMP
 # using Combinatorics
 # using ProgressMeter
 
-optimizer = optimizer_with_attributes(Gurobi.Optimizer, "OutputFlag"=>0, "MIPGap"=>0.001)
+optimizer = optimizer_with_attributes(Gurobi.Optimizer, "OutputFlag"=>0, "MIPGap"=>0.01)
 model_constructor = DCPPowerModel
 
 ##
@@ -29,14 +29,22 @@ propagate_damage_status!(data)
 
 # solution = run_iterative_restoration(data, DCPPowerModel, optimizer, time_limit=10.0)
 
-# data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\experiment_data\\case240api_50.m")
+data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\experiment_data\\case118api_30.m")
 # data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\simple_data.m")
 # solution = rad_restoration(data, model_constructor, optimizer; time_limit = 1000.0)
 solution = run_iterative_restoration(data, model_constructor, optimizer; time_limit=120.0)
 # display(solution["stats"]["solve_time"])
 # sum(sum(load["pd"] for (id,load) in net["load"]) for (nwid,net) in solution["solution"]["nw"])
+@time util_restoration_order = utilization_heuristic_restoration(data)
 
+@time for i in 1:50
+    run_dc_opf(data, optimizer)
+end
 
+case_mn = replicate_restoration_network(data, count=length(keys(util_restoration_order)))
+apply_restoration_sequence!(case_mn, util_restoration_order)
+delete!(case_mn["nw"], "0")
+solution = run_restoration_redispatch(case_mn, DCPPowerModel, optimizer)
 # display(solution["stats"]["repair_list"])
 
 # # SortedDict(parse(Int,k)=>v for (k,v) in restoration_order)
@@ -47,6 +55,15 @@ solution = run_iterative_restoration(data, model_constructor, optimizer; time_li
 # print_summary_restoration(solution["solution"])
 
 using VegaLite
+
+load_duration = []
+for nwid in sort(parse.(Int,collect(keys(solution["solution"]["nw"]))))
+    net = solution["solution"]["nw"]["$nwid"]
+    push!(load_duration, sum(load["pd"] for (id,load) in net["load"]))
+end
+
+@vlplot(:line, x=1:length(load_duration), y={load_duration, type=:quantitative}, title="Load Duration")
+
 atl = solution["stats"]["average_termination_time_limit"]
 afi = solution["stats"]["average_fail_to_improve"]
 ens = solution["stats"]["ENS"]
@@ -58,6 +75,8 @@ p2 = @vlplot(:line, x=1:length(afi), y=afi, title="Fail to Improve")            
 p3 = @vlplot(:line, x=1:length(ens), y=ens, title="ENS")                        #|> save("ENS.pdf")
 p3 = @vlplot(:line, x=1:length(stl), y=stl, title="Solver Time Limit")          #|> save("solver_time_limit.pdf")
 p3 = @vlplot(:line, x=1:length(mps), y=mps, title="Maximum Partition Size")     #|> save("maximum_partition_size.pdf")
+
+
 
 
 # data_mn = replicate_restoration_network(data, count=maximum(parse.(Int,collect(keys(solution["repair_ordering"])))))
@@ -352,15 +371,3 @@ solution["stats"]["ENS"]
 network = data
 util_restoration_order = utilization_heuristic_restoration(network)
 
-restoration_order = Dict{String,Any}("$nwid"=>Dict{String,Any}(comp_type=>String[] for comp_type in restoration_comps) for nwid in 1:2)
-l = maximum(parse.(Int,collect(keys(util_restoration_order))))
-m = round(Int,l/2)
-net_keys = [1:m,m:l]
-for r_id in axes(net_keys,1)
-    for nw_id in net_keys[r_id]
-        for comp_type in keys(restoration_order["$r_id"])
-            append!(restoration_order["$r_id"][comp_type],util_restoration_order["$nw_id"][comp_type])
-        end
-    end
-end
-restoration_order
