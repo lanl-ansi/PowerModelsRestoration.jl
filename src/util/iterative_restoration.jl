@@ -124,7 +124,7 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
         _update_optimizer_time_limit!(optimizer, solver_time_limit)
 
         # run utilization
-        restoration_order = final_period_restoration(network)
+        restoration_order = utilization_heuristic_restoration(network)
         case_mn = replicate_restoration_network(network, count=length(keys(restoration_order)))
         # set time_elapsed correctly
         for (nwid,net) ∈ mn_network["nw"]
@@ -162,7 +162,7 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
         _update_optimizer_time_limit!(optimizer, solver_time_limit)
 
         # run utilization
-        restoration_order = final_period_restoration(network)
+        restoration_order = utilization_heuristic_restoration(network)
         case_mn = replicate_restoration_network(network, count=length(keys(restoration_order)))
         # set time_elapsed correctly
         for (nwid,net) ∈ mn_network["nw"]
