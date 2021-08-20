@@ -59,7 +59,7 @@ function util_value(data::Dict{String,<:Any}, comp_type::String, comp_id::String
         return util_value_storage(data,comp_id)
     else
         Memento.error(_PM._LOGGER, "Component $comp_type does not have a supported utilization cost. Setting cost to NaN")
-        return 0.0
+        return NaN
     end
 end
 
