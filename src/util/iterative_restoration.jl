@@ -32,18 +32,22 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
 
     repair_periods=2
     mn_network = replicate_restoration_network(network, repair_periods, _PM._pm_global_keys)
+    # set time_elapsed correctly
+    for (nwid,net) ∈ mn_network["nw"]
+        net["time_elapsed"] = max(1, net["repairs"])
+    end
 
     ## solve ROP problem
     solution = _run_rop_ir(mn_network, model_constructor, optimizer; kwargs...)
 
     # collect stats on solution
     solution["stats"] = Dict(
-        :termination_status => [solution["termination_status"]],
-        :primal_status => [solution["primal_status"]],
-        :solve_time => [solution["solve_time"]],
-        :item_count => [count_repairable_items(network)],
-        :period_count=>[repair_periods],
-        :alt_condition=>[]
+        "termination_status" => [solution["termination_status"]],
+        "primal_status" => [solution["primal_status"]],
+        "solve_time" => [solution["solve_time"]],
+        "item_count" => [count_repairable_items(network)],
+        "period_count"=>[repair_periods],
+        "alt_condition"=>[]
     )
 
     ## Clean solution and apply result to network
@@ -72,6 +76,11 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
         end
 
         mn_network = replicate_restoration_network(network, count=2)
+        # set time_elapsed correctly
+        for (nwid,net) ∈ mn_network["nw"]
+            net["time_elapsed"] = max(1, net["repairs"])
+        end
+
         apply_repairs!(mn_network, restoration_order)
 
         ## if result will have single repair in a period, run RRP to create a reporting solution
@@ -87,12 +96,12 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
             # RRP to get load served
             solution = run_restoration_redispatch(mn_network, model_constructor, optimizer)
             solution["stats"] = Dict(
-                :termination_status => [solution["termination_status"]],
-                :primal_status => [solution["primal_status"]],
-                :solve_time => [solution["solve_time"]],
-                :item_count => [count_repairable_items(network)],
-                :period_count=>[repair_periods],
-                :alt_condition=>["Util recovery caused small network"]
+                "termination_status" => [solution["termination_status"]],
+                "primal_status" => [solution["primal_status"]],
+                "solve_time" => [solution["solve_time"]],
+                "item_count" => [count_repairable_items(network)],
+                "period_count"=>[repair_periods],
+                "alt_condition"=>["Util recovery caused small network"]
             )
 
             # fill missing items removed for status=0 in redispatch
@@ -117,18 +126,22 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
         # run utilization
         restoration_order = final_period_restoration(network)
         case_mn = replicate_restoration_network(network, count=length(keys(restoration_order)))
+        # set time_elapsed correctly
+        for (nwid,net) ∈ mn_network["nw"]
+            net["time_elapsed"] = max(1, net["repairs"])
+        end
         apply_restoration_sequence!(case_mn, restoration_order)
         delete!(case_mn["nw"], "0")
 
         # RRP to get load served
         solution = run_restoration_redispatch(case_mn, model_constructor, optimizer)
         solution["stats"] = Dict(
-            :termination_status => [solution["termination_status"]],
-            :primal_status => [solution["primal_status"]],
-            :solve_time => [solution["solve_time"]],
-            :item_count => [count_repairable_items(network)],
-            :period_count=>[repair_periods],
-            :alt_condition=>["all repairs in period 2"]
+            "termination_status" => [solution["termination_status"]],
+            "primal_status" => [solution["primal_status"]],
+            "solve_time" => [solution["solve_time"]],
+            "item_count" => [count_repairable_items(network)],
+            "period_count"=>[repair_periods],
+            "alt_condition"=>["all repairs in period 2"]
         )
 
         # fill missing items removed for status=0 in redispatch
@@ -151,18 +164,22 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
         # run utilization
         restoration_order = final_period_restoration(network)
         case_mn = replicate_restoration_network(network, count=length(keys(restoration_order)))
+        # set time_elapsed correctly
+        for (nwid,net) ∈ mn_network["nw"]
+            net["time_elapsed"] = max(1, net["repairs"])
+        end
         apply_restoration_sequence!(case_mn, restoration_order)
         delete!(case_mn["nw"], "0")
 
         # RRP to get load served
         solution = run_restoration_redispatch(case_mn, model_constructor, optimizer)
         solution["stats"] = Dict(
-            :termination_status => [solution["termination_status"]],
-            :primal_status => [solution["primal_status"]],
-            :solve_time => [solution["solve_time"]],
-            :item_count => [count_repairable_items(network)],
-            :period_count=>[repair_periods],
-            :alt_condition=>["ordering exceeeded time limit"]
+            "termination_status" => [solution["termination_status"]],
+            "primal_status" => [solution["primal_status"]],
+            "solve_time" => [solution["solve_time"]],
+            "item_count" => [count_repairable_items(network)],
+            "period_count"=>[repair_periods],
+            "alt_condition"=>["ordering exceeeded time limit"]
         )
 
         # fill missing items removed for status=0 in redispatch

@@ -15,24 +15,28 @@ using JuMP
 # using Combinatorics
 # using ProgressMeter
 
-optimizer = optimizer_with_attributes(Gurobi.Optimizer, "OutputFlag"=>0, "MIPGap"=>0.01)
+optimizer = optimizer_with_attributes(Gurobi.Optimizer, "OutputFlag"=>0, "MIPGap"=>0.001)
 model_constructor = DCPPowerModel
 
 ##
 
 # pms_path = joinpath(dirname(pathof(PowerModels)), "..")
 pglib_path = "$(homedir())/Documents/PowerDev/pglib-opf"
-data = PowerModels.parse_file("$(pglib_path)/pglib_opf_case118_ieee.m")
+data = PowerModels.parse_file("$(pglib_path)/pglib_opf_case14_ieee.m")
 damage_items!(data, Dict("branch"=>[id for (id, branch) in data["branch"]]))
 # damage_items!(data, Dict("branch"=>["$id" for id in 1:50]))
 propagate_damage_status!(data)
 
 # solution = run_iterative_restoration(data, DCPPowerModel, optimizer, time_limit=10.0)
 
-# data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\experiment_data\\case60api_10.m")
-data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\simple_data.m")
-solution = rad_restoration(data, model_constructor, optimizer; time_limit = 120.0)
+# data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\experiment_data\\case240api_50.m")
+# data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\simple_data.m")
+# solution = rad_restoration(data, model_constructor, optimizer; time_limit = 1000.0)
 solution = run_iterative_restoration(data, model_constructor, optimizer; time_limit=120.0)
+# display(solution["stats"]["solve_time"])
+# sum(sum(load["pd"] for (id,load) in net["load"]) for (nwid,net) in solution["solution"]["nw"])
+
+
 # display(solution["stats"]["repair_list"])
 
 # # SortedDict(parse(Int,k)=>v for (k,v) in restoration_order)
@@ -62,7 +66,7 @@ print_summary_restoration(solution["solution"])
 
 ##
 pglib_path = ""
-data = parse_file(string(pglib_path,"/pglib_opf_case118_ieee__api.m"))
+data = parse_file(string(pglib_path,"/pglib_opf_case240_ieee__api.m"))
 damage_items!(data, Dict("branch"=>[id for (id, branch) in data["branch"]]))
 # damage_items!(data, Dict("bus"=>["1","2","3"]))
 propagate_damage_status!(data)
