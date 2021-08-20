@@ -70,6 +70,9 @@ function build_restoration_redispatch(pm::_PM.AbstractPowerModel)
         for i in _PM.ids(pm, :storage, nw=n_2)
             _PM.constraint_storage_state(pm, i, n_1, n_2)
         end
+        for i in _PM.ids(pm, :load, nw=n_2)
+            constraint_load_increasing(pm, i, n_1, n_2)
+        end
         n_1 = n_2
     end
 
