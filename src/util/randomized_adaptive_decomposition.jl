@@ -49,6 +49,11 @@ function rad_restoration(data, model_constructor, optimizer;
 
     solution["solution"] = replicate_restoration_network(data,count=length(keys(repair_ordering)))
     solution["solution"] = apply_restoration_sequence!(solution["solution"],repair_ordering)
+    for (nwid,net) in solution["solution"]["nw"] #initialize load solution to 0
+        for (loadid,load) in net["load"]
+            load["pd"] = 0.0
+        end
+    end
     delete!(solution["solution"]["nw"],"0")
 
     ## Update stats
