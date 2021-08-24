@@ -29,17 +29,97 @@ propagate_damage_status!(data)
 
 # solution = run_iterative_restoration(data, DCPPowerModel, optimizer, time_limit=10.0)
 
-data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\experiment_data\\case118api_30.m")
+data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\experiment_data\\case240api_50.m")
 # data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\simple_data.m")
-# solution = rad_restoration(data, model_constructor, optimizer; time_limit = 1000.0)
-solution = run_iterative_restoration(data, model_constructor, optimizer; time_limit=120.0)
+solution = rad_restoration(data, model_constructor, optimizer; time_limit = 60.0, partition_max=10)
+# solution = run_iterative_restoration(data, model_constructor, optimizer; time_limit=120.0)
 # display(solution["stats"]["solve_time"])
 # sum(sum(load["pd"] for (id,load) in net["load"]) for (nwid,net) in solution["solution"]["nw"])
-@time util_restoration_order = utilization_heuristic_restoration(data)
+# util_restoration_order = utilization_heuristic_restoration(data)
 
-@time for i in 1:50
-    run_dc_opf(data, optimizer)
+
+nwids = sort(parse.(Int,keys(solution["solution"]["nw"])))
+load_duration = [sum(load["pd"] for (id,load) in solution["solution"]["nw"]["$nwid"]["load"]) for nwid in nwids]
+@vlplot(:line, x=1:length(load_duration), y={load_duration, type=:quantitative}, title=solution["primal_status"])
+
+df = DataFrame(iter=Int[], nw_id=Int[], comp_id=Int[])
+for iter in keys(solution["stats"]["repair_list"])
+    for (nw_id,comp_types) in solution["stats"]["repair_list"][iter]
+        for (comp_type, ids) in comp_types
+            for id in ids
+                push!(df, (iter, parse(Int,nw_id), parse(Int,id)))
+            end
+        end
+    end
 end
+function process_cumulative_repairs!(data::DataFrame)
+    data[!,:cumulative_repairs] .= 0
+    for iter in unique(data.iter)
+        df = filter(row -> row.iter==iter, data)
+        sort!(df,[:nw_id])
+        for nw_id in unique(df.nw_id)
+            cumulative_repairs = 0
+            for row in eachrow(df)
+                if row.nw_id <= nw_id
+                    cumulative_repairs+=1
+                end
+            end
+            data[(data.iter .== iter) .& (data.nw_id .== nw_id), :cumulative_repairs] .= cumulative_repairs
+        end
+    end
+    return data
+end
+process_cumulative_repairs!(df)
+
+# @vlplot(
+#     data=df,
+#     :bar,
+#     y="comp_id:n",
+#     x="count()",
+#     color="iter"
+# )
+@vlplot(
+    data=df,
+    height=500,
+    width=500,
+    mark={
+        :line,
+        point=true,
+        size=1,
+    },
+    x="nw_id:q",
+    y={"cumulative_repairs:q"},
+    color=:iter,
+    tooltip={"iter:q"}
+)
+
+
+
+
+ts = string.(solution["stats"]["termination_status"])
+ps = string.(solution["stats"]["primal_status"])
+iter_ids = []
+for iter in keys(solution["stats"]["repair_list"])
+    for nw_id in unique(keys(solution["stats"]["repair_list"][iter]))
+        push!(iter_ids, iter)
+    end
+end
+
+using JSON
+open("foo.json","w") do f
+    JSON.print(f, solution)
+end
+# id_array = findall(x->x=="TIME_LIMIT", ts)
+
+# iter_ids = sort!(collect(keys(solution["stats"]["repair_list"])))
+
+@vlplot(height=1600,widht=400)+
+@vlplot(
+    mark={:circle,clip=true,size=100}, y={1:length(ts),type="quantitative",scale={domainMin=5200}}, x={value=5}, color=ts, title="Termination Status"
+)+
+@vlplot(
+    mark={:circle,clip=true,size=100}, y={1:length(ps),type="quantitative",scale={domainMin=5200}},x={value=15}, color=ps, title="Primal Status"
+)
 
 case_mn = replicate_restoration_network(data, count=length(keys(util_restoration_order)))
 apply_restoration_sequence!(case_mn, util_restoration_order)
@@ -53,6 +133,10 @@ solution = run_restoration_redispatch(case_mn, DCPPowerModel, optimizer)
 # data_mn = replicate_restoration_network(data, count=count_damaged_items(data))
 # sol = PowerModelsRestoration.run_rop(data_mn, DCPPowerModel, Gurobi.Optimizer)
 # print_summary_restoration(solution["solution"])
+
+open("file.csv","w") do io
+    summary_restoration(io,solution["solution"])
+end
 
 using VegaLite
 
