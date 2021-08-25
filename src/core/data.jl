@@ -170,7 +170,7 @@ function _get_inactive_items(network::Dict{String,<:Any})
         status_key = _PM.pm_component_status[comp_type]
         comp_list[comp_type] = []
 
-        for (comp_id, comp) in network[comp_type]
+        for (comp_id, comp) in get(network,comp_type,Dict())
             if haskey(comp, status_key) && comp[status_key] == _PM.pm_component_status_inactive[comp_type]
                 push!(comp_list[comp_type], comp_id)
             end

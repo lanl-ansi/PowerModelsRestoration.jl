@@ -22,18 +22,18 @@ function rad_restoration(data, model_constructor, optimizer;
     )
     stats = Dict{String,Any}(
         "repair_list" => SortedDict{Int,Dict{String,Any}}(),
-        "ENS" => Float64[],
-        "sub_ENS" => Float64[],
-        "improvement" => Float64[],
-        "solve_time" => Float64[],
-        "termination_status" => MathOptInterface.TerminationStatusCode[],
-        "primal_status" => MathOptInterface.ResultStatusCode[],
-        "average_fail_to_improve"=>Float64[],
-        "average_termination_time_limit"=>Float64[],
-        "solver_time_limit"=>Float64[],
-        "partition_max"=>Float64[],
-        "partition_size"=>Float64[],
-        "repair_count"=>Float64[],
+        "ENS" => Dict{Int,Vector{Float64}}(),
+        "sub_ENS" => Dict{Int,Vector{Float64}}(),
+        "improvement" => Dict{Int,Vector{Float64}}(),
+        "solve_time" => Dict{Int,Vector{Float64}}(),
+        "termination_status" => Dict{Int,Vector{MathOptInterface.TerminationStatusCode}}(),
+        "primal_status" => Dict{Int,Vector{MathOptInterface.ResultStatusCode}}(),
+        "average_fail_to_improve"=>Dict{Int,Vector{Float64}}(),
+        "average_termination_time_limit"=>Dict{Int,Vector{Float64}}(),
+        "solver_time_limit"=>Dict{Int,Vector{Float64}}(),
+        "partition_max"=>Dict{Int,Vector{Float64}}(),
+        "partition_size"=>Dict{Int,Vector{Float64}}(),
+        "repair_count"=>Dict{Int,Vector{Float64}}(),
         "feasible_period"=>Dict{Int,Bool}(),
     )
 
@@ -79,6 +79,17 @@ function rad_restoration(data, model_constructor, optimizer;
 
     # while (iteration with no improvement is under the limit OR not every network has a feasible power flow) AND we are under the time limit
     while ((iterations_with_no_improvement < iteration_with_no_improvement_limit) || !minimum(values(stats["feasible_period"]))) && ((time()-t_start) < time_limit)
+
+        stats["solve_time"][iteration_counter] =  Float64[]
+        stats["termination_status"][iteration_counter] = Float64[]
+        stats["primal_status"][iteration_counter] =  Float64[]
+        stats["ENS"][iteration_counter] =  Float64[]
+        stats["sub_ENS"][iteration_counter] =  Float64[]
+        stats["improvement"][iteration_counter] =  Float64[]
+        stats["solver_time_limit"][iteration_counter] = Float64[]
+        stats["partition_max"][iteration_counter] =  Float64[]
+        stats["partition_size"][iteration_counter] = Float64[]
+        stats["repair_count"][iteration_counter] =  Float64[]
 
         ## Adapative changes to time limit and parition max
         updated = false
@@ -247,16 +258,16 @@ function rad_restoration(data, model_constructor, optimizer;
             end
 
 
-            push!(stats["solve_time"], rad_solution["solve_time"])
-            push!(stats["termination_status"], rad_solution["termination_status"])
-            push!(stats["primal_status"], rad_solution["primal_status"])
-            push!(stats["ENS"], sum(values(ens_dict)))
-            push!(stats["sub_ENS"], sum(values(new_ens)))
-            push!(stats["improvement"], sum(values(old_ens))-sum(values(new_ens)))
-            push!(stats["solver_time_limit"], solver_time_limit)
-            push!(stats["partition_max"], partition_max)
-            push!(stats["partition_size"], repair_periods)
-            push!(stats["repair_count"], count_repairable_items(r_data))
+            push!(stats["solve_time"][iteration_counter], rad_solution["solve_time"])
+            push!(stats["termination_status"][iteration_counter], rad_solution["termination_status"])
+            push!(stats["primal_status"][iteration_counter], rad_solution["primal_status"])
+            push!(stats["ENS"][iteration_counter], sum(values(ens_dict)))
+            push!(stats["sub_ENS"][iteration_counter], sum(values(new_ens)))
+            push!(stats["improvement"][iteration_counter], sum(values(old_ens))-sum(values(new_ens)))
+            push!(stats["solver_time_limit"][iteration_counter], solver_time_limit)
+            push!(stats["partition_max"][iteration_counter], partition_max)
+            push!(stats["partition_size"][iteration_counter], repair_periods)
+            push!(stats["repair_count"][iteration_counter], count_repairable_items(r_data))
         end
 
         # Calc average and reset
@@ -264,8 +275,8 @@ function rad_restoration(data, model_constructor, optimizer;
         average_termination_time_limit = mean(termination_time_limit)
         fail_to_improve = []
         termination_time_limit = []
-        push!(stats["average_fail_to_improve"], average_fail_to_improve)
-        push!(stats["average_termination_time_limit"], average_termination_time_limit)
+        stats["average_fail_to_improve"][iteration_counter] = [average_fail_to_improve]
+        stats["average_termination_time_limit"][iteration_counter] = [average_termination_time_limit]
 
         iterations_with_no_improvement += 1
         Memento.info(_PM._LOGGER, "iterations_with_no_improvement: $iterations_with_no_improvement")
