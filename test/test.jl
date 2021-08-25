@@ -1,3 +1,4 @@
+using Gurobi: set_int_param!
 Pkg.activate(".")
 # Pkg.develop("PowerModels")
 # Pkg.add("JuMP")
@@ -29,9 +30,9 @@ propagate_damage_status!(data)
 
 # solution = run_iterative_restoration(data, DCPPowerModel, optimizer, time_limit=10.0)
 
-data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\experiment_data\\case240api_50.m")
+data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\experiment_data\\case240api_100.m")
 # data = PowerModels.parse_file("../../../Documents\\PowerDev\\RestorationCLI\\data\\simple_data.m")
-solution = rad_restoration(data, model_constructor, optimizer; time_limit = 60.0, partition_max=10)
+solution = rad_restoration(data, model_constructor, optimizer; time_limit = 300.0, partition_max=30)
 # solution = run_iterative_restoration(data, model_constructor, optimizer; time_limit=120.0)
 # display(solution["stats"]["solve_time"])
 # sum(sum(load["pd"] for (id,load) in net["load"]) for (nwid,net) in solution["solution"]["nw"])
@@ -41,17 +42,9 @@ solution = rad_restoration(data, model_constructor, optimizer; time_limit = 60.0
 nwids = sort(parse.(Int,keys(solution["solution"]["nw"])))
 load_duration = [sum(load["pd"] for (id,load) in solution["solution"]["nw"]["$nwid"]["load"]) for nwid in nwids]
 @vlplot(:line, x=1:length(load_duration), y={load_duration, type=:quantitative}, title=solution["primal_status"])
+plot_repairs(solution)
 
-df = DataFrame(iter=Int[], nw_id=Int[], comp_id=Int[])
-for iter in keys(solution["stats"]["repair_list"])
-    for (nw_id,comp_types) in solution["stats"]["repair_list"][iter]
-        for (comp_type, ids) in comp_types
-            for id in ids
-                push!(df, (iter, parse(Int,nw_id), parse(Int,id)))
-            end
-        end
-    end
-end
+
 function process_cumulative_repairs!(data::DataFrame)
     data[!,:cumulative_repairs] .= 0
     for iter in unique(data.iter)
@@ -69,29 +62,41 @@ function process_cumulative_repairs!(data::DataFrame)
     end
     return data
 end
-process_cumulative_repairs!(df)
+function plot_repairs(solution)
+    df = DataFrame(iter=Int[], nw_id=Int[], comp_id=Int[])
+    for iter in keys(solution["stats"]["repair_list"])
+        for (nw_id,comp_types) in solution["stats"]["repair_list"][iter]
+            for (comp_type, ids) in comp_types
+                for id in ids
+                    push!(df, (iter, parse(Int,nw_id), parse(Int,id)))
+                end
+            end
+        end
+    end
+    process_cumulative_repairs!(df)
 
-# @vlplot(
-#     data=df,
-#     :bar,
-#     y="comp_id:n",
-#     x="count()",
-#     color="iter"
-# )
-@vlplot(
-    data=df,
-    height=500,
-    width=500,
-    mark={
-        :line,
-        point=true,
-        size=1,
-    },
-    x="nw_id:q",
-    y={"cumulative_repairs:q"},
-    color=:iter,
-    tooltip={"iter:q"}
-)
+    # @vlplot(
+    #     data=df,
+    #     :bar,
+    #     y="comp_id:n",
+    #     x="count()",
+    #     color="iter"
+    # )
+    return @vlplot(
+        data=df,
+        height=500,
+        width=500,
+        mark={
+            :line,
+            point=true,
+            size=1,
+        },
+        x="nw_id:q",
+        y={"cumulative_repairs:q"},
+        color=:iter,
+        tooltip={"iter:q"}
+    )
+end
 
 
 
@@ -451,7 +456,27 @@ solution["stats"]["ENS"]
 # load_diff = load-load2
 
 
-## Test util 2 period problem
-network = data
-util_restoration_order = utilization_heuristic_restoration(network)
+# ## Test util 2 period problem
+# network = data
+# util_restoration_order = utilization_heuristic_restoration(network)
 
+
+
+for br_id in ["1","2","3"]
+    data["branch"][br_id]["br_status"] = 0
+end
+
+PowerModelsRestoration._update_optimizer_time_limit!(optimizer, 0.0/100)
+mn_network = PowerModelsRestoration._new_replicate_restoration_network(data, 3, PowerModels._pm_global_keys)
+rad_solution = PowerModelsRestoration._run_rop_ir(mn_network, model_constructor, optimizer)
+
+active_branches = zeros(3)
+# for (nwid,net) in mn_network["nw"]
+for (nwid,net) in rad_solution["solution"]["nw"]
+    if nwid!="0"
+        for (br_id,branch) in net["branch"]
+            active_branches[parse(Int,nwid)] += branch["br_status"]
+        end
+    end
+end
+@show active_branches
