@@ -239,6 +239,10 @@ function rad_restoration(data, model_constructor, optimizer;
             else ## no primal solution to rop
                 new_ens = deepcopy(old_ens)
 
+                for nwid in network_ids
+                    new_repair_ordering["$nwid"] = deepcopy(repair_ordering["$nwid"])
+                end
+
                 Memento.info(_PM._LOGGER, "No Solution")
                 Memento.info(_PM._LOGGER, "Primal status: $(rad_solution["primal_status"])")
                 Memento.info(_PM._LOGGER, "Termination status: $(rad_solution["termination_status"])")
