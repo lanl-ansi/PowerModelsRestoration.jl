@@ -239,6 +239,7 @@ function rad_restoration(data, model_constructor, optimizer;
             else ## no primal solution to rop
                 new_ens = deepcopy(old_ens)
 
+                # insert old order
                 for nwid in network_ids
                     new_repair_ordering["$nwid"] = deepcopy(repair_ordering["$nwid"])
                 end
