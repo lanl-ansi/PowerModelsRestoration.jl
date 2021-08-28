@@ -21,7 +21,7 @@ function rad_restoration(data, model_constructor, optimizer;
         "solve_time" => 0.0
     )
     stats = Dict{String,Any}(
-        "repair_list" => SortedDict{Int,Dict{String,Any}}(),
+        # "repair_list" => SortedDict{Int,Dict{String,Any}}(),
         "ENS" => Dict{Int,Vector{Float64}}(),
         "sub_ENS" => Dict{Int,Vector{Float64}}(),
         "improvement" => Dict{Int,Vector{Float64}}(),
@@ -59,7 +59,7 @@ function rad_restoration(data, model_constructor, optimizer;
     ## Update stats
     iteration_counter = 0
     # stats["repair_list"][iteration_counter] = get_repair_list(deepcopy(repair_ordering))
-    stats["repair_list"][iteration_counter] = deepcopy(repair_ordering)
+    # stats["repair_list"][iteration_counter] = deepcopy(repair_ordering)
     iteration_counter +=1
     stats["feasible_period"] = Dict{Int,Bool}(parse(Int,nwid)=>false for nwid ∈ keys(repair_ordering))
 
@@ -289,7 +289,7 @@ function rad_restoration(data, model_constructor, optimizer;
 
         ## update stats
         # stats["repair_list"][iteration_counter] = get_repair_list(deepcopy(repair_ordering))
-        stats["repair_list"][iteration_counter] = deepcopy(repair_ordering)
+        # stats["repair_list"][iteration_counter] = deepcopy(repair_ordering)
         iteration_counter += 1
 
     end
