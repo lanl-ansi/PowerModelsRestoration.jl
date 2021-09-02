@@ -59,6 +59,27 @@ function apply_restoration_sequence!(data::Dict{String,<:Any}, repair_order::Dic
 end
 
 
+function apply_initial_restoration_sequence!(data::Dict{String,<:Any}, repair_order::Dict{String,<:Any})
+    if !_IM.ismultinetwork(data)
+        Memento.error(_PM._LOGGER, "Cannot apply restoration sequence.  Data is not a multinetwork")
+    end
+
+    for (repair_nw_id, comp_data) in repair_order
+        for (comp_type, comp_ids) in comp_data
+            for comp_id in comp_ids
+                for (nw_id, net) in data["nw"]
+                    if  parse(Int,nw_id) < parse(Int,repair_nw_id)
+                        net[comp_type][comp_id]["z_branch_start"] = 0
+                    elseif nw_id >= repair_nw_id
+                        net[comp_type][comp_id]["z_branch_start"] = 1
+                    end
+                end
+            end
+        end
+    end
+    return data
+end
+
 # function apply_repairs!(data, repairs)
 #     for (repair_nw_id, repair_list) in repairs
 #         for (comp_type, comp_id) in repair_list
