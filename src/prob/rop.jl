@@ -95,9 +95,9 @@ function build_rop(pm::_PM.AbstractPowerModel)
         for i in _PM.ids(pm, :branch, nw=n_2)
             constraint_branch_energized(pm, i, n_1, n_2)
         end
-        for i in _PM.ids(pm, :load, nw=n_2)
-            constraint_load_increasing(pm, i, n_1, n_2)
-        end
+        # for i in _PM.ids(pm, :load, nw=n_2)
+        #     constraint_load_increasing(pm, i, n_1, n_2)
+        # end
         n_1 = n_2
     end
 
