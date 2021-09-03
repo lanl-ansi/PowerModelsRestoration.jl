@@ -91,7 +91,8 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
             # update time limit
             remaining_time_limit = max(0.1, time_limit-(time()-t_start))
             solver_time_limit = remaining_time_limit/2
-            _update_optimizer_time_limit!(optimizer, solver_time_limit)
+            # _update_optimizer_time_limit!(optimizer, solver_time_limit)
+            _update_optimizer_time_limit!(optimizer, 1000.0) #artificially alrge time limit here
 
             # RRP to get load served
             solution = run_restoration_redispatch(mn_network, model_constructor, optimizer)
@@ -121,7 +122,8 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
         # update time limit
         remaining_time_limit = max(10.0, time_limit-(time()-t_start))
         solver_time_limit = remaining_time_limit/2
-        _update_optimizer_time_limit!(optimizer, solver_time_limit)
+        # _update_optimizer_time_limit!(optimizer, solver_time_limit)
+        _update_optimizer_time_limit!(optimizer, 1000.0) #artificially alrge time limit here
 
         # run utilization
         restoration_order = utilization_heuristic_restoration(network)
@@ -159,7 +161,8 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
         # update time limit
         remaining_time_limit = max(recovery_time_limit, time_limit-(time()-t_start))
         solver_time_limit = remaining_time_limit/2
-        _update_optimizer_time_limit!(optimizer, solver_time_limit)
+        # _update_optimizer_time_limit!(optimizer, solver_time_limit)
+        _update_optimizer_time_limit!(optimizer, 1000.0) #artificially alrge time limit here
 
         # run utilization
         restoration_order = utilization_heuristic_restoration(network)
