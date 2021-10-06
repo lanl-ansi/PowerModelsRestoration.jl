@@ -1,6 +1,6 @@
 ### RAD Restoration Tests
 @testset "RAD" begin
-    data = PowerModels.parse_file("../test/data/case5_restoration_RAD.m")
+    # data = PowerModels.parse_file("../test/data/case5_restoration_rrr.m")
 
     @testset "test AC RAD" begin
         @testset "5-bus case" begin

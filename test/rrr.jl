@@ -1,6 +1,6 @@
 ### RRR Restoration Tests
 @testset "RRR" begin
-    data = PowerModels.parse_file("../test/data/case5_restoration_RRR.m")
+    # data = PowerModels.parse_file("../test/data/case5_restoration_RRR.m")
 
     @testset "test AC RRR" begin
         @testset "5-bus case" begin
