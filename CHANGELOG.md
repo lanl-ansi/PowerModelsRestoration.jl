@@ -1,7 +1,10 @@
 # PowerModelsRestoration.jl Change Log
 
 ## Staged
-- nothing
+- Change iterative_restoration to Recursive Restoration Refinement (RRR)
+- Add randomized adaptive decomponsition (RAD) algorithm
+- Add utilization (UTIL) heuristic (sort by repairs by component capacity)
+- Add final period restoration algorithm (restore components in final period)
 
 ## v0.6.0
 - Add support for InfrastructureModels multi-infrastructure functions (breaking)

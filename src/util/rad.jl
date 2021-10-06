@@ -1,6 +1,5 @@
 
-using DataStructures
-using Statistics
+# using DataStructures
 
 function rad_restoration(data, model_constructor, optimizer;
         time_limit::Float64=3600.0,
@@ -21,7 +20,6 @@ function rad_restoration(data, model_constructor, optimizer;
         "solve_time" => 0.0
     )
     stats = Dict{String,Any}(
-        # "repair_list" => SortedDict{Int,Dict{String,Any}}(),
         "ENS" => Dict{Int,Vector{Float64}}(),
         "sub_ENS" => Dict{Int,Vector{Float64}}(),
         "improvement" => Dict{Int,Vector{Float64}}(),

@@ -11,9 +11,9 @@
 
 
 
-function run_iterative_restoration(network, model_constructor, optimizer; time_limit::Float64=3600.0, kwargs...)
+function run_RRR(network, model_constructor, optimizer; time_limit::Float64=3600.0, kwargs...)
     t_start = time()
-    sol = _run_iterative_restoration(network, model_constructor, optimizer, time_limit; kwargs...)
+    sol = _run_RRR(network, model_constructor, optimizer, time_limit; kwargs...)
 
     fill_missing_variables!(sol, network) # some networks do not have all variables if devices were status 0
     sol["solve_time"] = time()-t_start
@@ -21,8 +21,8 @@ function run_iterative_restoration(network, model_constructor, optimizer; time_l
 end
 
 
-"recrusive call to iterative restoration"
-function _run_iterative_restoration(network,model_constructor,optimizer, time_limit; kwargs... )
+"recrusive call of RRR"
+function _run_RRR(network,model_constructor,optimizer, time_limit; kwargs... )
 
     # record starting time
     t_start = time()
@@ -208,7 +208,7 @@ function _run_iterative_restoration(network,model_constructor,optimizer, time_li
                 end
 
                 remaining_time_limit = max(0.1, time_limit-(time()-t_start))
-                sub_sol = _run_iterative_restoration(sub_net, model_constructor, optimizer, remaining_time_limit; kwargs...)
+                sub_sol = _run_RRR(sub_net, model_constructor, optimizer, remaining_time_limit; kwargs...)
                 update_solution!(return_solution,sub_sol) # accumulate objective, solve status, etc.
 
                 # collect return networks

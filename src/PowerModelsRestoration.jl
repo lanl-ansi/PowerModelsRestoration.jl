@@ -6,6 +6,7 @@ import InfrastructureModels: nw_id_default
 import PowerModels
 import Memento
 import MathOptInterface
+import Statistics
 
 const _IM = InfrastructureModels
 const _PM = PowerModels
@@ -31,12 +32,12 @@ include("form/wr.jl")
 include("form/wrm.jl")
 
 include("util/common.jl")
-include("util/utilization_heuristic.jl")
-include("util/randomized_adaptive_decomposition.jl")
+include("util/utilization.jl")
+include("util/rad.jl")
 include("util/restoration_redispatch.jl")
 include("util/ac-mld-uc.jl")
-include("util/iterative_restoration.jl")
-include("util/final_period_restoration.jl")
+include("util/rrr.jl")
+include("util/final.jl")
 
 include("core/export.jl")
 
