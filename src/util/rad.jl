@@ -24,8 +24,8 @@ function rad_restoration(data, model_constructor, optimizer;
         "sub_ENS" => Dict{Int,Vector{Float64}}(),
         "improvement" => Dict{Int,Vector{Float64}}(),
         "solve_time" => Dict{Int,Vector{Float64}}(),
-        "termination_status" => Dict{Int,Vector{MathOptInterface.TerminationStatusCode}}(),
-        "primal_status" => Dict{Int,Vector{MathOptInterface.ResultStatusCode}}(),
+        "termination_status" => Dict{Int,Vector{_PM.TerminationStatusCode}}(),
+        "primal_status" => Dict{Int,Vector{_PM.ResultStatusCode}}(),
         "average_fail_to_improve"=>Dict{Int,Vector{Float64}}(),
         "average_termination_time_limit"=>Dict{Int,Vector{Float64}}(),
         "solver_time_limit"=>Dict{Int,Vector{Float64}}(),
@@ -175,7 +175,7 @@ function rad_restoration(data, model_constructor, optimizer;
             total_load = sum(load["pd"] for (id,load) in r_data["load"])
             old_ens = Dict("$nwid"=> ens_dict["$nwid"] for nwid in network_ids)
 
-            if rad_solution["primal_status"] == MathOptInterface.FEASIBLE_POINT
+            if rad_solution["primal_status"] == _PM.FEASIBLE_POINT
                 fill_missing_variables!(rad_solution, r_data) # some devices like load are removed for status 0.  E.g. ensure that load pd is zero if removed
                 clean_solution!(rad_solution)
                 clean_status!(rad_solution["solution"])
@@ -254,7 +254,7 @@ function rad_restoration(data, model_constructor, optimizer;
                 push!(fail_to_improve, true)
                 average_fail_to_improve = average_fail_to_improve*(averaging_window-1)/averaging_window + 1/averaging_window
             end
-            if rad_solution["termination_status"]!=MathOptInterface.TIME_LIMIT
+            if rad_solution["termination_status"]!=_PM.TIME_LIMIT
                 push!(termination_time_limit, false)
             else
                 push!(termination_time_limit, true)
@@ -297,8 +297,8 @@ function rad_restoration(data, model_constructor, optimizer;
     solution["stats"] = stats
     solution["repair_ordering"] = repair_ordering
     solution["solve_time"] = time()-t_start
-    solution["primal_status"] = minimum(collect(values(stats["feasible_period"]))) ? MathOptInterface.FEASIBLE_POINT : MathOptInterface.NO_SOLUTION
-    solution["termination_status"] = time()-t_start>time_limit ? MathOptInterface.TIME_LIMIT : solution["primal_status"]==MathOptInterface.FEASIBLE_POINT ?  MathOptInterface.LOCALLY_SOLVED :  MathOptInterface.LOCALLY_INFEASIBLE
+    solution["primal_status"] = minimum(collect(values(stats["feasible_period"]))) ? _PM.FEASIBLE_POINT : _PM.NO_SOLUTION
+    solution["termination_status"] = time()-t_start>time_limit ? _PM.TIME_LIMIT : solution["primal_status"]==_PM.FEASIBLE_POINT ?  _PM.LOCALLY_SOLVED :  _PM.LOCALLY_INFEASIBLE
     return solution
 end
 
