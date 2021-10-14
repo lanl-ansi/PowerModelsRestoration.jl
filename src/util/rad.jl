@@ -1,7 +1,6 @@
 
-# using DataStructures
 
-function rad_restoration(data, model_constructor, optimizer;
+function run_RAD(data, model_constructor, optimizer;
         time_limit::Float64=3600.0,
         averaging_window::Int = 100,
         partition_min::Int = 2,
@@ -42,7 +41,7 @@ function rad_restoration(data, model_constructor, optimizer;
     t_start = time()
 
     ## initial ordering (utilization heuristic)
-    repair_ordering = utilization_heuristic_restoration(data)
+    repair_ordering = run_UTIL(data)
     ens_dict = Dict(k=>sum(load["pd"] for (id,load) in data["load"]) for k in keys(repair_ordering))
 
     solution["solution"] = replicate_restoration_network(data,count=length(keys(repair_ordering)))
@@ -56,8 +55,6 @@ function rad_restoration(data, model_constructor, optimizer;
 
     ## Update stats
     iteration_counter = 0
-    # stats["repair_list"][iteration_counter] = get_repair_list(deepcopy(repair_ordering))
-    # stats["repair_list"][iteration_counter] = deepcopy(repair_ordering)
     iteration_counter +=1
     stats["feasible_period"] = Dict{Int,Bool}(parse(Int,nwid)=>false for nwid ∈ keys(repair_ordering))
 
@@ -274,8 +271,8 @@ function rad_restoration(data, model_constructor, optimizer;
         end
 
         # Calc average and reset
-        average_fail_to_improve = mean(fail_to_improve)
-        average_termination_time_limit = mean(termination_time_limit)
+        average_fail_to_improve = Statistics.mean(fail_to_improve)
+        average_termination_time_limit = Statistics.mean(termination_time_limit)
         fail_to_improve = []
         termination_time_limit = []
         stats["average_fail_to_improve"][iteration_counter] = [average_fail_to_improve]
@@ -286,11 +283,7 @@ function rad_restoration(data, model_constructor, optimizer;
 
         repair_ordering = deepcopy(new_repair_ordering)
 
-        ## update stats
-        # stats["repair_list"][iteration_counter] = get_repair_list(deepcopy(repair_ordering))
-        # stats["repair_list"][iteration_counter] = deepcopy(repair_ordering)
         iteration_counter += 1
-
     end
 
     ## Collection final solution and return

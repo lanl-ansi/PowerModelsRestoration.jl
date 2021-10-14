@@ -61,7 +61,7 @@ function _run_RRR(network,model_constructor,optimizer, time_limit; kwargs... )
         Memento.warn(_PM._LOGGER, "Primal status is not feasible.")
         Memento.warn(_PM._LOGGER, "Running a $(count_repairable_items(network)) period recovery using Utilization Heuristic")
 
-        util_restoration_order = utilization_heuristic_restoration(network)
+        util_restoration_order = run_UTIL(network)
 
         restoration_order = Dict{String,Any}("$nwid"=>Dict{String,Any}(comp_type=>String[] for comp_type in restoration_comps) for nwid in 0:2)
         l = maximum(parse.(Int,collect(keys(util_restoration_order))))
@@ -126,7 +126,7 @@ function _run_RRR(network,model_constructor,optimizer, time_limit; kwargs... )
         _update_optimizer_time_limit!(optimizer, 1000.0) #artificially alrge time limit here
 
         # run utilization
-        restoration_order = utilization_heuristic_restoration(network)
+        restoration_order = run_UTIL(network)
         case_mn = replicate_restoration_network(network, count=length(keys(restoration_order)))
         # set time_elapsed correctly
         for (nwid,net) ∈ mn_network["nw"]
@@ -165,7 +165,7 @@ function _run_RRR(network,model_constructor,optimizer, time_limit; kwargs... )
         _update_optimizer_time_limit!(optimizer, 1000.0) #artificially alrge time limit here
 
         # run utilization
-        restoration_order = utilization_heuristic_restoration(network)
+        restoration_order = run_UTIL(network)
         case_mn = replicate_restoration_network(network, count=length(keys(restoration_order)))
         # set time_elapsed correctly
         for (nwid,net) ∈ mn_network["nw"]

@@ -1,9 +1,9 @@
 
 
 "Return repair order where all repairs occur in final time period."
-function final_period_restoration(network::Dict{String,<:Any})
+function run_FINAL(network::Dict{String,<:Any})
     if _IM.ismultinetwork(network)
-        Memento.error(_PM._LOGGER, "final_period_restoration requires a single network.")
+        Memento.error(_PM._LOGGER, "run_FINAL requires a single network.")
     end
     dmg_count = count_repairable_items(network)
     dmg_items = get_repairable_items(network)

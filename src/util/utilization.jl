@@ -2,9 +2,9 @@
 
 "Take a sn powermodels dict and constrcut a utilization based restoration utilizatio based
 heuristic repair ordering"
-function utilization_heuristic_restoration(data::Dict{String,<:Any})
+function run_UTIL(data::Dict{String,<:Any})
     if _IM.ismultinetwork(data)
-        Memento.error(_PM._LOGGER, "utilization_heuristic_restoration requires a single network.")
+        Memento.error(_PM._LOGGER, "run_UTIL requires a single network.")
     end
 
     d_comp_vec = vcat([[(comp_type,comp_id) for comp_id in comp_ids] for (comp_type,comp_ids) in get_repairable_items(data)]...)
@@ -18,7 +18,7 @@ function utilization_heuristic_restoration(data::Dict{String,<:Any})
 
     # Create precedent repair requirements
     repair_constraints = calculate_repair_precedance(data)
-    # apply precendet repair requirments
+    # apply precedent repair requirments
     updated = true
     while updated
         updated = false
