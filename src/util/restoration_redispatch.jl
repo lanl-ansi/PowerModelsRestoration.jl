@@ -84,6 +84,7 @@ function build_restoration_redispatch(pm::_PM.AbstractPowerModel)
 end
 
 
+# was used to require load increasing for ROP intial feasible point, but ROP not long requires load to be increasing
 "Simulate a restoration sequence power flow"
 function run_restoration_redispatch_load_up(file::String, model_type::Type, optimizer; kwargs...)
     data = _PM.parse_file(file)
