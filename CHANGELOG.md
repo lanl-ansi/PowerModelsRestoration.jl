@@ -1,7 +1,9 @@
 # PowerModelsRestoration.jl Change Log
 
 ## Staged
-- nothing
+- Make support for multinetwork returns explicitly disallowed for `count_repairable_items`, `get_repairable_items`, `damage_items!`, `count_damaged_items`, `get_damaged_items`, `get_isolated_load`, `clear_damage_indicator!`
+- Add `get_inactive_items`, `count_inactive_items`, `get_active_items`, `count_active_items`
+- Update tests
 
 ## v0.6.0
 - Add support for InfrastructureModels multi-infrastructure functions (breaking)
