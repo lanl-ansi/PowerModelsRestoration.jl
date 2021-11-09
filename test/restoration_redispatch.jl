@@ -7,7 +7,6 @@
         mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=2)
         result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.ACPPowerModel, juniper_solver)
 
-        PowerModelsRestoration.clean_solution!(result_rop)
         clean_status!(result_rop["solution"])
         update_status!(mn_data, result_rop["solution"])
 
@@ -36,7 +35,6 @@
         mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=2)
         result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
 
-        PowerModelsRestoration.clean_solution!(result_rop)
         clean_status!(result_rop["solution"])
         update_status!(mn_data, result_rop["solution"])
 
@@ -64,7 +62,6 @@
         mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=2)
         result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
 
-        PowerModelsRestoration.clean_solution!(result_rop)
         clean_status!(result_rop["solution"])
         update_status!(mn_data, result_rop["solution"])
 

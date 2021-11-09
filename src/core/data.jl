@@ -352,38 +352,6 @@ end
 
 
 """
-    clean_solution!(solution::Dict{String,<:Any})
-
-Replace variables with values of NaN or Nothing with 0 in solution dictionaries.
-"""
-function clean_solution!(solution::Dict{String,<:Any})
-    if _IM.ismultinetwork(solution["solution"])
-        for (nwid,nw) in solution["solution"]["nw"]
-            _clean_solution!(nw)
-        end
-    else
-        _clean_solution!(solution["solution"])
-    end
-end
-
-
-""
-function _clean_solution!(data::Dict{String,<:Any})
-    for comp_type in keys(_PM.pm_component_status)
-        for (comp_id,comp) in get(data, comp_type, Dict())
-            for k in keys(comp)
-                if comp[k] === nothing
-                    comp[k] = 0
-                elseif typeof(comp[k])<:Number && isnan(comp[k])
-                    comp[k] = 0
-                end
-            end
-        end
-    end
-end
-
-
-"""
     update_status!(network_1::Dict{String, <:Any}, network_2::Dict{String, <:Any})
 
 Update the status values in network1 with values from network2. Supports sparse networks.

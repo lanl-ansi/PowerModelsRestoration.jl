@@ -194,34 +194,6 @@
 
     end
 
-    @testset "clean_solution" begin
-        network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
-        mn_network = replicate_restoration_network(network, count=2)
-        solution = Dict("solution"=>network)
-        mn_solution = Dict("solution"=>mn_network)
-
-        for comp_type in ["bus","gen","load","branch"]
-            network[comp_type]["1"]["status"] = NaN
-        end
-        for (nwid, net) in mn_network["nw"]
-            for comp_type in ["bus","gen","load","branch"]
-                net[comp_type]["1"]["status"] = NaN
-            end
-        end
-
-        clean_solution!(solution)
-        @test !isnan(solution["solution"]["bus"]["1"]["status"])
-        @test !isnan(solution["solution"]["gen"]["1"]["status"])
-        @test !isnan(solution["solution"]["load"]["1"]["status"])
-        @test !isnan(solution["solution"]["branch"]["1"]["status"])
-
-        clean_solution!(mn_solution)
-        @test !isnan(mn_solution["solution"]["nw"]["1"]["bus"]["1"]["status"])
-        @test !isnan(mn_solution["solution"]["nw"]["1"]["gen"]["1"]["status"])
-        @test !isnan(mn_solution["solution"]["nw"]["2"]["load"]["1"]["status"])
-        @test !isnan(mn_solution["solution"]["nw"]["2"]["branch"]["1"]["status"])
-    end
-
     @testset "clean_status!" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         mn_network = replicate_restoration_network(network, count=2)
