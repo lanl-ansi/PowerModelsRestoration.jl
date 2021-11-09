@@ -3,6 +3,9 @@
 ## Staged
 - nothing
 
+## v0.6.1
+- Fixed bugs in `constraint_bus_energized` and `run_iterative_restoration` (#55,#57)
+
 ## v0.6.0
 - Add support for InfrastructureModels multi-infrastructure functions (breaking)
 - Update to PowerModels v0.17 (breaking)
