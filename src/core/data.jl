@@ -4,29 +4,29 @@ const restoration_comps = ["bus" "gen" "storage" "branch"]
 
 
 """
-    count_repairable_items(network::Dict{String, <:Any})
+    count_repairable_components(network::Dict{String, <:Any})
 
 Return the number of repairable components in a network.
 """
-function count_repairable_items(network::Dict{String, <:Any})
+function count_repairable_components(network::Dict{String, <:Any})
     pm_data = _PM.get_pm_data(network)
     if _IM.ismultinetwork(pm_data)
-        Memento.error(_PM._LOGGER, "count_repairable_items can only be used on single networks")
+        Memento.error(_PM._LOGGER, "count_repairable_components can only be used on single networks")
     else
-        repairable_set = get_repairable_items(pm_data)
+        repairable_set = get_repairable_components(pm_data)
         return repairable_count = sum(length(comp_ids) for (comp_name,comp_ids) in repairable_set)
     end
 end
 
 
 """
-    get_repairable_items(network::Dict{String, <:Any})
+    get_repairable_components(network::Dict{String, <:Any})
 
 Return a dictionary of the repairable component indices.
 A component is repairable if `"damaged"==1` and `"status"=1`
 
 ```
-    julia> get_repairable_items(network)
+    julia> get_repairable_components(network)
     Dict{String, Set{String}} with 4 entries:
         "gen"     => Set(["4", "1", "2"])
         "branch"  => Set(["4", "1", "5", "2", "6", "7", "3"])
@@ -34,18 +34,18 @@ A component is repairable if `"damaged"==1` and `"status"=1`
         "bus"     => Set(["4"])
 ```
 """
-function get_repairable_items(data::Dict{String, <:Any})
+function get_repairable_components(data::Dict{String, <:Any})
     pm_data = _PM.get_pm_data(data)
     if _IM.ismultinetwork(pm_data)
-        Memento.error(_PM._LOGGER, "get_repairable_items can only be used on single networks")
+        Memento.error(_PM._LOGGER, "get_repairable_components can only be used on single networks")
     else
-        return repairs =  _get_repairable_items(pm_data)
+        return repairs =  _get_repairable_components(pm_data)
     end
 end
 
 
 ""
-function _get_repairable_items(network::Dict{String,<:Any})
+function _get_repairable_components(network::Dict{String,<:Any})
     repairs = Dict{String, Set{String}}()
     for comp_name in restoration_comps
         status_key = _PM.pm_component_status[comp_name]
@@ -62,18 +62,18 @@ end
 
 
 """
-    damage_items!(nw_data::Dict{String,<:Any}, comp_list::Dict{String, Set{String}})
+    damage_components!(nw_data::Dict{String,<:Any}, comp_list::Dict{String, Set{String}})
 
 Set the damage indicator to 1 for components in the comp_list.
 
 ```
-    julia> damage_items!(network, Dict("bus"=>["1","3"]))
+    julia> damage_components!(network, Dict("bus"=>["1","3"]))
 ```
 """
-function damage_items!(nw_data::Dict{String,<:Any}, comp_list::Dict{String, Set{String}})
+function damage_components!(nw_data::Dict{String,<:Any}, comp_list::Dict{String, Set{String}})
     pm_data = _PM.get_pm_data(nw_data)
     if _IM.ismultinetwork(pm_data)
-        Memento.error(_PM._LOGGER, "damage_items! can only be used on single networks")
+        Memento.error(_PM._LOGGER, "damage_components! can only be used on single networks")
     end
 
     for (comp_name, comp_ids) in comp_list
@@ -86,29 +86,29 @@ end
 
 
 """
-    count_damaged_items(network::Dict{String, <:Any})
+    count_damaged_components(network::Dict{String, <:Any})
 
-Count the number of items with key `"damaged" == 1`.
+Count the number of components with key `"damaged" == 1`.
 """
-function count_damaged_items(network::Dict{String, <:Any})
+function count_damaged_components(network::Dict{String, <:Any})
     pm_data = _PM.get_pm_data(network)
     if _IM.ismultinetwork(pm_data)
-        Memento.error(_PM._LOGGER, "count_damaged_items can only be used on single networks")
+        Memento.error(_PM._LOGGER, "count_damaged_components can only be used on single networks")
     else
-        damaged_set = get_damaged_items(pm_data)
+        damaged_set = get_damaged_components(pm_data)
         return damaged_count = sum(length(comp_ids) for (comp_name,comp_ids) in damaged_set)
     end
 end
 
 
 """
-    get_damaged_items(network::Dict{String, <:Any})
+    get_damaged_components(network::Dict{String, <:Any})
 
 Return a dictionary of the damaged component indices.
 A component is damaged if `"damaged"==1`.
 
 ```
-    julia> get_damaged_items(network)
+    julia> get_damaged_components(network)
     Dict{String, Set{String}} with 4 entries:
         "gen"     => Set(["4", "1", "2"])
         "branch"  => Set(["4", "1", "5", "2", "6", "7", "3"])
@@ -116,19 +116,19 @@ A component is damaged if `"damaged"==1`.
         "bus"     => Set(["4"])
 ```
 """
-function get_damaged_items(data::Dict{String,<:Any})
+function get_damaged_components(data::Dict{String,<:Any})
     pm_data = _PM.get_pm_data(data)
 
     if _IM.ismultinetwork(pm_data)
-        Memento.error(_PM._LOGGER, "get_damaged_items can only be used on single networks")
+        Memento.error(_PM._LOGGER, "get_damaged_components can only be used on single networks")
     else
-        return comp_list = _get_damaged_items(pm_data)
+        return comp_list = _get_damaged_components(pm_data)
     end
 end
 
 
 ""
-function _get_damaged_items(network::Dict{String,<:Any})
+function _get_damaged_components(network::Dict{String,<:Any})
     comp_list = Dict{String, Set{String}}()
     for comp_name in restoration_comps
         status_key = _PM.pm_component_status[comp_name]
@@ -177,13 +177,13 @@ end
 
 
 """
-    get_inactive_items(network::Dict{String, <:Any})
+    get_inactive_components(network::Dict{String, <:Any})
 
 Return a dictionary of the inactive component indices.
 A component is inactive if its status value is 0.
 
 ```
-    julia> get_inactive_items(network)
+    julia> get_inactive_components(network)
     Dict{String, Set{String}} with 4 entries:
         "gen"     => Set(["4", "1", "2"])
         "branch"  => Set(["4", "1", "5", "2", "6", "7", "3"])
@@ -191,17 +191,17 @@ A component is inactive if its status value is 0.
         "bus"     => Set(["4"])
 ```
 """
-function get_inactive_items(data::Dict{String,<:Any})
+function get_inactive_components(data::Dict{String,<:Any})
     pm_data = _PM.get_pm_data(data)
 
     if _IM.ismultinetwork(pm_data)
         comp_list = Dict{String,Any}("nw" => Dict{String,Any}())
 
         for (i, nw_data) in pm_data["nw"]
-            comp_list["nw"][i] = _get_inactive_items(nw_data)
+            comp_list["nw"][i] = _get_inactive_components(nw_data)
         end
     else
-        comp_list = _get_inactive_items(pm_data)
+        comp_list = _get_inactive_components(pm_data)
     end
 
     return comp_list
@@ -209,7 +209,7 @@ end
 
 
 ""
-function _get_inactive_items(network::Dict{String,<:Any})
+function _get_inactive_components(network::Dict{String,<:Any})
     comp_list = Dict{String, Array{String,1}}()
 
     for comp_type in restoration_comps
@@ -228,30 +228,30 @@ end
 
 
 """
-    count_inactive_items(network::Dict{String, <:Any})
+    count_inactive_components(network::Dict{String, <:Any})
 
-Count the number of items with an inactive component status.
+Count the number of components with an inactive component status.
 """
-function count_inactive_items(network::Dict{String, <:Any})
+function count_inactive_components(network::Dict{String, <:Any})
     pm_data = _PM.get_pm_data(network)
 
     if _IM.ismultinetwork(pm_data)
-        Memento.error(_PM._LOGGER, "count_inactive_items can only be used on single networks")
+        Memento.error(_PM._LOGGER, "count_inactive_components can only be used on single networks")
     else
-        inactive_set = get_inactive_items(pm_data)
+        inactive_set = get_inactive_components(pm_data)
         return inactive_count = sum(length(comp_ids) for (comp_name,comp_ids) in inactive_set)
     end
 end
 
 
 """
-    get_active_items(network::Dict{String, <:Any})
+    get_active_components(network::Dict{String, <:Any})
 
 Return a dictionary of the active component indices.
 A component is inactive if its status value is 1.
 
 ```
-    julia> get_active_items(network)
+    julia> get_active_components(network)
     Dict{String, Set{String}} with 4 entries:
         "gen"     => Set(["4", "1", "2"])
         "branch"  => Set(["4", "1", "5", "2", "6", "7", "3"])
@@ -259,37 +259,37 @@ A component is inactive if its status value is 1.
         "bus"     => Set(["4"])
 ```
 """
-function get_active_items(network::Dict{String, Any})
+function get_active_components(network::Dict{String, Any})
     pm_data = _PM.get_pm_data(network)
     if _IM.ismultinetwork(pm_data)
-        Memento.error(_PM._LOGGER, "get_active_items can only be used on single networks")
+        Memento.error(_PM._LOGGER, "get_active_components can only be used on single networks")
     else
-        active_items = Dict{String, Set{String}}()
+        active_components = Dict{String, Set{String}}()
         for comp_type in restoration_comps
             status_key = _PM.pm_component_status[comp_type]
-            active_items[comp_type] = Set()
+            active_components[comp_type] = Set()
             for (comp_id, comp) in get(network, comp_type, Dict())
                 if haskey(comp, status_key) && comp[status_key] != PowerModels.pm_component_status_inactive[comp_type]
-                    push!(active_items[comp_type], comp_id)
+                    push!(active_components[comp_type], comp_id)
                 end
             end
         end
-        return active_items
+        return active_components
     end
 end
 
 
 """
-    count_active_items(network::Dict{String, <:Any})
+    count_active_components(network::Dict{String, <:Any})
 
-Count the number of items with an active component status.
+Count the number of components with an active component status.
 """
-function count_active_items(network::Dict{String, Any})
+function count_active_components(network::Dict{String, Any})
     pm_data = _PM.get_pm_data(network)
     if _IM.ismultinetwork(pm_data)
-        Memento.error(_PM._LOGGER, "count_active_items can only be used on single networks")
+        Memento.error(_PM._LOGGER, "count_active_components can only be used on single networks")
     else
-        active_set = get_active_items(pm_data)
+        active_set = get_active_components(pm_data)
         return sum(length(comp_ids) for (comp_name,comp_ids) in active_set)
     end
 end
@@ -527,7 +527,7 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
 
     clean_status!(pm_sn_data)
     propagate_damage_status!(pm_sn_data)
-    total_repairs = count_repairable_items(pm_sn_data)
+    total_repairs = count_repairable_components(pm_sn_data)
 
     if count > total_repairs
         Memento.warn(_PM._LOGGER, "More restoration steps than repairable components.  Reducing restoration steps to $(total_repairs).")

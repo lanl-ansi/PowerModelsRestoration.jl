@@ -1,10 +1,10 @@
 ## Test data processing functions
 @testset "Data" begin
 
-    @testset "damage_items!" begin
+    @testset "damage_components!" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         @test isapprox(network["gen"]["5"]["damaged"], 0, atol=1e-4)
-        damage_items!(network, Dict("gen" => Set(["5"])))
+        damage_components!(network, Dict("gen" => Set(["5"])))
         @test isapprox(network["gen"]["5"]["damaged"], 1, atol=1e-4)
     end
 
@@ -33,19 +33,19 @@
 
     end
 
-    @testset "count_damaged_items" begin
+    @testset "count_damaged_components" begin
 
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         propagate_damage_status!(network)
-        count = count_damaged_items(network)
+        count = count_damaged_components(network)
 
         @test isapprox(count,12, atol=1e-4)
     end
 
-    @testset "get_damaged_items" begin
+    @testset "get_damaged_components" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         propagate_damage_status!(network)
-        comp_set = get_damaged_items(network)
+        comp_set = get_damaged_components(network)
 
         @test in("1", comp_set["gen"])
         @test in("4", comp_set["bus"])
@@ -64,40 +64,40 @@
 
     end
 
-    @testset "count_repairable_items" begin
+    @testset "count_repairable_components" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         propagate_damage_status!(network)
-        @test isapprox(count_repairable_items(network), 12, atol=1e-6)
+        @test isapprox(count_repairable_components(network), 12, atol=1e-6)
         set_comp_inactive!(network, Dict("branch"=> Set(["1"])))
-        @test isapprox(count_repairable_items(network), 11, atol=1e-6)
+        @test isapprox(count_repairable_components(network), 11, atol=1e-6)
     end
 
-    @testset "get_repairable_items" begin
+    @testset "get_repairable_components" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         propagate_damage_status!(network)
-        repairable_set = get_repairable_items(network)
+        repairable_set = get_repairable_components(network)
 
         @test ("1" in repairable_set["gen"])
         @test ("1" in repairable_set["branch"])
 
         ## set status to 0, should not longer be repairable
         set_comp_inactive!(network, Dict("branch" => Set(["1"])))
-        repairable_set = get_repairable_items(network)
+        repairable_set = get_repairable_components(network)
         @test ("1" in repairable_set["gen"])
         @test !("1" in repairable_set["branch"])
     end
 
-    @testset "count_active_items" begin
+    @testset "count_active_components" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
 
-        @test isapprox(count_active_items(network), 19, atol=1e-2)
+        @test isapprox(count_active_components(network), 19, atol=1e-2)
 
         set_comp_inactive!(network, Dict("bus"=> Set(["1"])))
         set_comp_inactive!(network, Dict("gen"=> Set(["2"])))
         set_comp_inactive!(network, Dict("branch"=> Set(["3"])))
         set_comp_inactive!(network, Dict("storage"=> Set(["1"])))
 
-        @test isapprox(count_active_items(network), 15, atol=1e-2)
+        @test isapprox(count_active_components(network), 15, atol=1e-2)
 
     end
 
@@ -105,38 +105,38 @@
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         propagate_damage_status!(network)
 
-        @test isapprox(count_damaged_items(network), 12, atol=1e-2)
+        @test isapprox(count_damaged_components(network), 12, atol=1e-2)
 
         clear_damage_indicator!(network)
-        @test isapprox(count_damaged_items(network), 0, atol=1e-2)
+        @test isapprox(count_damaged_components(network), 0, atol=1e-2)
 
 
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         network_mn = replicate_restoration_network(network,count=2)
         propagate_damage_status!(network)
 
-        @test isapprox(count_damaged_items(network_mn["nw"]["0"]), 12, atol=1e-2)
-        @test isapprox(count_damaged_items(network_mn["nw"]["1"]), 12, atol=1e-2)
-        @test isapprox(count_damaged_items(network_mn["nw"]["2"]), 12, atol=1e-2)
+        @test isapprox(count_damaged_components(network_mn["nw"]["0"]), 12, atol=1e-2)
+        @test isapprox(count_damaged_components(network_mn["nw"]["1"]), 12, atol=1e-2)
+        @test isapprox(count_damaged_components(network_mn["nw"]["2"]), 12, atol=1e-2)
 
         clear_damage_indicator!(network_mn)
 
-        @test isapprox(count_damaged_items(network_mn["nw"]["0"]), 0, atol=1e-2)
-        @test isapprox(count_damaged_items(network_mn["nw"]["1"]), 0, atol=1e-2)
-        @test isapprox(count_damaged_items(network_mn["nw"]["2"]), 0, atol=1e-2)
+        @test isapprox(count_damaged_components(network_mn["nw"]["0"]), 0, atol=1e-2)
+        @test isapprox(count_damaged_components(network_mn["nw"]["1"]), 0, atol=1e-2)
+        @test isapprox(count_damaged_components(network_mn["nw"]["2"]), 0, atol=1e-2)
     end
 
     @testset "set_comp_inactive!" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
 
-        @test isapprox(count_repairable_items(network), 7, atol=1e-2)
+        @test isapprox(count_repairable_components(network), 7, atol=1e-2)
         set_comp_inactive!(network, Dict("branch"=> Set(["1"])))
-        @test isapprox(count_repairable_items(network), 6, atol=1e-2)
+        @test isapprox(count_repairable_components(network), 6, atol=1e-2)
     end
 
-    @testset "get_inactive_items" begin
+    @testset "get_inactive_components" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
-        comp_set = get_inactive_items(network)
+        comp_set = get_inactive_components(network)
         @test !in("2", comp_set["gen"])
         @test !in("1", comp_set["bus"])
         @test !in("3",  comp_set["branch"])
@@ -146,7 +146,7 @@
         set_comp_inactive!(network, Dict("gen"=> Set(["2"])))
         set_comp_inactive!(network, Dict("branch"=> Set(["3"])))
         set_comp_inactive!(network, Dict("storage"=> Set(["1"])))
-        comp_set = get_inactive_items(network)
+        comp_set = get_inactive_components(network)
 
         @test in("2", comp_set["gen"])
         @test in("1", comp_set["bus"])
@@ -154,21 +154,21 @@
         @test !in( "2",comp_set["storage"])
     end
 
-    @testset "count_inactive_items" begin
+    @testset "count_inactive_components" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
-        @test isapprox(count_inactive_items(network), 0, atol=1e-2)
+        @test isapprox(count_inactive_components(network), 0, atol=1e-2)
 
         set_comp_inactive!(network, Dict("bus"=> Set(["1"])))
         set_comp_inactive!(network, Dict("gen"=> Set(["2"])))
         set_comp_inactive!(network, Dict("branch"=> Set(["3"])))
         set_comp_inactive!(network, Dict("storage"=> Set(["1"])))
 
-        @test isapprox(count_inactive_items(network), 4, atol=1e-2)
+        @test isapprox(count_inactive_components(network), 4, atol=1e-2)
     end
 
-    @testset "get_active_items" begin
+    @testset "get_active_components" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
-        active_set = get_active_items(network)
+        active_set = get_active_components(network)
 
         @test [i in active_set["gen"] for i in ["1","2","3","4","5"]] == ones(5)
         @test [i in active_set["bus"] for i in ["1","2","3","4","10"]] == ones(5)
@@ -181,13 +181,13 @@
         set_comp_inactive!(network, Dict("bus" => Set(["1"])))
         set_comp_inactive!(network, Dict("storage" => Set(["1"])))
 
-        active_set = get_active_items(network)
-        @test !("1" in active_set["gen"]) #items no longer active
+        active_set = get_active_components(network)
+        @test !("1" in active_set["gen"]) #components no longer active
         @test !("1" in active_set["bus"])
         @test !("1" in active_set["branch"])
         @test !("1" in active_set["storage"])
 
-        @test [i in active_set["gen"] for i in ["2","3","4","5"]] == ones(4) #items still active
+        @test [i in active_set["gen"] for i in ["2","3","4","5"]] == ones(4) #components still active
         @test [i in active_set["bus"] for i in ["2","3","4","10"]] == ones(4)
         @test [i in active_set["branch"] for i in ["2","3","4","5","6","7"]] == ones(6)
         @test [i in active_set["storage"] for i in ["2"]] == ones(1)
