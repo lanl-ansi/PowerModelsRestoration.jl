@@ -296,19 +296,19 @@ end
 
 
 """
-    set_comp_inactive!(nw_data::Dict{String,<:Any}, comp_list::Dict{String, Set{String}})
+    make_inactive!(nw_data::Dict{String,<:Any}, comp_list::Dict{String, Set{String}})
 
 Set the status indicator to 0 for components in the comp_list.
 
 ```
-    julia> set_comp_inactive!(network, Dict("bus"=>["1","3"]))
+    julia> make_inactive!(network, Dict("bus"=>["1","3"]))
 ```
 """
-function set_comp_inactive!(network::Dict{String,<:Any}, comp_list::Dict{String, Set{String}})
+function make_inactive!(network::Dict{String,<:Any}, comp_list::Dict{String, Set{String}})
     pm_data = _PM.get_pm_data(network)
 
     if _IM.ismultinetwork(pm_data)
-        Memento.error(_PM._LOGGER, "set_comp_inactive! can only be used on single networks")
+        Memento.error(_PM._LOGGER, "make_inactive! can only be used on single networks")
     else
         for (comp_name, comp_ids) in comp_list
             for comp_id in comp_ids

@@ -55,7 +55,7 @@
 
     @testset "get_isolated_load" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
-        set_comp_inactive!(network, Dict("bus" =>Set(["4"])))
+        make_inactive!(network, Dict("bus" =>Set(["4"])))
 
         load_set = get_isolated_load(network)
 
@@ -68,7 +68,7 @@
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         propagate_damage_status!(network)
         @test isapprox(count_repairable_components(network), 12, atol=1e-6)
-        set_comp_inactive!(network, Dict("branch"=> Set(["1"])))
+        make_inactive!(network, Dict("branch"=> Set(["1"])))
         @test isapprox(count_repairable_components(network), 11, atol=1e-6)
     end
 
@@ -81,7 +81,7 @@
         @test ("1" in repairable_set["branch"])
 
         ## set status to 0, should not longer be repairable
-        set_comp_inactive!(network, Dict("branch" => Set(["1"])))
+        make_inactive!(network, Dict("branch" => Set(["1"])))
         repairable_set = get_repairable_components(network)
         @test ("1" in repairable_set["gen"])
         @test !("1" in repairable_set["branch"])
@@ -92,10 +92,10 @@
 
         @test isapprox(count_active_components(network), 19, atol=1e-2)
 
-        set_comp_inactive!(network, Dict("bus"=> Set(["1"])))
-        set_comp_inactive!(network, Dict("gen"=> Set(["2"])))
-        set_comp_inactive!(network, Dict("branch"=> Set(["3"])))
-        set_comp_inactive!(network, Dict("storage"=> Set(["1"])))
+        make_inactive!(network, Dict("bus"=> Set(["1"])))
+        make_inactive!(network, Dict("gen"=> Set(["2"])))
+        make_inactive!(network, Dict("branch"=> Set(["3"])))
+        make_inactive!(network, Dict("storage"=> Set(["1"])))
 
         @test isapprox(count_active_components(network), 15, atol=1e-2)
 
@@ -126,11 +126,11 @@
         @test isapprox(count_damaged_components(network_mn["nw"]["2"]), 0, atol=1e-2)
     end
 
-    @testset "set_comp_inactive!" begin
+    @testset "make_inactive!" begin
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
 
         @test isapprox(count_repairable_components(network), 7, atol=1e-2)
-        set_comp_inactive!(network, Dict("branch"=> Set(["1"])))
+        make_inactive!(network, Dict("branch"=> Set(["1"])))
         @test isapprox(count_repairable_components(network), 6, atol=1e-2)
     end
 
@@ -142,10 +142,10 @@
         @test !in("3",  comp_set["branch"])
         @test !in("2", comp_set["storage"])
 
-        set_comp_inactive!(network, Dict("bus"=> Set(["1"])))
-        set_comp_inactive!(network, Dict("gen"=> Set(["2"])))
-        set_comp_inactive!(network, Dict("branch"=> Set(["3"])))
-        set_comp_inactive!(network, Dict("storage"=> Set(["1"])))
+        make_inactive!(network, Dict("bus"=> Set(["1"])))
+        make_inactive!(network, Dict("gen"=> Set(["2"])))
+        make_inactive!(network, Dict("branch"=> Set(["3"])))
+        make_inactive!(network, Dict("storage"=> Set(["1"])))
         comp_set = get_inactive_components(network)
 
         @test in("2", comp_set["gen"])
@@ -158,10 +158,10 @@
         network = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
         @test isapprox(count_inactive_components(network), 0, atol=1e-2)
 
-        set_comp_inactive!(network, Dict("bus"=> Set(["1"])))
-        set_comp_inactive!(network, Dict("gen"=> Set(["2"])))
-        set_comp_inactive!(network, Dict("branch"=> Set(["3"])))
-        set_comp_inactive!(network, Dict("storage"=> Set(["1"])))
+        make_inactive!(network, Dict("bus"=> Set(["1"])))
+        make_inactive!(network, Dict("gen"=> Set(["2"])))
+        make_inactive!(network, Dict("branch"=> Set(["3"])))
+        make_inactive!(network, Dict("storage"=> Set(["1"])))
 
         @test isapprox(count_inactive_components(network), 4, atol=1e-2)
     end
@@ -176,10 +176,10 @@
         @test [i in active_set["storage"] for i in ["1","2"]] == ones(2)
 
         ## set status to 0, should not longer be active
-        set_comp_inactive!(network, Dict("branch" => Set(["1"])))
-        set_comp_inactive!(network, Dict("gen" => Set(["1"])))
-        set_comp_inactive!(network, Dict("bus" => Set(["1"])))
-        set_comp_inactive!(network, Dict("storage" => Set(["1"])))
+        make_inactive!(network, Dict("branch" => Set(["1"])))
+        make_inactive!(network, Dict("gen" => Set(["1"])))
+        make_inactive!(network, Dict("bus" => Set(["1"])))
+        make_inactive!(network, Dict("storage" => Set(["1"])))
 
         active_set = get_active_components(network)
         @test !("1" in active_set["gen"]) #components no longer active
