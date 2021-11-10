@@ -1,6 +1,6 @@
 
 "supported components for restoration"
-const restoration_comps = ["bus" "gen" "storage" "branch"]
+const restoration_components = ["bus" "gen" "storage" "branch"]
 
 
 """
@@ -47,7 +47,7 @@ end
 ""
 function _get_repairable_components(network::Dict{String,<:Any})
     repairs = Dict{String, Set{String}}()
-    for comp_name in restoration_comps
+    for comp_name in restoration_components
         status_key = _PM.pm_component_status[comp_name]
         repairs[comp_name] = Set()
 
@@ -130,7 +130,7 @@ end
 ""
 function _get_damaged_components(network::Dict{String,<:Any})
     comp_list = Dict{String, Set{String}}()
-    for comp_name in restoration_comps
+    for comp_name in restoration_components
         status_key = _PM.pm_component_status[comp_name]
         comp_list[comp_name] = Set()
 
@@ -212,7 +212,7 @@ end
 function _get_inactive_components(network::Dict{String,<:Any})
     comp_list = Dict{String, Array{String,1}}()
 
-    for comp_type in restoration_comps
+    for comp_type in restoration_components
         status_key = _PM.pm_component_status[comp_type]
         comp_list[comp_type] = []
 
@@ -265,7 +265,7 @@ function get_active_components(network::Dict{String, Any})
         Memento.error(_PM._LOGGER, "get_active_components can only be used on single networks")
     else
         active_components = Dict{String, Set{String}}()
-        for comp_type in restoration_comps
+        for comp_type in restoration_components
             status_key = _PM.pm_component_status[comp_type]
             active_components[comp_type] = Set()
             for (comp_id, comp) in get(network, comp_type, Dict())
@@ -339,7 +339,7 @@ end
 
 ""
 function _clear_damage_indicator!(network::Dict{String,<:Any})
-    for comp_name in restoration_comps
+    for comp_name in restoration_components
         status_key = _PM.pm_component_status[comp_name]
 
         for (i, comp) in get(network, comp_name, Dict())
@@ -354,7 +354,7 @@ end
 """
     update_status!(network_1::Dict{String, <:Any}, network_2::Dict{String, <:Any})
 
-Update the status values in network1 with values from network2. Supports sparse networks.
+Update the status values in network_1 with values from network_2. Supports sparse networks.
 """
 function update_status!(network_1::Dict{String, <:Any}, network_2::Dict{String, <:Any})
     pm_data1 = _PM.get_pm_data(network_1)
