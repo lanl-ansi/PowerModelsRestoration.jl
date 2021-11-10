@@ -3,21 +3,21 @@ function constraint_model_voltage_damage(pm::_PM.AbstractPowerModel; nw::Int=nw_
     constraint_model_voltage_damage(pm, nw)
 end
 
-"Limit the maximum number of items restored in each time-step"
+"Limit the maximum number of components restored in each time-step"
 function constraint_restoration_cardinality_ub(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, cumulative_repairs=_PM.ref(pm, nw, :repaired_total))
     constraint_restoration_cardinality_ub(pm, nw, cumulative_repairs)
 end
 
 
-"Limit the minimum number of items restored in each time-step"
+"Limit the minimum number of components restored in each time-step"
 function constraint_restoration_cardinality_lb(pm::_PM.AbstractPowerModel; nw::Int=nw_id_default, cumulative_repairs=_PM.ref(pm, nw, :repaired_total))
     constraint_restoration_cardinality_lb(pm, nw, cumulative_repairs)
 end
 
 #
-# "Require all items restored in final time-step"
-# function constraint_restore_all_items(pm::_PM.AbstractPowerModel; nw::Int=maximum(_PM.nw_ids(pm)))
-#     constraint_restore_all_items(pm, nw)
+# "Require all components restored in final time-step"
+# function constraint_restore_all_components(pm::_PM.AbstractPowerModel; nw::Int=maximum(_PM.nw_ids(pm)))
+#     constraint_restore_all_components(pm, nw)
 # end
 
 

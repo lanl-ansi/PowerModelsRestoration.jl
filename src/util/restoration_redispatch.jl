@@ -9,7 +9,7 @@ end
 function run_restoration_redispatch(data::Dict{String,Any}, model_type::Type, optimizer; kwargs...)
     clear_damage_indicator!(data)
     return _PM.run_model(data, model_type, optimizer, build_restoration_redispatch; multinetwork=true,
-    ref_extensions=[_PM.ref_add_on_off_va_bounds!, ref_add_damaged_items!], kwargs...)
+    ref_extensions=[_PM.ref_add_on_off_va_bounds!, ref_add_damaged_components!], kwargs...)
 end
 
 ""

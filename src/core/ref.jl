@@ -1,7 +1,7 @@
 # tools for working with a PowerModels ref dict structures
 
 ""
-function ref_add_damaged_items!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+function ref_add_damaged_components!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     ref_add_damaged_gens!(ref, data)
     ref_add_damaged_branches!(ref, data)
     ref_add_damaged_storage!(ref, data)
