@@ -490,7 +490,7 @@ Add network keys for `repairs`, the number of repairs that are allowed in each p
 Also add `time_elapsed` based on the number of repairs that occur in the following period.
 """
 function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, global_keys::Set{String})
-    pm_sn_data = _PM.get_pm_data(deepcopy(sn_data))
+    pm_sn_data = deepcopy(_PM.get_pm_data(sn_data))
 
     @assert count > 0
     if _IM.ismultinetwork(pm_sn_data)
