@@ -40,7 +40,7 @@ function get_repairable_components(data::Dict{String, <:Any})
     if _IM.ismultinetwork(pm_data)
         Memento.error(_PM._LOGGER, "get_repairable_components can only be used on single networks")
     else
-        return repairs =  _get_repairable_components(pm_data)
+        return _get_repairable_components(pm_data)
     end
 end
 
@@ -124,7 +124,7 @@ function get_damaged_components(data::Dict{String,<:Any})
     if _IM.ismultinetwork(pm_data)
         Memento.error(_PM._LOGGER, "get_damaged_components can only be used on single networks")
     else
-        return comp_list = _get_damaged_components(pm_data)
+        return _get_damaged_components(pm_data)
     end
 end
 
@@ -133,7 +133,6 @@ end
 function _get_damaged_components(network::Dict{String,<:Any})
     comp_list = Dict{String, Set{String}}()
     for comp_name in restoration_components
-        status_key = _PM.pm_component_status[comp_name]
         comp_list[comp_name] = Set()
 
         for (comp_id, comp) in network[comp_name]
@@ -157,7 +156,7 @@ function get_isolated_load(data::Dict{String,<:Any})
         Memento.error(_PM._LOGGER, "get_isolated_load can only be used on single networks")
     end
 
-    return load_list = _get_isolated_load(pm_data)
+    return _get_isolated_load(pm_data)
 end
 
 
@@ -344,8 +343,6 @@ end
 ""
 function _clear_damage_indicator!(network::Dict{String,<:Any})
     for comp_name in restoration_components
-        status_key = _PM.pm_component_status[comp_name]
-
         for (i, comp) in get(network, comp_name, Dict())
             if haskey(comp, "damaged")
                 comp["damaged"] = 0
