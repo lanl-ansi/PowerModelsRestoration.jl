@@ -8,13 +8,14 @@ const restoration_components = ["bus" "gen" "storage" "branch"]
 
 Return the number of repairable components in a network.
 """
-function count_repairable_components(network::Dict{String, <:Any})
+function count_repairable_components(network::Dict{String, <:Any})::Int
     pm_data = _PM.get_pm_data(network)
     if _IM.ismultinetwork(pm_data)
         Memento.error(_PM._LOGGER, "count_repairable_components can only be used on single networks")
     else
         repairable_set = get_repairable_components(pm_data)
-        return repairable_count = sum(length(comp_ids) for (comp_name,comp_ids) in repairable_set)
+        repairable_count = sum(length(comp_ids) for (comp_name,comp_ids) in repairable_set)
+        return repairable_count
     end
 end
 
@@ -90,13 +91,14 @@ end
 
 Count the number of components with key `"damaged" == 1`.
 """
-function count_damaged_components(network::Dict{String, <:Any})
+function count_damaged_components(network::Dict{String, <:Any})::Int
     pm_data = _PM.get_pm_data(network)
     if _IM.ismultinetwork(pm_data)
         Memento.error(_PM._LOGGER, "count_damaged_components can only be used on single networks")
     else
         damaged_set = get_damaged_components(pm_data)
-        return damaged_count = sum(length(comp_ids) for (comp_name,comp_ids) in damaged_set)
+        damaged_count = sum(length(comp_ids) for (comp_name,comp_ids) in damaged_set)
+        return damaged_count
     end
 end
 
@@ -232,14 +234,15 @@ end
 
 Count the number of components with an inactive component status.
 """
-function count_inactive_components(network::Dict{String, <:Any})
+function count_inactive_components(network::Dict{String, <:Any})::Int
     pm_data = _PM.get_pm_data(network)
 
     if _IM.ismultinetwork(pm_data)
         Memento.error(_PM._LOGGER, "count_inactive_components can only be used on single networks")
     else
         inactive_set = get_inactive_components(pm_data)
-        return inactive_count = sum(length(comp_ids) for (comp_name,comp_ids) in inactive_set)
+        inactive_count = sum(length(comp_ids) for (comp_name,comp_ids) in inactive_set)
+        return inactive_count
     end
 end
 
@@ -284,13 +287,14 @@ end
 
 Count the number of components with an active component status.
 """
-function count_active_components(network::Dict{String, Any})
+function count_active_components(network::Dict{String, Any})::Int
     pm_data = _PM.get_pm_data(network)
     if _IM.ismultinetwork(pm_data)
         Memento.error(_PM._LOGGER, "count_active_components can only be used on single networks")
     else
         active_set = get_active_components(pm_data)
-        return sum(length(comp_ids) for (comp_name,comp_ids) in active_set)
+        activate_count = sum(length(comp_ids) for (comp_name,comp_ids) in active_set)
+        return activate_count
     end
 end
 
@@ -499,7 +503,7 @@ function replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, 
 
     if count > total_repairs
         Memento.warn(_PM._LOGGER, "More restoration steps than repairable components.  Reducing restoration steps to $(total_repairs).")
-        count = trunc(Int,total_repairs)
+        count = total_repairs
     end
 
     mn_data = Dict{String,Any}(
