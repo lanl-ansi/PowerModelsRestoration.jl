@@ -32,7 +32,7 @@ function constraint_restoration_cardinality_lb(pm::_PM.AbstractPowerModel, n::In
 end
 
 
-function constraint_restore_all_items(pm, n)
+function constraint_restore_all_components(pm, n)
     z_demand = _PM.var(pm, n, :z_demand)
     z_shunt = _PM.var(pm, n, :z_shunt)
     z_storage = _PM.var(pm, n, :z_storage)
