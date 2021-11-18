@@ -37,7 +37,6 @@
 
         # TODO move into ROP tests
         @testset "test ROP with MRSP preprocessing" begin
-            PowerModelsRestoration.clean_solution!(result)
             PowerModels.update_data!(data, result["solution"])
 
             mn_data = build_mn_data(data, replicates=2)
@@ -125,7 +124,6 @@
 
         # TODO move into ROP tests
         @testset "test ROP with MRSP preprocessing" begin
-            PowerModelsRestoration.clean_solution!(result)
             PowerModels.update_data!(data, result["solution"])
 
             mn_data = build_mn_data(data, replicates=2)

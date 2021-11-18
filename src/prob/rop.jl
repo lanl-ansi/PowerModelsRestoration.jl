@@ -1,7 +1,7 @@
 ""
 function run_rop(file, model_constructor, optimizer; kwargs...)
     return _PM.run_model(file, model_constructor, optimizer, build_rop; multinetwork=true,
-        ref_extensions=[_PM.ref_add_on_off_va_bounds!, ref_add_damaged_items!], kwargs...)
+        ref_extensions=[_PM.ref_add_on_off_va_bounds!, ref_add_damaged_components!], kwargs...)
 end
 
 
@@ -102,7 +102,7 @@ function build_rop(pm::_PM.AbstractPowerModel)
     end
 
     n_final = last(network_ids)
-    constraint_restore_all_items(pm, n_final)
+    constraint_restore_all_components(pm, n_final)
 
     objective_max_load_delivered(pm)
 end

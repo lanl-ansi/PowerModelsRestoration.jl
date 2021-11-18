@@ -83,7 +83,6 @@ end
 ## Forward restoration is not currently working with MLD when buses are disabled.
     mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=3)
     rop_result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
-    PowerModelsRestoration.clean_solution!(rop_result)
 
     @testset "ac forward case" begin
 
@@ -119,7 +118,6 @@ end
 
     mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=3)
     rop_result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
-    PowerModelsRestoration.clean_solution!(rop_result)
 
     @testset "ac forward case" begin
 
