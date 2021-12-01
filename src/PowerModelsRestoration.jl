@@ -31,6 +31,7 @@ include("form/wrm.jl")
 
 include("util/restoration_redispatch.jl")
 include("util/ac-mld-uc.jl")
+include("util/utilization.jl")
 
 include("core/export.jl")
 

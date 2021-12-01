@@ -57,6 +57,7 @@ include("data.jl")
 include("mrsp.jl")
 include("rop.jl")
 include("restoration_redispatch.jl")
+include("utilization.jl")
 
 include("util.jl")
 
