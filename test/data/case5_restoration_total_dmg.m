@@ -17,10 +17,10 @@ mpc.bus = [
 %column_names%  damaged
 mpc.bus_damage = [
 	1;
-	0;
-	0;
-	0;
-	0;
+	1;
+	1;
+	1;
+	1;
 ];
 
 
@@ -38,8 +38,8 @@ mpc.gen_damage = [
 	1;
 	1;
 	1;
-	0;
-	0;
+	1;
+	1;
 ];
 
 %% generator cost data
@@ -66,25 +66,25 @@ mpc.branch = [
 %column_names%  damaged
 mpc.branch_damage = [
 	1;
-	0;
-	0;
-	0;
-	0;
-	0;
-	0;
-];
-
-% hours
-mpc.time_elapsed = 1.0
-
-%% storage data
-%   storage_bus ps qs energy  energy_rating charge_rating  discharge_rating  charge_efficiency  discharge_efficiency  thermal_rating  qmin  qmax  r  x  p_loss  q_loss  status
-mpc.storage = [
-	4	 0.0	 0.0	 20.0	 100.0	 50.0	 70.0	 0.8	 0.9	 100.0	 -50.0	 70.0	 0.1	 0.0	 0.0	 0.0	 1;
-	10	 0.0	 0.0	 30.0	 100.0	 50.0	 70.0	 0.9	 0.8	 100.0	 -50.0	 70.0	 0.1	 0.0	 0.0	 0.0	 1;
-];
-%column_names%  damaged
-mpc.storage_damage = [
 	1;
-	0;
+	1;
+	1;
+	1;
+	1;
+	1;
 ];
+
+% % hours
+% mpc.time_elapsed = 1.0
+%
+% %% storage data
+% %   storage_bus ps qs energy  energy_rating charge_rating  discharge_rating  charge_efficiency  discharge_efficiency  thermal_rating  qmin  qmax  r  x  p_loss  q_loss  status
+% mpc.storage = [
+% 	4	 0.0	 0.0	 20.0	 100.0	 50.0	 70.0	 0.8	 0.9	 100.0	 -50.0	 70.0	 0.1	 0.0	 0.0	 0.0	 1;
+% 	10	 0.0	 0.0	 30.0	 100.0	 50.0	 70.0	 0.9	 0.8	 100.0	 -50.0	 70.0	 0.1	 0.0	 0.0	 0.0	 1;
+% ];
+% %column_names%  damaged
+% mpc.storage_damage = [
+% 	1;
+% 	0;
+% ];
