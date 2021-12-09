@@ -68,40 +68,31 @@ function run_utilization(data::Dict{String,<:Any})
 end
 
 function _util_value(data::Dict{String,<:Any}, comp_type::String, comp_id::String)
+
     if comp_type=="branch"
-        return _util_value_branch(data,comp_id)
+        value = data["branch"][comp_id]["rate_a"]
+
     elseif comp_type=="gen"
-        return _util_value_gen(data,comp_id)
+        value = data["gen"][comp_id]["pmax"]
+
     elseif comp_type=="bus"
-        return _util_value_bus(data,comp_id)
+        bus_load = 0.0
+        for (load_id,load) in data["load"]
+            if load["load_bus"]==parse(Int,comp_id::String)
+                bus_load+=load["pd"]
+            end
+        end
+        value = bus_load
+
     elseif comp_type=="storage"
-        return _util_value_storage(data,comp_id)
+        value = data["storage"][comp_id]["energy"]
+
     else
         Memento.error(_PM._LOGGER, "Component $comp_type does not have a supported utilization cost. Setting cost to NaN")
-        return NaN
+        value = NaN
     end
-end
 
-function _util_value_branch(data::Dict{String,<:Any}, comp_id::String)
-    return data["branch"][comp_id]["rate_a"]
-end
-
-function _util_value_gen(data::Dict{String,<:Any}, comp_id::String)
-    return data["gen"][comp_id]["pmax"]
-end
-
-function _util_value_bus(data::Dict{String,<:Any}, comp_id::String)
-    bus_load = 0.0 # this is orders of mag slower than the other util_value functions
-    for (load_id,load) in data["load"]
-        if load["load_bus"]==parse(Int,comp_id::String)
-            bus_load+=load["pd"]
-        end
-    end
-    return bus_load
-end
-
-function _util_value_storage(data::Dict{String,<:Any}, comp_id::String)
-    return data["storage"][comp_id]["energy"]
+    return value
 end
 
 
