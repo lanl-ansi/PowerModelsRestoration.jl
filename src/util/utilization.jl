@@ -1,12 +1,12 @@
 
 """
-    `run_UTIL(data::Dict{String,<:Any})`
+    `run_utilization(data::Dict{String,<:Any})`
 
 Returns a priority restoration order for damaged components in a single network.
 
 # Example
 ```
-julia> run_UTIL(data)
+julia> run_utilization(data)
 Dict{String, Any} with 6 entries:
     "4" => [("branch", "2")]
     "1" => [("gen", "1")]
@@ -16,9 +16,9 @@ Dict{String, Any} with 6 entries:
     "3" => [("branch", "1")]
 ```
 """
-function run_UTIL(data::Dict{String,<:Any})
+function run_utilization(data::Dict{String,<:Any})
     if _IM.ismultinetwork(data)
-        Memento.error(_PM._LOGGER, "run_UTIL requires a single network.")
+        Memento.error(_PM._LOGGER, "run_utilization requires a single network.")
     end
 
     d_comp_vec = vcat([[(comp_type,comp_id) for comp_id in comp_ids] for (comp_type,comp_ids) in get_repairable_components(data)]...)
