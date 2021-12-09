@@ -21,7 +21,14 @@ function run_utilization(data::Dict{String,<:Any})
         Memento.error(_PM._LOGGER, "run_utilization requires a single network.")
     end
 
-    d_comp_vec = vcat([[(comp_type,comp_id) for comp_id in comp_ids] for (comp_type,comp_ids) in get_repairable_components(data)]...)
+    d_comp_vec = Vector{Tuple{String,String}}()
+    for (comp_type,comp_ids) in get_repairable_components(data)
+        for comp_id in comp_ids
+            push!(d_comp_vec, (comp_type,comp_id))
+        end
+    end
+
+
     d_comp_cost = [_util_value(data,comp_type,comp_id) for (comp_type,comp_id) in d_comp_vec]
     d_comp_vec = [d_comp_vec[i] for i in sortperm(d_comp_cost)] # reordered damaged component vector
 
