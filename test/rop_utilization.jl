@@ -43,4 +43,15 @@
         end
 
     end
+
+    @testset "Test utilization restoration order" begin
+        data = PowerModels.parse_file("../test/data/case5_restoration_total_dmg.m")
+        priority_order = run_utilization(data)
+        mn_data = replicate_restoration_network(data, count=length(priority_order))
+        apply_restoration_sequence!(mn_data, priority_order)
+
+        result = run_restoration_redispatch(mn_data, PowerModels.DCPPowerModel, juniper_solver)
+        @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
+    end
+
 end
