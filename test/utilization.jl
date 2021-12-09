@@ -6,7 +6,7 @@
         # totally damaged 5_bus system, includes storage
         data = PowerModels.parse_file("../test/data/case5_restoration_total_dmg.m")
 
-        priority_order = run_UTIL(data)
+        priority_order = run_utilization(data)
 
         # check restoration order
         @test length(priority_order["1"]) == 1
