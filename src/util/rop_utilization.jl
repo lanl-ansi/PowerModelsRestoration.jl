@@ -1,24 +1,41 @@
 
+
+
+
 """
-    `run_utilization(data::Dict{String,<:Any})`
+    `run_utilization(data::Dict{String,<:Any}, )`
+
+    Solve `utilization_repair_order,  apply the repair order to the input data, and solve a `run_restoration_redispatch` problem.
+
+    Returns a solution data structure in PowerModels Dict format
+"""
+function run_utilization(data::Dict{String,<:Any}, model_constructor, optimizer; kwargs...)
+    repair_order = utilization_repair_order(data)
+    mn_data = replicate_restoration_network(data, count=length(repair_order))
+    apply_restoration_sequence!(mn_data, repair_order)
+
+    return run_restoration_redispatch(mn_data, model_constructor, optimizer; kwargs...)
+end
+
+
+"""
+`utilization_repair_order(data::Dict{String,<:Any})`
 
 Returns a priority restoration order for damaged components in a single network.
 
 # Example
 ```
-julia> run_utilization(data)
+julia> utilization_repair_order(data)
 Dict{String, Any} with 6 entries:
-    "4" => [("branch", "2")]
-    "1" => [("gen", "1")]
-    "5" => [("branch", "3")]
-    "2" => [("gen", "2")]
-    "6" => [("gen", "3")]
-    "3" => [("branch", "1")]
+"4" => [("branch", "2")]
+"1" => [("gen", "1")]
+"2" => []
+"3" => [("branch", "1"), ("bus", "1")]
 ```
 """
-function run_utilization(data::Dict{String,<:Any})
+function utilization_repair_order(data::Dict{String,<:Any})
     if _IM.ismultinetwork(data)
-        Memento.error(_PM._LOGGER, "run_utilization requires a single network.")
+        Memento.error(_PM._LOGGER, "utilization_repair_order requires a single network.")
     end
 
     d_comp_vec = Vector{Tuple{String,String}}()
