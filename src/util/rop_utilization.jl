@@ -45,10 +45,7 @@ function utilization_repair_order(data::Dict{String,<:Any})
         end
     end
 
-
-    d_comp_cost = [_util_value(data,comp_type,comp_id) for (comp_type,comp_id) in d_comp_vec]
-    d_comp_vec = [d_comp_vec[i] for i in sortperm(d_comp_cost)] # reordered damaged component vector
-
+    sort!(d_comp_vec, by=(x)->_util_value(data,x...))
 
     restoration_period = Dict{Tuple{String, String},Any}(
         (d_comp_vec[id])=>id for id in 1:length(d_comp_vec)
