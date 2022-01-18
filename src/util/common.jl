@@ -103,6 +103,22 @@ function _count_cumulative_component_repairs(solution)
 end
 
 
+"""
+Update sol_1 dictionary with sol_2 dictionary. `termination_status`, `primal_status`, and `dual_status`
+values are the maximum of the MOI status code. `solvetime`,`objective`, and `objective_lb` are accumulated. The
+`solution` dictionary is merged using `PowerModels.update_data(sol_1["solution"],sol_2["solution"])`.
+"""
+function merge_solution!(sol_1, sol_2)
+    Memento.info(_PM._LOGGER, "networks $(keys(sol_2["solution"]["nw"])) finished with status $(sol_2["termination_status"])")
+
+    sol_1["termination_status"] = max(sol_1["termination_status"],sol_2["termination_status"])
+    sol_1["primal_status"] = max(sol_1["primal_status"],sol_2["primal_status"])
+    sol_1["dual_status"] = max(sol_1["dual_status"],sol_2["dual_status"])
+    sol_1["solve_time"] += sol_2["solve_time"]
+    sol_1["objective"] += sol_2["objective"]
+    sol_1["objective_lb"] += sol_2["objective_lb"]
+end
+
 
 "Transforms a single network into a multinetwork with several deepcopies of the original network. Indexed from 0."
 function _simple_replicate_restoration_network(sn_data::Dict{String,<:Any}; count::Int=1, global_keys::Set{String}=Set{String}())

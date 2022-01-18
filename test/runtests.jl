@@ -60,6 +60,7 @@ include("rop.jl")
 include("restoration_redispatch.jl")
 include("rop_utilization.jl")
 include("rop_rad.jl")
+include("rop_rrr.jl")
 
 include("util.jl")
 

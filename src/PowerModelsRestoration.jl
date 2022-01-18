@@ -36,6 +36,7 @@ include("util/restoration_redispatch.jl")
 include("util/ac-mld-uc.jl")
 include("util/rop_utilization.jl")
 include("util/rop_rad.jl")
+include("util/rop_rrr.jl")
 
 include("core/export.jl")
 
