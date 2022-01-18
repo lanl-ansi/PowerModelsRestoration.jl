@@ -5,6 +5,8 @@ import InfrastructureModels
 import InfrastructureModels: nw_id_default
 import PowerModels
 import Memento
+import MathOptInterface
+import Statistics
 
 const _IM = InfrastructureModels
 const _PM = PowerModels
@@ -29,9 +31,11 @@ include("form/dcp.jl")
 include("form/wr.jl")
 include("form/wrm.jl")
 
+include("util/common.jl")
 include("util/restoration_redispatch.jl")
 include("util/ac-mld-uc.jl")
 include("util/rop_utilization.jl")
+include("util/rop_rad.jl")
 
 include("core/export.jl")
 

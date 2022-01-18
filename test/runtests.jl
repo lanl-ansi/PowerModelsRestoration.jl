@@ -5,6 +5,7 @@ import InfrastructureModels
 import PowerModels
 import Memento
 import JuMP
+import Random
 
 # Suppress warnings during testing.
 Memento.setlevel!(Memento.getlogger(InfrastructureModels), "error")
@@ -58,6 +59,7 @@ include("mrsp.jl")
 include("rop.jl")
 include("restoration_redispatch.jl")
 include("rop_utilization.jl")
+include("rop_rad.jl")
 
 include("util.jl")
 
