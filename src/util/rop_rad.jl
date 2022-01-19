@@ -8,6 +8,7 @@ function run_rad(data, model_constructor, optimizer;
     iteration_with_no_improvement_limit::Int=10,
     fail_to_improve_limit::Float64=0.8,
     fail_time_limit::Float64=0.8,
+    rng=Random.GLOBAl_RNG,
     kwargs...
     )
 
@@ -102,7 +103,7 @@ function run_rad(data, model_constructor, optimizer;
         partition_count = 0
         while partition_count < network_count
             partition_range = min((network_count-partition_count),partition_min):min((network_count-partition_count),partition_max)
-            push!(partitions,rand(partition_range))
+            push!(partitions,rand(rng,partition_range))
             partition_count = sum(partitions)
         end
 
