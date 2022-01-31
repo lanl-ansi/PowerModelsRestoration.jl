@@ -22,7 +22,7 @@ function _run_rrr(network,model_constructor,optimizer, time_limit; kwargs... )
     repair_periods=2
     mn_network = replicate_restoration_network(network, repair_periods, _PM._pm_global_keys)
     # set time_elapsed correctly
-    for (nwid,net) ∈ mn_network["nw"]
+    for (nwid,net) in mn_network["nw"]
         net["time_elapsed"] = max(1, net["repairs"])
     end
 
@@ -66,7 +66,7 @@ function _run_rrr(network,model_constructor,optimizer, time_limit; kwargs... )
 
         mn_network = replicate_restoration_network(network, count=2)
         # set time_elapsed correctly
-        for (nwid,net) ∈ mn_network["nw"]
+        for (nwid,net) in mn_network["nw"]
             net["time_elapsed"] = max(1, net["repairs"])
         end
 
@@ -118,7 +118,7 @@ function _run_rrr(network,model_constructor,optimizer, time_limit; kwargs... )
         restoration_order = utilization_repair_order(network)
         case_mn = replicate_restoration_network(network, count=length(keys(restoration_order)))
         # set time_elapsed correctly
-        for (nwid,net) ∈ mn_network["nw"]
+        for (nwid,net) in mn_network["nw"]
             net["time_elapsed"] = max(1, net["repairs"])
         end
         _apply_repairs!(case_mn, restoration_order)
@@ -157,7 +157,7 @@ function _run_rrr(network,model_constructor,optimizer, time_limit; kwargs... )
         restoration_order = utilization_repair_order(network)
         case_mn = replicate_restoration_network(network, count=length(keys(restoration_order)))
         # set time_elapsed correctly
-        for (nwid,net) ∈ mn_network["nw"]
+        for (nwid,net) in mn_network["nw"]
             net["time_elapsed"] = max(1, net["repairs"])
         end
         _apply_repairs!(case_mn, restoration_order)

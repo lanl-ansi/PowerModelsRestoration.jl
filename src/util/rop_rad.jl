@@ -55,7 +55,7 @@ function run_rad(data, model_constructor, optimizer;
 
     ## Update stats
     iteration_counter = 1
-    stats["feasible_period"] = Dict{Int,Bool}(parse(Int,nwid)=>false for nwid ∈ keys(repair_ordering))
+    stats["feasible_period"] = Dict{Int,Bool}(parse(Int,nwid)=>false for nwid in keys(repair_ordering))
 
     ## Adaptive information
     iterations_with_no_improvement = 0
@@ -168,7 +168,7 @@ function run_rad(data, model_constructor, optimizer;
                 new_ens = Dict(nwid=>(total_load - served_load[nwid]) for nwid in keys(served_load))
 
                 # a feasible power flow was found for these networks
-                for nwid ∈ network_ids
+                for nwid in network_ids
                     stats["feasible_period"][nwid] = true
                 end
 
