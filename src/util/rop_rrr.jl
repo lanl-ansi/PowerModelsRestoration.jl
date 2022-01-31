@@ -1,8 +1,13 @@
 
 
-function run_rrr(network, model_constructor, optimizer; time_limit::Float64=3600.0, kwargs...)
+function run_rrr(network, model_constructor, optimizer;
+        time_limit::Float64=3600.0,
+        minimum_solver_time_limit::Float64=0.1,
+        minimum_recovery_problem_time_limit::Float64 = 10.0,
+        kwargs...
+    )
     t_start = time()
-    sol = _run_rrr(network, model_constructor, optimizer, time_limit; kwargs...)
+    sol = _run_rrr(network, model_constructor, optimizer, time_limit, minimum_solver_time_limit, minimum_recovery_problem_time_limit; kwargs...)
 
     _fill_missing_variables!(sol, network) # some networks do not have all variables if devices were status 0
     sol["solve_time"] = time()-t_start
@@ -11,12 +16,17 @@ end
 
 
 "recrusive call of RRR"
-function _run_rrr(network,model_constructor,optimizer, time_limit; kwargs... )
+function _run_rrr(network, model_constructor, optimizer,
+        time_limit::Float64,
+        minimum_solver_time_limit::Float64,
+        minimum_recovery_problem_time_limit::Float64;
+        kwargs...
+    )
 
     # record starting time
     t_start = time()
     solver_time_limit = time_limit/2
-    remaining_time_limit = max(0.1, time_limit-(time()-t_start))
+    remaining_time_limit = max(minimum_solver_time_limit, time_limit-(time()-t_start))
     _update_optimizer_time_limit!(optimizer, solver_time_limit)
 
     repair_periods=2
@@ -58,9 +68,7 @@ function _run_rrr(network,model_constructor,optimizer, time_limit; kwargs... )
         net_keys = [1:m,m+1:l]
         for r_id in axes(net_keys,1)
             for nw_id in net_keys[r_id]
-                # for comp_type in keys(restoration_order["$r_id"])
-                    append!(restoration_order["$r_id"],util_order["$nw_id"])
-                # end
+                append!(restoration_order["$r_id"],util_order["$nw_id"])
             end
         end
 
@@ -73,15 +81,15 @@ function _run_rrr(network,model_constructor,optimizer, time_limit; kwargs... )
         _apply_repairs!(mn_network, restoration_order)
 
         ## if result will have single repair in a period, run RRP to create a reporting solution
-        ## DOES THIS WORK PROPERLY?!
         if count_repairable_components(mn_network["nw"]["1"]) ≤ 1 || count_repairable_components(mn_network["nw"]["2"]) ≤ 1
-            Memento.warn(_PM._LOGGER, "Running a $(count_repairable_components(network)) component recovery")
 
             # update time limit
-            remaining_time_limit = max(0.1, time_limit-(time()-t_start))
+            remaining_time_limit = max(minimum_recovery_problem_time_limit, time_limit-(time()-t_start))
             solver_time_limit = remaining_time_limit/2
-            # _update_optimizer_time_limit!(optimizer, solver_time_limit)
-            _update_optimizer_time_limit!(optimizer, 1000.0) #artificially alrge time limit here
+            _update_optimizer_time_limit!(optimizer, solver_time_limit)
+
+            Memento.warn(_PM._LOGGER, "Running a $(count_repairable_components(network)) period recovery and
+            a redispatch with a time limit of $solver_time_limit")
 
             # RRP to get load served
             solution = run_restoration_redispatch(mn_network, model_constructor, optimizer)
@@ -105,14 +113,14 @@ function _run_rrr(network,model_constructor,optimizer, time_limit; kwargs... )
     r_count = _count_cumulative_component_repairs(mn_network)
     ## IF (all repairs in period 2) OR (Exceeding time limit) then run Redispatch and return
     if (r_count["1"]==0 && r_count["2"]!=0)
-        Memento.warn(_PM._LOGGER, "All repairs in final time period.")
-        Memento.warn(_PM._LOGGER, "Running a $(count_repairable_components(network)) period recovery")
-
         # update time limit
-        remaining_time_limit = max(10.0, time_limit-(time()-t_start))
-        solver_time_limit = remaining_time_limit/2
-        # _update_optimizer_time_limit!(optimizer, solver_time_limit)
-        _update_optimizer_time_limit!(optimizer, 1000.0) #artificially alrge time limit here
+        remaining_time_limit = time_limit-(time()-t_start)
+        solver_time_limit = max(minimum_recovery_problem_time_limit, remaining_time_limit/2)
+        _update_optimizer_time_limit!(optimizer, solver_time_limit)
+
+        Memento.warn(_PM._LOGGER, "All repairs in final time period.")
+        Memento.warn(_PM._LOGGER, "Running a $(count_repairable_components(network)) period recovery and
+        a redispatch with a time limit of $solver_time_limit")
 
         # run utilization
         restoration_order = utilization_repair_order(network)
@@ -141,21 +149,18 @@ function _run_rrr(network,model_constructor,optimizer, time_limit; kwargs... )
         return_solution = deepcopy(solution)
 
     elseif time()-t_start > time_limit
-
-        recovery_time_limit = 10.0
+        # update time limit
+        remaining_time_limit = time_limit-(time()-t_start)
+        solver_time_limit = max(minimum_recovery_problem_time_limit, remaining_time_limit/2)
+        _update_optimizer_time_limit!(optimizer, solver_time_limit)
 
         Memento.warn(_PM._LOGGER, "Time Limit Exceeded, setting repairs to final period")
-        Memento.warn(_PM._LOGGER, "Running a $(count_repairable_components(network)) redispatch with a limit of $recovery_time_limit")
-
-        # update time limit
-        remaining_time_limit = max(recovery_time_limit, time_limit-(time()-t_start))
-        solver_time_limit = remaining_time_limit/2
-        # _update_optimizer_time_limit!(optimizer, solver_time_limit)
-        _update_optimizer_time_limit!(optimizer, 1000.0) #artificially alrge time limit here
+        Memento.warn(_PM._LOGGER, "Running a $(count_repairable_components(network)) redispatch with a limit of $solver_time_limit")
 
         # run utilization
         restoration_order = utilization_repair_order(network)
         case_mn = replicate_restoration_network(network, count=length(keys(restoration_order)))
+
         # set time_elapsed correctly
         for (nwid,net) in mn_network["nw"]
             net["time_elapsed"] = max(1, net["repairs"])
@@ -196,8 +201,8 @@ function _run_rrr(network,model_constructor,optimizer, time_limit; kwargs... )
                     end
                 end
 
-                remaining_time_limit = max(0.1, time_limit-(time()-t_start))
-                sub_sol = _run_rrr(sub_net, model_constructor, optimizer, remaining_time_limit; kwargs...)
+                remaining_time_limit = max(minimum_solver_time_limit, time_limit-(time()-t_start))
+                sub_sol = _run_rrr(sub_net, model_constructor, optimizer, remaining_time_limit, minimum_solver_time_limit, minimum_recovery_problem_time_limit; kwargs...)
                 merge_solution!(return_solution,sub_sol) # accumulate objective, solve status, etc.
 
                 # collect return networks
@@ -216,8 +221,7 @@ function _run_rrr(network,model_constructor,optimizer, time_limit; kwargs... )
                     append!(return_solution["stats"][stat], sub_sol["stats"][stat])
                 end
 
-            else # add solution net to return
-                # Does this need to use update_solution?
+            else # add solution network to return
                 return_keys = keys(return_solution["solution"]["nw"]) |> collect |> (y->parse.(Int,y))
                 if isempty(return_keys)
                     current_net_id = 0
@@ -251,16 +255,14 @@ end
 function _apply_repairs!(data, repairs)
     for (repair_nw_id, nw_repairs) in repairs
         for (comp_type, comp_id) in nw_repairs
-            # for comp_id in comp_ids
-                status_key = _PM.pm_component_status[comp_type]
-                for (nw_id, net) in data["nw"]
-                    if  nw_id < repair_nw_id
-                        net[comp_type][comp_id][status_key] = _PM.pm_component_status_inactive[comp_type]
-                    elseif nw_id > repair_nw_id
-                        net[comp_type][comp_id]["damaged"] = 0
-                    end
+            status_key = _PM.pm_component_status[comp_type]
+            for (nw_id, net) in data["nw"]
+                if  nw_id < repair_nw_id
+                    net[comp_type][comp_id][status_key] = _PM.pm_component_status_inactive[comp_type]
+                elseif nw_id > repair_nw_id
+                    net[comp_type][comp_id]["damaged"] = 0
                 end
-            # end
+            end
         end
     end
     return data
