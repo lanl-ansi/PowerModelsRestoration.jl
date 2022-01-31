@@ -50,25 +50,19 @@ end
 
 
 "get repairs in each period of the solution data"
-function _get_component_repairs(solution)
-    if haskey(solution,"solution")
-        network = solution["solution"]
-    else
-        network = solution
+function get_component_activations(solution_dict)
+    if !_IM.ismultinetwork(solution_dict)
+        Memento.error(_PM._LOGGER, "get_component_activations requires multinetwork.")
     end
 
-    if !_IM.ismultinetwork(network)
-        Memento.error(_PM._LOGGER, "_get_component_repairs requires multinetwork.")
-    end
-
-    repairs = Dict{String,Any}("$nwid"=>Tuple{String,String}[] for nwid in keys(network["nw"]))
-    for (nw_id, net) in network["nw"]
+    repairs = Dict{String,Any}("$nwid"=>Tuple{String,String}[] for nwid in keys(solution_dict["nw"]))
+    for (nw_id, net) in solution_dict["nw"]
         for comp_type in restoration_components
             status_key = _PM.pm_component_status[comp_type]
             for (comp_id, comp) in get(net, comp_type, Dict())
                 if nw_id != "0" #not items are repaired in "0", do not check in previous net for a change
                     if comp[status_key] != _PM.pm_component_status_inactive[comp_type] &&  # if comp is active
-                        network["nw"]["$(parse(Int,nw_id)-1)"][comp_type][comp_id][status_key] == _PM.pm_component_status_inactive[comp_type] # if comp was previously inactive
+                        solution_dict["nw"]["$(parse(Int,nw_id)-1)"][comp_type][comp_id][status_key] == _PM.pm_component_status_inactive[comp_type] # if comp was previously inactive
                         push!(repairs[nw_id], (comp_type,comp_id))
                     end
                 end
@@ -80,16 +74,16 @@ end
 
 
 "count repairs in each period of the solution data"
-function _count_component_repairs(solution)
-    repairs = _get_component_repairs(solution)
+function _count_component_repairs(solution_dict)
+    repairs = get_component_activations(solution_dict)
     repair_count = Dict{String,Int}(nw=>length(nw_repairs) for (nw, nw_repairs) in repairs )
     return repair_count
 end
 
 
 "count the cumulative repairs in each period of the solution data"
-function _count_cumulative_component_repairs(solution)
-    repair_count = _count_component_repairs(solution)
+function _count_cumulative_component_repairs(solution_dict)
+    repair_count = _count_component_repairs(solution_dict)
 
     cumulative_count = Dict{String,Int}(nw_id=>0 for nw_id in keys(repair_count))
     end_nw_id = maximum(parse.(Int,keys(repair_count)))

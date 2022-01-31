@@ -176,7 +176,7 @@ function run_rad(data, model_constructor, optimizer;
                 if (sum(values(new_ens)) < sum(values(old_ens)))
                     # add new repair orders
                     iterations_with_no_improvement = 0
-                    r_repairs =  _get_component_repairs(rad_solution)
+                    r_repairs =  get_component_activations(rad_solution["solution"])
                     for (rr_id, repairs) in r_repairs
                         if rr_id != "0"
                             nw_id = network_ids[parse(Int,rr_id)]

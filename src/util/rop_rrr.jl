@@ -45,7 +45,7 @@ function _run_rrr(network,model_constructor,optimizer, time_limit; kwargs... )
 
     ## IF primal infeasible, run Utilization for a repair ordering and continue
     if solution["primal_status"] ==_PM.FEASIBLE_POINT
-        _apply_repairs!(mn_network, _get_component_repairs(solution))
+        _apply_repairs!(mn_network, get_component_activations(solution["solution"]))
     else
         Memento.warn(_PM._LOGGER, "Primal status is not feasible.")
         Memento.warn(_PM._LOGGER, "Running a $(count_repairable_components(network)) period recovery using Utilization Heuristic")
