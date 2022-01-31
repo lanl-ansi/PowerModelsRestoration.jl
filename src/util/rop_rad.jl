@@ -249,8 +249,8 @@ function run_rad(data, model_constructor, optimizer;
         end
 
         # Calc average and reset
-        average_fail_to_improve = Statistics.mean(fail_to_improve)
-        average_termination_time_limit = Statistics.mean(termination_time_limit)
+        average_fail_to_improve = sum(fail_to_improve)/length(fail_to_improve)
+        average_termination_time_limit = sum(termination_time_limit)/length(termination_time_limit)
         fail_to_improve = []
         termination_time_limit = []
         stats["average_fail_to_improve"][iteration_counter] = [average_fail_to_improve]
