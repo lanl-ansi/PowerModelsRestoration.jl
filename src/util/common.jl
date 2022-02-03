@@ -275,28 +275,25 @@ function _build_partial_rop(pm::_PM.AbstractPowerModel)
         n_1 = n_2
     end
 
+    # restore all devices
     n_final = last(network_ids)
-    constraint_restore_all_items_partial_load(pm, n_final)
+    z_storage = _PM.var(pm, n_final, :z_storage)
+    z_gen = _PM.var(pm, n_final, :z_gen)
+    z_branch = _PM.var(pm, n_final, :z_branch)
+    z_bus = _PM.var(pm, n_final, :z_bus)
+    for (i,storage) in  _PM.ref(pm, n_final, :storage_damage)
+        JuMP.@constraint(pm.model, z_storage[i] == 1)
+    end
+    for (i,gen) in  _PM.ref(pm, n_final, :gen_damage)
+        JuMP.@constraint(pm.model, z_gen[i] == 1)
+    end
+    for (i,branch) in  _PM.ref(pm, n_final, :branch_damage)
+        JuMP.@constraint(pm.model, z_branch[i] == 1)
+    end
+    for (i,bus) in  _PM.ref(pm, n_final, :bus_damage)
+        JuMP.@constraint(pm.model, z_bus[i] == 1)
+    end
 
     objective_max_load_delivered(pm)
 end
 
-function constraint_restore_all_items_partial_load(pm, n)
-    z_storage = _PM.var(pm, n, :z_storage)
-    z_gen = _PM.var(pm, n, :z_gen)
-    z_branch = _PM.var(pm, n, :z_branch)
-    z_bus = _PM.var(pm, n, :z_bus)
-
-    for (i,storage) in  _PM.ref(pm, n, :storage_damage)
-        JuMP.@constraint(pm.model, z_storage[i] == 1)
-    end
-    for (i,gen) in  _PM.ref(pm, n, :gen_damage)
-        JuMP.@constraint(pm.model, z_gen[i] == 1)
-    end
-    for (i,branch) in  _PM.ref(pm, n, :branch_damage)
-        JuMP.@constraint(pm.model, z_branch[i] == 1)
-    end
-    for (i,bus) in  _PM.ref(pm, n, :bus_damage)
-        JuMP.@constraint(pm.model, z_bus[i] == 1)
-    end
-end
