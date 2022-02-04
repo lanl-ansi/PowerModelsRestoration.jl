@@ -6,6 +6,7 @@ import PowerModels
 import Memento
 import JuMP
 import Random
+import StableRNGs
 
 # Suppress warnings during testing.
 Memento.setlevel!(Memento.getlogger(InfrastructureModels), "error")

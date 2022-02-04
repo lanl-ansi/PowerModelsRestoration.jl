@@ -6,11 +6,11 @@
     @testset "test dc rop rad" begin
         @testset "5-bus case" begin
             data = PowerModels.parse_file("../test/data/case3_restoration_total_dmg.m")
-            rng = Random.MersenneTwister(1234) # ensure RNG is set in run_rad
+            rng = StableRNGs.StableRNG(1234) # ensure RNG is set in run_rad
             result = PowerModelsRestoration.run_rad(data, PowerModels.DCPPowerModel, cbc_solver,rng=rng)
 
             @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
-            @test isapprox(result["objective"], 12.9; atol = 1e-1)
+            @test isapprox(result["objective"], 13.4; atol = 1e-1)
 
             @testset "gen_status" begin
                 @test isapprox(gen_status(result,"1","1"), 0; atol=1e-2)
@@ -25,7 +25,8 @@
                 @test isapprox(gen_status(result,"6","1"), 1; atol=1e-2)
                 @test isapprox(gen_status(result,"7","1"), 1; atol=1e-2)
 
-                @test isapprox(gen_status(result,"7","3"), 0; atol=1e-2)
+                @test isapprox(gen_status(result,"6","3"), 0; atol=1e-2)
+                @test isapprox(gen_status(result,"7","3"), 1; atol=1e-2)
                 @test isapprox(gen_status(result,"8","3"), 1; atol=1e-2)
 
                 @test isapprox(gen_status(result,"9","1"), 1; atol=1e-2)
@@ -61,7 +62,8 @@
                 @test isapprox(branch_status(result,"7","1"), 0; atol=1e-2)
                 @test isapprox(branch_status(result,"8","1"), 1; atol=1e-2)
 
-                @test isapprox(branch_status(result,"7","2"), 0; atol=1e-2)
+                @test isapprox(branch_status(result,"6","2"), 0; atol=1e-2)
+                @test isapprox(branch_status(result,"7","2"), 1; atol=1e-2)
                 @test isapprox(branch_status(result,"8","2"), 1; atol=1e-2)
 
                 @test isapprox(branch_status(result,"8","3"), 0; atol=1e-2)
