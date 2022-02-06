@@ -114,20 +114,14 @@ function merge_solution!(sol_1, sol_2)
 end
 
 
-"Transforms a single network into a multinetwork with several deepcopies of the original network. Indexed from 0."
-function _simple_replicate_restoration_network(sn_data::Dict{String,<:Any}; count::Int=1, global_keys::Set{String}=Set{String}())
-    # differs from replicate_restoration_network by not by not reducing count to the total number of repairs
-    return _simple_replicate_restoration_network(sn_data, count, union(global_keys, _PM._pm_global_keys))
-end
-
-
-"Transforms a single network into a multinetwork with several deepcopies of the original network. Indexed from 0."
-function _simple_replicate_restoration_network(sn_data::Dict{String,<:Any}, count::Int, global_keys::Set{String})
+"Create a restoration network with 1 repair per time period. Final period will contain remainder repairs."
+function _single_repair_restoration_network(sn_data::Dict{String,<:Any}, count::Int, global_keys::Set{String}=Set{String}())
+    union(global_keys, _PM._pm_global_keys)
     pm_sn_data = _PM.get_pm_data(sn_data)
 
     @assert count > 0
     if _IM.ismultinetwork(pm_sn_data)
-        Memento.error(_PM._LOGGER, "_simple_replicate_restoration_network can only be used on single networks")
+        Memento.error(_PM._LOGGER, "_single_repair_restoration_network can only be used on single networks")
     end
 
     clean_status!(pm_sn_data)

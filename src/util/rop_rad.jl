@@ -146,7 +146,7 @@ function run_rad(data, model_constructor, optimizer;
             # solve ROP
             _update_optimizer_time_limit!(optimizer, min(solver_time_limit,max(0,time_limit-(time()-t_start))))
             repair_periods=length(network_ids)
-            mn_network = _simple_replicate_restoration_network(r_data, repair_periods, PowerModels._pm_global_keys)
+            mn_network = _single_repair_restoration_network(r_data, repair_periods, PowerModels._pm_global_keys)
             rad_solution = PowerModelsRestoration._run_partial_rop(mn_network, model_constructor, optimizer; kwargs...)
 
             # calculate load
