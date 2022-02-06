@@ -5,7 +5,6 @@ import InfrastructureModels
 import InfrastructureModels: nw_id_default
 import PowerModels
 import Memento
-import MathOptInterface
 
 const _IM = InfrastructureModels
 const _PM = PowerModels

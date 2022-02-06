@@ -27,7 +27,8 @@ function _run_rrr(network, model_constructor, optimizer,
     t_start = time()
     solver_time_limit = time_limit/2
     remaining_time_limit = max(minimum_solver_time_limit, time_limit-(time()-t_start))
-    _update_optimizer_time_limit!(optimizer, solver_time_limit)
+    pm =  JuMP.Model(optimizer)
+    JuMP.set_time_limit_sec(pm, solver_time_limit)
 
     repair_periods=2
     mn_network = replicate_restoration_network(network, repair_periods, _PM._pm_global_keys)
@@ -37,7 +38,7 @@ function _run_rrr(network, model_constructor, optimizer,
     end
 
     ## solve ROP problem
-    solution = _run_partial_rop(mn_network, model_constructor, optimizer; kwargs...)
+    solution = _run_partial_rop(mn_network, model_constructor, nothing; jump_model=pm, kwargs...)
 
     # collect stats on solution
     solution["stats"] = Dict(
@@ -86,13 +87,14 @@ function _run_rrr(network, model_constructor, optimizer,
             # update time limit
             remaining_time_limit = max(minimum_recovery_problem_time_limit, time_limit-(time()-t_start))
             solver_time_limit = remaining_time_limit/2
-            _update_optimizer_time_limit!(optimizer, solver_time_limit)
+            pm =  JuMP.Model(optimizer)
+            JuMP.set_time_limit_sec(pm, solver_time_limit)
 
             Memento.warn(_PM._LOGGER, "Running a $(count_repairable_components(network)) period recovery and
             a redispatch with a time limit of $solver_time_limit")
 
             # RRP to get load served
-            solution = run_restoration_redispatch(mn_network, model_constructor, optimizer)
+            solution = run_restoration_redispatch(mn_network, model_constructor, nothing; jump_model=pm)
             solution["stats"] = Dict(
                 "termination_status" => [solution["termination_status"]],
                 "primal_status" => [solution["primal_status"]],
@@ -116,7 +118,8 @@ function _run_rrr(network, model_constructor, optimizer,
         # update time limit
         remaining_time_limit = time_limit-(time()-t_start)
         solver_time_limit = max(minimum_recovery_problem_time_limit, remaining_time_limit/2)
-        _update_optimizer_time_limit!(optimizer, solver_time_limit)
+        pm =  JuMP.Model(optimizer)
+        JuMP.set_time_limit_sec(pm, solver_time_limit)
 
         Memento.warn(_PM._LOGGER, "All repairs in final time period.")
         Memento.warn(_PM._LOGGER, "Running a $(count_repairable_components(network)) period recovery and
@@ -133,7 +136,7 @@ function _run_rrr(network, model_constructor, optimizer,
         delete!(case_mn["nw"], "0")
 
         # RRP to get load served
-        solution = run_restoration_redispatch(case_mn, model_constructor, optimizer)
+        solution = run_restoration_redispatch(case_mn, model_constructor, nothing, jump_model=pm)
         solution["stats"] = Dict(
             "termination_status" => [solution["termination_status"]],
             "primal_status" => [solution["primal_status"]],
@@ -152,7 +155,8 @@ function _run_rrr(network, model_constructor, optimizer,
         # update time limit
         remaining_time_limit = time_limit-(time()-t_start)
         solver_time_limit = max(minimum_recovery_problem_time_limit, remaining_time_limit/2)
-        _update_optimizer_time_limit!(optimizer, solver_time_limit)
+        pm =  JuMP.Model(optimizer)
+        JuMP.set_time_limit_sec(pm, solver_time_limit)
 
         Memento.warn(_PM._LOGGER, "Time Limit Exceeded, setting repairs to final period")
         Memento.warn(_PM._LOGGER, "Running a $(count_repairable_components(network)) redispatch with a limit of $solver_time_limit")
@@ -169,7 +173,7 @@ function _run_rrr(network, model_constructor, optimizer,
         delete!(case_mn["nw"], "0")
 
         # RRP to get load served
-        solution = run_restoration_redispatch(case_mn, model_constructor, optimizer)
+        solution = run_restoration_redispatch(case_mn, model_constructor, nothing; jump_model=pm)
         solution["stats"] = Dict(
             "termination_status" => [solution["termination_status"]],
             "primal_status" => [solution["primal_status"]],

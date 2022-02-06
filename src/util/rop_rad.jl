@@ -144,10 +144,12 @@ function run_rad(data, model_constructor, optimizer;
             end
 
             # solve ROP
-            _update_optimizer_time_limit!(optimizer, min(solver_time_limit,max(0,time_limit-(time()-t_start))))
+            pm =  JuMP.Model(optimizer)
+            JuMP.set_time_limit_sec(pm, min(solver_time_limit,max(0,time_limit-(time()-t_start))))
             repair_periods=length(network_ids)
             mn_network = _single_repair_restoration_network(r_data, repair_periods, PowerModels._pm_global_keys)
-            rad_solution = PowerModelsRestoration._run_partial_rop(mn_network, model_constructor, optimizer; kwargs...)
+            rad_solution = PowerModelsRestoration._run_partial_rop(mn_network, model_constructor, nothing; jump_model=pm, kwargs...)
+
 
             # calculate load
             total_load = sum(load["pd"] for (id,load) in r_data["load"])

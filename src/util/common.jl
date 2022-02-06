@@ -1,22 +1,4 @@
 
-"updates the solve time limit of an optimizer"
-function _update_optimizer_time_limit!(optimizer::MathOptInterface.OptimizerWithAttributes, time_limit::Real)
-        new_params = typeof((optimizer.params))()
-    for param in optimizer.params
-        if param[1] != MathOptInterface.TimeLimitSec()
-            push!(new_params, param)
-        end
-    end
-    empty!(optimizer.params)
-    for param in new_params
-        push!(optimizer.params, param)
-    end
-    push!(optimizer.params, (MathOptInterface.TimeLimitSec()=>time_limit))
-
-    return optimizer
-end
-
-
 """
         `_fill_missing_variables!(sol::Dict{String,<:Any}, network::Dict{String,<:Any})`
     add network values for components removed for status=0 from solution
