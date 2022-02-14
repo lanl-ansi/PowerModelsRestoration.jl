@@ -85,4 +85,34 @@
             @test isapprox(load_power(result, "9",["1","2","3"]), 3.15; atol=1)
         end
     end
+
+        
+    @testset "RRR Time limits" begin
+        data = PowerModels.parse_file("../test/data/case3_restoration_total_dmg.m")
+        
+        # test time_limit=0.0, purely recovery problem
+        result1 = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, cbc_solver, time_limit=0.0,minimum_solver_time_limit=0.0, minimum_recovery_problem_time_limit=0.00)
+        clean_status!(result1["solution"])
+
+        util_sol = utilization_repair_order(data)
+        for (nwid,repairs) in get_component_activations(result1["solution"])
+            # test that each repair occurs in the same period in sol util and rrr
+            for repair in repairs
+                @test repair in util_sol[nwid]
+            end
+            for repair in util_sol[nwid]
+                @test repair in repairs
+            end
+        end
+
+
+        result2 = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, cbc_solver) # no time limit 
+
+        @test result2["termination_status"] == PowerModels.OPTIMAL
+        @test result1["termination_status"] == PowerModels.OPTIMAL
+        @test isapprox(result2["objective"], 90.07; atol = 1e-1)
+        @test isapprox(result1["objective"], 10.6; atol = 1e-1)
+        @test result1["solve_time"]*2 <= result2["solve_time"] # Time limit makes result1 much faster
+    end 
+
 end
