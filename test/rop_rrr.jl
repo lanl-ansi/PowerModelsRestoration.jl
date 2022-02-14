@@ -112,7 +112,7 @@
         @test result1["termination_status"] == PowerModels.OPTIMAL
         @test isapprox(result2["objective"], 90.07; atol = 1e-1)
         @test isapprox(result1["objective"], 10.6; atol = 1e-1)
-        @test result1["solve_time"]*2 <= result2["solve_time"] # Time limit makes result1 much faster
+        @test result1["solve_time"] <= result2["solve_time"] # Time limit makes result1 much faster
     end 
 
 end
