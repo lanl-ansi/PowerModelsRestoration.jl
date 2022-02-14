@@ -10,10 +10,12 @@ Memento = "f28f55f0-a522-5efc-85c2-fe41dfb9b2d9"
 PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
 
 [compat]
-InfrastructureModels = "~0.6"
-JuMP = "~0.21"
+InfrastructureModels = "~0.6, ~0.7"
+JuMP = "~0.22"
 Memento = "~1.0, ~1.1, ~1.2"
-PowerModels = "~0.18.3"
+PowerModels = "~0.18.3, ~0.19"
+SCS = "~0.8"
+Ipopt = "~0.8"
 julia = "^1"
 
 [extras]

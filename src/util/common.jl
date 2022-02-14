@@ -87,12 +87,36 @@ values are the maximum of the MOI status code. `solvetime`,`objective`, and `obj
 function merge_solution!(sol_1, sol_2)
     Memento.info(_PM._LOGGER, "networks $(keys(sol_2["solution"]["nw"])) finished with status $(sol_2["termination_status"])")
 
-    sol_1["termination_status"] = max(sol_1["termination_status"],sol_2["termination_status"])
-    sol_1["primal_status"] = max(sol_1["primal_status"],sol_2["primal_status"])
-    sol_1["dual_status"] = max(sol_1["dual_status"],sol_2["dual_status"])
+    sol_1["termination_status"] = _compare_termination_statuses([sol_1["termination_status"],sol_2["termination_status"]])
+    sol_1["primal_status"] =  _compare_result_statuses([sol_1["primal_status"],sol_2["primal_status"]])
+    sol_1["dual_status"] =  _compare_result_statuses([sol_1["dual_status"],sol_2["dual_status"]])
     sol_1["solve_time"] += sol_2["solve_time"]
     sol_1["objective"] += sol_2["objective"]
     sol_1["objective_lb"] += sol_2["objective_lb"]
+end
+
+
+
+function _compare_termination_statuses(statuses::Vector{JuMP.TerminationStatusCode})
+    for status in statuses
+        if status == JuMP.INFEASIBLE
+            return JuMP.INFEASIBLE
+        elseif status != JuMP.OPTIMAL && status != JuMP.LOCALLY_SOLVED
+            return JuMP.UNKNOWN_STATUS
+        end
+    end
+    return JuMP.OPTIMAL
+end
+
+function _compare_result_statuses(statuses::Vector{JuMP.ResultStatusCode})
+    for status in statuses
+        if status == JuMP.NO_SOLUTION
+            return JuMP.NO_SOLUTION
+        elseif status != JuMP.FEASIBLE_POINT
+            return JuMP.UNKNOWN_RESULT_STATUS
+        end
+    end
+    return JuMP.FEASIBLE_POINT
 end
 
 
