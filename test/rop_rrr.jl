@@ -91,11 +91,11 @@
         data = PowerModels.parse_file("../test/data/case3_restoration_total_dmg.m")
 
         # test time_limit=0.0, purely recovery problem
-        result1 = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, cbc_solver, time_limit=0.0,minimum_solver_time_limit=0.0, minimum_recovery_problem_time_limit=0.000001)
-        clean_status!(result1["solution"])
+        result = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, cbc_solver, time_limit=0.0,minimum_solver_time_limit=0.0, minimum_recovery_problem_time_limit=1.0)
+        clean_status!(result["solution"])
 
         util_sol = utilization_repair_order(data)
-        for (nwid,repairs) in get_component_activations(result1["solution"])
+        for (nwid,repairs) in get_component_activations(result["solution"])
             # test that each repair occurs in the same period in sol util and rrr
             for repair in repairs
                 @test repair in util_sol[nwid]
@@ -105,14 +105,10 @@
             end
         end
 
-
-        result2 = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, cbc_solver) # no time limit
-
-        @test result2["termination_status"] == PowerModels.OPTIMAL
-        @test result1["termination_status"] == PowerModels.OPTIMAL
-        @test isapprox(result2["objective"], 90.07; atol = 1e-1)
-        @test isapprox(result1["objective"], 10.6; atol = 1e-1)
-        @test result1["solve_time"] <= result2["solve_time"] # Time limit makes result1 much faster
+        @test result["termination_status"] == PowerModels.OPTIMAL
+        @test isapprox(result["objective"], 10.6; atol = 1e-1)
+        @test length(result["stats"]["solve_time"]) == 1 # recursion depth==1 due to time limit
+        @test result["stats"]["solve_time"][1] <=1.0 # recovery problem solve time
     end
 
 end
