@@ -86,12 +86,12 @@
         end
     end
 
-        
+
     @testset "RRR Time limits" begin
         data = PowerModels.parse_file("../test/data/case3_restoration_total_dmg.m")
-        
+
         # test time_limit=0.0, purely recovery problem
-        result1 = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, cbc_solver, time_limit=0.0,minimum_solver_time_limit=0.0, minimum_recovery_problem_time_limit=0.00)
+        result1 = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, cbc_solver, time_limit=0.0,minimum_solver_time_limit=0.0, minimum_recovery_problem_time_limit=0.000001)
         clean_status!(result1["solution"])
 
         util_sol = utilization_repair_order(data)
@@ -106,13 +106,13 @@
         end
 
 
-        result2 = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, cbc_solver) # no time limit 
+        result2 = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, cbc_solver) # no time limit
 
         @test result2["termination_status"] == PowerModels.OPTIMAL
         @test result1["termination_status"] == PowerModels.OPTIMAL
         @test isapprox(result2["objective"], 90.07; atol = 1e-1)
         @test isapprox(result1["objective"], 10.6; atol = 1e-1)
         @test result1["solve_time"] <= result2["solve_time"] # Time limit makes result1 much faster
-    end 
+    end
 
 end
