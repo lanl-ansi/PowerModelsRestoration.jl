@@ -98,17 +98,32 @@ end
 
 
 function _compare_termination_statuses(statuses::Vector{JuMP.TerminationStatusCode})
+    st = statuses[1]
+    if all(x->x==st, statuses)
+        return st # return status if all are the same
+    end
     for status in statuses
         if status == JuMP.INFEASIBLE
             return JuMP.INFEASIBLE
-        elseif status != JuMP.OPTIMAL && status != JuMP.LOCALLY_SOLVED
-            return JuMP.UNKNOWN_STATUS
+        elseif status == JuMP.OPTIMAL && st == JuMP.OPTIMAL
+            st=JuMP.OPTIMAL
+        elseif status  in([JuMP.LOCALLY_SOLVED,JuMP.OPTIMAL]) && st in([JuMP.LOCALLY_SOLVED,JuMP.OPTIMAL])
+            st=JuMP.LOCALLY_SOLVED
+        elseif status in([JuMP.LOCALLY_SOLVED,JuMP.OPTIMAL,JuMP.TIME_LIMIT]) && st in([JuMP.LOCALLY_SOLVED,JuMP.OPTIMAL,JuMP.TIME_LIMIT])
+            st=JuMP.TIME_LIMIT
+        else # status is other termination code
+            st=JuMP.OTHER_ERROR
         end
     end
-    return JuMP.OPTIMAL
+    return st
 end
 
 function _compare_result_statuses(statuses::Vector{JuMP.ResultStatusCode})
+    st = statuses[1]
+    if all(x->x==st, statuses)
+        return st # return status if all are the same
+    end
+
     for status in statuses
         if status == JuMP.NO_SOLUTION
             return JuMP.NO_SOLUTION
