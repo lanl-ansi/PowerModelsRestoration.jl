@@ -1,7 +1,10 @@
 # PowerModelsRestoration.jl Change Log
 
 ## Staged
-- nothing
+- Add restoration problem heuristics
+  -  Utilization 
+  -  Recursive Restoration Refinement
+  -  Randomized Adaptive Decomposition
 
 ## v0.6.1
 - Fixed bugs in `constraint_bus_energized` and `run_iterative_restoration` (#55,#57)
