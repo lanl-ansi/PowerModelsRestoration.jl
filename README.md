@@ -20,7 +20,7 @@ A PowerModelsRestoration provides extensions to [PowerModels](https://github.com
 * SDP Relaxation (W-space)
 
 ## Citing PowerModelsRestoration
-If you find the PowerModelsRestoration package useful in your work, we request that you cite the following [publication](https://www.sciencedirect.com/science/article/abs/pii/S0378779620305393?via%3Dihub):
+If you find the PowerModelsRestoration package useful in your work, we request that you cite the following [publication](https://doi.org/10.1016/j.epsr.2020.106736):
 ```
 @article{rhodes2021powermodelsrestoration,
   title={PowerModelsRestoration. jl: An open-source framework for exploring power network restoration algorithms},
