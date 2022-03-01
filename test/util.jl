@@ -78,6 +78,25 @@
 end
 
 
+@testset "test util common functions" begin
+    @testset "_compare_termination_statuses"   begin
+        @test JuMP.OPTIMAL==PowerModelsRestoration._compare_termination_statuses([JuMP.OPTIMAL,JuMP.OPTIMAL,JuMP.OPTIMAL])
+        @test JuMP.LOCALLY_SOLVED==PowerModelsRestoration._compare_termination_statuses([JuMP.LOCALLY_SOLVED,JuMP.LOCALLY_SOLVED,JuMP.OPTIMAL])
+        @test JuMP.INFEASIBLE==PowerModelsRestoration._compare_termination_statuses([JuMP.INFEASIBLE,JuMP.OPTIMAL,JuMP.OPTIMAL])
+        @test JuMP.INFEASIBLE==PowerModelsRestoration._compare_termination_statuses([JuMP.LOCALLY_SOLVED,JuMP.LOCALLY_SOLVED,JuMP.INFEASIBLE])
+        @test JuMP.TIME_LIMIT==PowerModelsRestoration._compare_termination_statuses([JuMP.LOCALLY_SOLVED,JuMP.TIME_LIMIT,JuMP.LOCALLY_SOLVED])
+        @test JuMP.OTHER_ERROR==PowerModelsRestoration._compare_termination_statuses([JuMP.LOCALLY_SOLVED,JuMP.LOCALLY_SOLVED,JuMP.NUMERICAL_ERROR])
+    end
+    @testset "_compare_result_statuses"   begin
+        @test JuMP.FEASIBLE_POINT==PowerModelsRestoration._compare_result_statuses([JuMP.FEASIBLE_POINT,JuMP.FEASIBLE_POINT,JuMP.FEASIBLE_POINT])
+        @test JuMP.NO_SOLUTION==PowerModelsRestoration._compare_result_statuses([JuMP.FEASIBLE_POINT,JuMP.NO_SOLUTION,JuMP.FEASIBLE_POINT])
+        @test JuMP.INFEASIBILITY_CERTIFICATE==PowerModelsRestoration._compare_result_statuses([JuMP.INFEASIBILITY_CERTIFICATE,JuMP.INFEASIBILITY_CERTIFICATE,JuMP.INFEASIBILITY_CERTIFICATE])
+        @test JuMP.UNKNOWN_RESULT_STATUS==PowerModelsRestoration._compare_result_statuses([JuMP.FEASIBLE_POINT,JuMP.FEASIBLE_POINT,JuMP.NEARLY_FEASIBLE_POINT])
+    end
+end
+
+
+
 #=
 @testset "Forward Restoration" begin
 ## Forward restoration is not currently working with MLD when buses are disabled.

@@ -29,9 +29,12 @@ include("form/dcp.jl")
 include("form/wr.jl")
 include("form/wrm.jl")
 
+include("util/common.jl")
 include("util/restoration_redispatch.jl")
 include("util/ac-mld-uc.jl")
 include("util/rop_utilization.jl")
+include("util/rop_rad.jl")
+include("util/rop_rrr.jl")
 
 include("core/export.jl")
 
