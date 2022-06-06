@@ -65,7 +65,7 @@ function constraint_bus_voltage_on_off(pm::_PM.AbstractWRMModel, n::Int)
     WI = _PM.var(pm, n, :WI)
     z_voltage = _PM.var(pm, n, :z_voltage)
 
-    JuMP.@SDconstraint(pm.model, [WR WI; -WI WR] >= 0)
+    JuMP.@constraint(pm.model, [WR WI; -WI WR] >= 0, JuMP.PSDCone())
 
     for (i,bus) in _PM.ref(pm, n, :bus)
         constraint_voltage_magnitude_sqr_on_off(pm, i; nw=n)
