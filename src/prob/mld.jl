@@ -1,6 +1,6 @@
 # Maximum loadability with generator and bus participation relaxed
 function run_mld(file, model_constructor, solver; kwargs...)
-    return _PM.run_model(file, model_constructor, solver, build_mld; kwargs...)
+    return _PM.solve_model(file, model_constructor, solver, build_mld; kwargs...)
 end
 
 function build_mld(pm::_PM.AbstractPowerModel)
@@ -54,7 +54,7 @@ end
 
 # Maximum loadability with flexible generator participation fixed
 function run_mld_uc(file, model_constructor, solver; kwargs...)
-    return _PM.run_model(file, model_constructor, solver, build_mld_uc; kwargs...)
+    return _PM.solve_model(file, model_constructor, solver, build_mld_uc; kwargs...)
 end
 
 function build_mld_uc(pm::_PM.AbstractPowerModel)
@@ -106,7 +106,7 @@ end
 
 # Maximum loadability with generator participation fixed
 function run_mld_smpl(file, model_constructor, solver; kwargs...)
-    return _PM.run_model(file, model_constructor, solver, run_mld_smpl; kwargs...)
+    return _PM.solve_model(file, model_constructor, solver, run_mld_smpl; kwargs...)
 end
 
 function run_mld_smpl(pm::_PM.AbstractPowerModel)
@@ -173,7 +173,7 @@ end
 
 # Maximum loadability with storage, generator and bus participation relaxed
 function run_mld_strg(file, model_constructor, solver; kwargs...)
-    return _PM.run_model(file, model_constructor, solver, build_mld_strg; kwargs...)
+    return _PM.solve_model(file, model_constructor, solver, build_mld_strg; kwargs...)
 end
 
 function build_mld_strg(pm::_PM.AbstractPowerModel)
@@ -235,7 +235,7 @@ end
 
 # Maximum loadability with storage and generator participated fixed,  and bus participation relaxed
 function run_mld_strg_uc(file, model_constructor, solver; kwargs...)
-    return _PM.run_model(file, model_constructor, solver, build_mld_strg_uc; kwargs...)
+    return _PM.solve_model(file, model_constructor, solver, build_mld_strg_uc; kwargs...)
 end
 
 function build_mld_strg_uc(pm::_PM.AbstractPowerModel)

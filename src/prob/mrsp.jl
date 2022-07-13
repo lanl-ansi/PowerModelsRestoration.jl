@@ -1,6 +1,6 @@
 ""
 function run_mrsp(file, model_constructor, optimizer; kwargs...)
-    return _PM.run_model(file, model_constructor, optimizer, build_mrsp;
+    return _PM.solve_model(file, model_constructor, optimizer, build_mrsp;
         ref_extensions=[_PM.ref_add_on_off_va_bounds!, ref_add_damaged_components!], kwargs...)
 end
 
