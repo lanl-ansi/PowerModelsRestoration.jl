@@ -89,7 +89,8 @@ end
 
 ""
 function gen_power(result, nw_id::String, gen_id::String)
-    value = result["solution"]["nw"][nw_id]["gen"][gen_id]["pg"]
+    gen = get(result["solution"]["nw"][nw_id]["gen"],gen_id,Dict())
+    value = get(gen,"pg",0.0)
     if isnan(value)
         return 0.0
     else
@@ -126,7 +127,8 @@ end
 
 ""
 function storage_power(result, nw_id::String, storage_id::String)
-    value = result["solution"]["nw"][nw_id]["storage"][storage_id]["ps"]
+    storage = get(result["solution"]["nw"][nw_id]["storage"],storage_id,Dict())
+    value = get(storage,"ps",0.0)
     if isnan(value)
         return 0.0
     else
