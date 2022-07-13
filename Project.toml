@@ -11,11 +11,9 @@ PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
 
 [compat]
 InfrastructureModels = "~0.6, ~0.7"
-Ipopt = "~0.8, ~1"
 JuMP = "~0.22, ~1"
 Memento = "~1.0, ~1.1, ~1.2"
 PowerModels = "~0.18.3, ~0.19"
-SCS = "~0.8, ~1"
 julia = "^1"
 
 [extras]
