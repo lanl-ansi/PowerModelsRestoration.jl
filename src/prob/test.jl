@@ -1,6 +1,6 @@
 # Maximum loadability with flexible generator participation fixed
 function _run_mld_discrete_load(file, model_constructor, solver; kwargs...)
-    return _PM.run_model(file, model_constructor, solver, _build_mld_discrete_load; kwargs...)
+    return _PM.solve_model(file, model_constructor, solver, _build_mld_discrete_load; kwargs...)
 end
 
 function _build_mld_discrete_load(pm::_PM.AbstractPowerModel)

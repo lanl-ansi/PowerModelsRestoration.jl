@@ -192,7 +192,7 @@ end
 
 "Variation of run_rop that permits some load not to be restored in final period. Useful for partial restoration of a network in rop heuristics"
 function _run_partial_rop(file, model_constructor, optimizer; kwargs...)
-    return _PM.run_model(file, model_constructor, optimizer, _build_partial_rop; multinetwork=true,
+    return _PM.solve_model(file, model_constructor, optimizer, _build_partial_rop; multinetwork=true,
         ref_extensions=[_PM.ref_add_on_off_va_bounds!, ref_add_damaged_components!], kwargs...)
 end
 

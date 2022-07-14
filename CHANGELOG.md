@@ -1,10 +1,11 @@
 # PowerModelsRestoration.jl Change Log
 
-## Staged
+## v0.7.0
 - Add heuristics for Restoration Ordering Problem `run_rop`
   -  Utilization (#62)
   -  Recursive Restoration Refinement (#63)
   -  Randomized Adaptive Decomposition (#63)
+- Update for JuMP v1.0 (#65)
 
 ## v0.6.1
 - Fixed bugs in `constraint_bus_energized` and `run_iterative_restoration` (#55,#57)

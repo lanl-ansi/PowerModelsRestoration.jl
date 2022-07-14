@@ -5,32 +5,34 @@
         result = run_mld(case3_mld_s, PowerModels.ACPPowerModel, ipopt_solver)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
+
+        atol=1e-8
         for (i,bus) in result["solution"]["bus"]
             @test haskey(bus, "status")
             @test haskey(bus, "vm")
             @test haskey(bus, "va")
-            @test bus["status"] >= 0.0 && bus["status"] <= 1.0
+            @test bus["status"] >= 0.0-atol && bus["status"] <= 1.0+atol
         end
 
         for (i,load) in result["solution"]["load"]
             @test haskey(load, "status")
             @test haskey(load, "pd")
             @test haskey(load, "qd")
-            @test load["status"] >= 0.0 && load["status"] <= 1.0
+            @test load["status"] >= 0.0-atol && load["status"] <= 1.0+atol
         end
 
         for (i,shunt) in result["solution"]["shunt"]
             @test haskey(shunt, "status")
             @test haskey(shunt, "gs")
             @test haskey(shunt, "bs")
-            @test shunt["status"] >= 0.0 && shunt["status"] <= 1.0
+            @test shunt["status"] >= 0.0-atol && shunt["status"] <= 1.0+atol
         end
 
         for (i,gen) in result["solution"]["gen"]
             @test haskey(gen, "pg")
             @test haskey(gen, "qg")
             @test haskey(gen, "gen_status")
-            @test gen["gen_status"] >= 0.0 && gen["gen_status"] <= 1.0
+            @test gen["gen_status"] >= 0.0-atol && gen["gen_status"] <= 1.0+atol
         end
 
         bus2 = result["solution"]["bus"]["2"] # load 1, shunt 1
@@ -55,33 +57,33 @@
         result = run_mld(case3_mld_s, PowerModels.DCPPowerModel, ipopt_solver)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
+        atol=1e-8
         for (i,bus) in result["solution"]["bus"]
-            #if bus[PowerModels.pm_component_status["bus"]] != PowerModels.pm_component_status_inactive["bus"]
-                @test haskey(bus, "vm")
-                @test haskey(bus, "va")
-                @test bus["status"] >= 0.0 && bus["status"] <= 1.0
-            #end
+            @test haskey(bus, "status")
+            @test haskey(bus, "vm")
+            @test haskey(bus, "va")
+            @test bus["status"] >= 0.0-atol && bus["status"] <= 1.0+atol
         end
 
         for (i,load) in result["solution"]["load"]
             @test haskey(load, "status")
             @test haskey(load, "pd")
             @test haskey(load, "qd")
-            @test load["status"] >= 0.0 && load["status"] <= 1.0
+            @test load["status"] >= 0.0-atol && load["status"] <= 1.0+atol
         end
 
         for (i,shunt) in result["solution"]["shunt"]
             @test haskey(shunt, "status")
             @test haskey(shunt, "gs")
             @test haskey(shunt, "bs")
-            @test shunt["status"] >= 0.0 && shunt["status"] <= 1.0
+            @test shunt["status"] >= 0.0-atol && shunt["status"] <= 1.0+atol
         end
 
         for (i,gen) in result["solution"]["gen"]
             @test haskey(gen, "pg")
             @test haskey(gen, "qg")
             @test haskey(gen, "gen_status")
-            @test gen["gen_status"] >= 0.0 && gen["gen_status"] <= 1.0
+            @test gen["gen_status"] >= 0.0-atol && gen["gen_status"] <= 1.0+atol
         end
 
         load1 = result["solution"]["load"]["1"]

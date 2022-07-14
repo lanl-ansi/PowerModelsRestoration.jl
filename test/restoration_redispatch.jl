@@ -12,7 +12,7 @@
 
         result_sim = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, ipopt_solver)
         @test result_sim["termination_status"] == PowerModels.LOCALLY_SOLVED
-        @test isapprox(result_sim["objective"], 53.14; atol = 1)
+        @test isapprox(result_sim["objective"], result_rop["objective"]; atol = 1e-2)
 
         #@test isapprox(gen_status(result_sim,"0","1"), gen_status(result_rop,"0","1"); atol=1e-2)
         #@test isapprox(gen_status(result_sim,"0","2"), gen_status(result_rop,"0","2"); atol=1e-2)
