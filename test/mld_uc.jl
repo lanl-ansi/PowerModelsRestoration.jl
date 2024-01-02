@@ -2,7 +2,7 @@
 
 @testset "test ac ml uc" begin
     @testset "3-bus case" begin
-        result = run_mld_uc(case3_mld, PowerModels.ACPPowerModel, juniper_solver)
+        result = run_mld_uc(case3_mld, PowerModels.ACPPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -13,7 +13,7 @@
         @test all_voltages_on(result)
     end
     @testset "3-bus uc case" begin
-        result = run_mld_uc(case3_mld_uc, PowerModels.ACPPowerModel, juniper_solver)
+        result = run_mld_uc(case3_mld_uc, PowerModels.ACPPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -27,7 +27,7 @@
     #=
     # does not converge with Juniper v0.2
     @testset "3-bus line charge case" begin
-        result = run_mld_uc(case3_mld_lc, PowerModels.ACPPowerModel, juniper_solver)
+        result = run_mld_uc(case3_mld_lc, PowerModels.ACPPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -42,7 +42,7 @@
     end
     =#
     @testset "24-bus rts case" begin
-        result = run_mld_uc(case24, PowerModels.ACPPowerModel, juniper_solver)
+        result = run_mld_uc(case24, PowerModels.ACPPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -57,7 +57,7 @@ end
 
 @testset "test dc ml uc" begin
     @testset "3-bus case" begin
-        result = run_mld_uc(case3_mld, PowerModels.DCPPowerModel, highs_solver)
+        result = run_mld_uc(case3_mld, PowerModels.DCPPowerModel, milp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.OPTIMAL
@@ -67,7 +67,7 @@ end
         @test all_gens_on(result)
     end
     @testset "3-bus uc case" begin
-        result = run_mld_uc(case3_mld_uc, PowerModels.DCPPowerModel, highs_solver)
+        result = run_mld_uc(case3_mld_uc, PowerModels.DCPPowerModel, milp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.OPTIMAL
@@ -78,7 +78,7 @@ end
         @test isapprox(gen_status(result, "2"), 1.000000; atol = 1e-6)
     end
     @testset "3-bus line charge case" begin
-        result = run_mld_uc(case3_mld_lc, PowerModels.DCPPowerModel, highs_solver)
+        result = run_mld_uc(case3_mld_lc, PowerModels.DCPPowerModel, milp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.OPTIMAL
@@ -88,7 +88,7 @@ end
         @test all_gens_on(result)
     end
     @testset "24-bus rts case" begin
-        result = run_mld_uc(case24, PowerModels.DCPPowerModel, highs_solver)
+        result = run_mld_uc(case24, PowerModels.DCPPowerModel, milp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.OPTIMAL
@@ -103,7 +103,7 @@ end
 # these tests were commented out in the old code
 @testset "test soc ml uc" begin
     @testset "3-bus case" begin
-        result = run_mld_uc(case3_mld, PowerModels.SOCWRPowerModel, juniper_solver)
+        result = run_mld_uc(case3_mld, PowerModels.SOCWRPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -114,7 +114,7 @@ end
         @test all_voltages_on(result)
     end
     @testset "3-bus uc case" begin
-        result = run_mld_uc(case3_mld_uc, PowerModels.SOCWRPowerModel, juniper_solver)
+        result = run_mld_uc(case3_mld_uc, PowerModels.SOCWRPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -128,7 +128,7 @@ end
     # pajarito v0.4.2 is reporting infeasible while gurobi produces a correct answer
     #=
     @testset "3-bus line charge case" begin
-        result = run_mld_uc(case3_mld_lc, PowerModels.SOCWRPowerModel, juniper_solver)
+        result = run_mld_uc(case3_mld_lc, PowerModels.SOCWRPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -143,7 +143,7 @@ end
     end
     =#
     @testset "24-bus rts case" begin
-        result = run_mld_uc(case24, PowerModels.SOCWRPowerModel, juniper_solver)
+        result = run_mld_uc(case24, PowerModels.SOCWRPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -159,7 +159,7 @@ end
 #=
 @testset "test qc ml uc" begin
     @testset "3-bus case" begin
-        result = run_mld_uc(case3_mld, QCWRPowerModel, juniper_solver)
+        result = run_mld_uc(case3_mld, QCWRPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -170,7 +170,7 @@ end
         @test all_voltages_on(result)
     end
     @testset "3-bus uc case" begin
-        result = run_mld_uc(case3_mld_uc, QCWRPowerModel, juniper_solver)
+        result = run_mld_uc(case3_mld_uc, QCWRPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -182,7 +182,7 @@ end
         @test all_voltages_on(result)
     end
     @testset "3-bus line charge case" begin
-        result = run_mld_uc(case3_mld_lc, QCWRPowerModel, juniper_solver)
+        result = run_mld_uc(case3_mld_lc, QCWRPowerModel, minlp_solver)
 
         println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -196,7 +196,7 @@ end
         #@test isapprox(bus_status(result, "3"), 1.02784e-8; atol = 1e-2)
     end
     @testset "24-bus rts case" begin
-        result = run_mld_uc(case24, QCWRPowerModel, juniper_solver)
+        result = run_mld_uc(case24, QCWRPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -265,7 +265,7 @@ end
 
 @testset "discrete load and shunt variables" begin
     @testset "5-bus discrete case" begin
-        result = PowerModelsRestoration._run_mld_discrete_load(case5_mld_uc, PowerModels.DCPPowerModel, highs_solver)
+        result = PowerModelsRestoration._run_mld_discrete_load(case5_mld_uc, PowerModels.DCPPowerModel, milp_solver)
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.OPTIMAL
         @test isapprox(result["objective"], 206.0; atol = 1e-2)
@@ -281,7 +281,7 @@ end
         @test isapprox(shunt_status(result, "2"), 1.00000; atol = 1e-6)
     end
     @testset "5-bus discrete case" begin
-        result = PowerModelsRestoration._run_mld_discrete_load(case5_mld_uc, PowerModels.ACPPowerModel, juniper_solver)
+        result = PowerModelsRestoration._run_mld_discrete_load(case5_mld_uc, PowerModels.ACPPowerModel, minlp_solver)
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 2205.9996; atol = 1e-2)
@@ -297,7 +297,7 @@ end
         @test isapprox(shunt_status(result, "2"), 1.00000; atol = 1e-6)
     end
     @testset "5-bus discrete case" begin
-        result = PowerModelsRestoration._run_mld_discrete_load(case5_mld_uc, PowerModels.SOCWRPowerModel, juniper_solver)
+        result = PowerModelsRestoration._run_mld_discrete_load(case5_mld_uc, PowerModels.SOCWRPowerModel, minlp_solver)
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 2205.99966; atol = 1e-2)

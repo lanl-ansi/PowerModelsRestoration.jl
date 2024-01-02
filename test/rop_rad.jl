@@ -7,7 +7,7 @@
         @testset "5-bus case" begin
             data = PowerModels.parse_file("../test/data/case3_restoration_total_dmg.m")
             rng = StableRNGs.StableRNG(1234) # ensure RNG is set in run_rad
-            result = PowerModelsRestoration.run_rad(data, PowerModels.DCPPowerModel, highs_solver,rng=rng)
+            result = PowerModelsRestoration.run_rad(data, PowerModels.DCPPowerModel, milp_solver,rng=rng)
 
             @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
             @test isapprox(result["objective"], 13.4; atol = 1e-1)

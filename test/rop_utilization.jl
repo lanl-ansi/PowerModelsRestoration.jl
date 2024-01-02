@@ -46,7 +46,7 @@
 
     @testset "Test utilization restoration order" begin
         data = PowerModels.parse_file("../test/data/case5_restoration_total_dmg.m")
-        result = run_utilization(data, PowerModels.ACPPowerModel, juniper_solver )
+        result = run_utilization(data, PowerModels.ACPPowerModel, minlp_solver )
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 46.32, atol = 1)

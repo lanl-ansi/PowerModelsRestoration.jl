@@ -5,12 +5,12 @@
 
     @testset "test ac redispatch" begin
         mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=2)
-        result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.ACPPowerModel, juniper_solver)
+        result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.ACPPowerModel, minlp_solver)
 
         clean_status!(result_rop["solution"])
         update_status!(mn_data, result_rop["solution"])
 
-        result_sim = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, ipopt_solver)
+        result_sim = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, nlp_solver)
         @test result_sim["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result_sim["objective"], result_rop["objective"]; atol = 1e-2)
 
@@ -33,12 +33,12 @@
 
     @testset "test dc redispatch" begin
         mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=2)
-        result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, highs_solver)
+        result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, milp_solver)
 
         clean_status!(result_rop["solution"])
         update_status!(mn_data, result_rop["solution"])
 
-        result_sim = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, ipopt_solver)
+        result_sim = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, nlp_solver)
         @test result_sim["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result_sim["objective"], 53.09; atol = 1)
 
@@ -60,12 +60,12 @@
 
     @testset "test soc redispatch" begin
         mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=2)
-        result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
+        result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.SOCWRPowerModel, minlp_solver)
 
         clean_status!(result_rop["solution"])
         update_status!(mn_data, result_rop["solution"])
 
-        result_sim = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, ipopt_solver)
+        result_sim = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, nlp_solver)
         @test result_sim["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result_sim["objective"], 53.15; atol = 1)
 
@@ -89,7 +89,7 @@
     # # @testset "test QCWR hueristic" begin
     # #     mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=3)
     # #     @testset "5-bus case" begin
-    # #         result = PowerModelsRestoration.run_rop_heuristic(mn_data, PowerModels.QCWRPowerModel, ipopt_solver)
+    # #         result = PowerModelsRestoration.run_rop_heuristic(mn_data, PowerModels.QCWRPowerModel, nlp_solver)
 
     # #         @test isapprox(result["solution"]["nw"]["1"]["gen"]["1"]["gen_status"], 0; atol = 1e-1)
     # #         @test isapprox(result["solution"]["nw"]["3"]["gen"]["1"]["gen_status"], 1; atol = 1e-1)

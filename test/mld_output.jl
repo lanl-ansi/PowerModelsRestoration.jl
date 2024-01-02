@@ -2,7 +2,7 @@
 
 @testset "test ml output" begin
     @testset "active and reactive" begin
-        result = run_mld(case3_mld_s, PowerModels.ACPPowerModel, ipopt_solver)
+        result = run_mld(case3_mld_s, PowerModels.ACPPowerModel, nlp_solver)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
 
@@ -54,7 +54,7 @@
     end
 
     @testset "active only" begin
-        result = run_mld(case3_mld_s, PowerModels.DCPPowerModel, ipopt_solver)
+        result = run_mld(case3_mld_s, PowerModels.DCPPowerModel, nlp_solver)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         atol=1e-8

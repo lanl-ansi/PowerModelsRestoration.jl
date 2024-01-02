@@ -4,7 +4,7 @@
     @testset "test ac rop" begin
         @testset "5-bus case" begin
             mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=1)
-            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.ACPPowerModel, juniper_solver)
+            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.ACPPowerModel, minlp_solver)
 
             @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
             @test isapprox(result["objective"], 36.29; atol = 1)
@@ -30,7 +30,7 @@
         # @testset "5-bus storage case" begin
         #     ## locally infeasible if 1 time_period is used
         #     mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=2)
-        #     result = PowerModelsRestoration.run_rop(mn_data, PowerModels.ACPPowerModel, juniper_solver)
+        #     result = PowerModelsRestoration.run_rop(mn_data, PowerModels.ACPPowerModel, minlp_solver)
 
         #     @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         #     @test isapprox(result["objective"], 88.0; atol = 1e0)
@@ -70,7 +70,7 @@
     @testset "test dc rop" begin
         @testset "5-bus case" begin
             mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=2)
-            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, highs_solver)
+            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, milp_solver)
 
             @test result["termination_status"] == PowerModels.OPTIMAL
             @test isapprox(result["objective"], 53.20; atol = 1e-2)
@@ -112,7 +112,7 @@
 
         @testset "5-bus strg case" begin
             mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=3)
-            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, highs_solver)
+            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, milp_solver)
 
             @test result["termination_status"] == PowerModels.OPTIMAL
             @test isapprox(result["objective"], 98.8; atol = 1e-2)
@@ -187,7 +187,7 @@
     @testset "test soc rop" begin
         @testset "5-bus case" begin
             mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=1)
-            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
+            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.SOCWRPowerModel, minlp_solver)
 
             @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
             # non-stable solution in osx and linux
@@ -217,7 +217,7 @@
         # solution stabilty issues on OS X and Linux
         @testset "5-bus strg case" begin
             mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=3)
-            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.QCWRPowerModel, juniper_solver)
+            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.QCWRPowerModel, minlp_solver)
 
             @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
             @test isapprox(result["objective"], 6701.3818; atol = 1e-2)
