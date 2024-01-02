@@ -1,6 +1,7 @@
 using Documenter, PowerModelsRestoration
 
 makedocs(
+    warnonly = Documenter.except(:linkcheck),
     modules = [PowerModelsRestoration],
     format = Documenter.HTML(mathengine = Documenter.MathJax()),
     sitename = "PowerModelsRestoration",
