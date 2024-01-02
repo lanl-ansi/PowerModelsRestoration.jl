@@ -6,7 +6,7 @@
         PowerModelsRestoration.propagate_damage_status!(data)
         result = Dict()
         @testset "5-bus strg case" begin
-            result = PowerModelsRestoration.run_mrsp(data, PowerModels.DCPPowerModel, cbc_solver)
+            result = PowerModelsRestoration.run_mrsp(data, PowerModels.DCPPowerModel, highs_solver)
 
             @test result["termination_status"] == PowerModels.OPTIMAL
             @test isapprox(result["objective"], 5.0; atol = 1e-2)
@@ -40,7 +40,7 @@
             PowerModels.update_data!(data, result["solution"])
 
             mn_data = build_mn_data(data, replicates=2)
-            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
+            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, highs_solver)
 
             @test result["termination_status"] == PowerModels.OPTIMAL
             @test isapprox(result["objective"], 34.0; atol = 1e0)

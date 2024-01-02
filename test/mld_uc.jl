@@ -57,7 +57,7 @@ end
 
 @testset "test dc ml uc" begin
     @testset "3-bus case" begin
-        result = run_mld_uc(case3_mld, PowerModels.DCPPowerModel, cbc_solver)
+        result = run_mld_uc(case3_mld, PowerModels.DCPPowerModel, highs_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.OPTIMAL
@@ -67,7 +67,7 @@ end
         @test all_gens_on(result)
     end
     @testset "3-bus uc case" begin
-        result = run_mld_uc(case3_mld_uc, PowerModels.DCPPowerModel, cbc_solver)
+        result = run_mld_uc(case3_mld_uc, PowerModels.DCPPowerModel, highs_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.OPTIMAL
@@ -78,7 +78,7 @@ end
         @test isapprox(gen_status(result, "2"), 1.000000; atol = 1e-6)
     end
     @testset "3-bus line charge case" begin
-        result = run_mld_uc(case3_mld_lc, PowerModels.DCPPowerModel, cbc_solver)
+        result = run_mld_uc(case3_mld_lc, PowerModels.DCPPowerModel, highs_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.OPTIMAL
@@ -88,7 +88,7 @@ end
         @test all_gens_on(result)
     end
     @testset "24-bus rts case" begin
-        result = run_mld_uc(case24, PowerModels.DCPPowerModel, cbc_solver)
+        result = run_mld_uc(case24, PowerModels.DCPPowerModel, highs_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.OPTIMAL
@@ -265,7 +265,7 @@ end
 
 @testset "discrete load and shunt variables" begin
     @testset "5-bus discrete case" begin
-        result = PowerModelsRestoration._run_mld_discrete_load(case5_mld_uc, PowerModels.DCPPowerModel, cbc_solver)
+        result = PowerModelsRestoration._run_mld_discrete_load(case5_mld_uc, PowerModels.DCPPowerModel, highs_solver)
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.OPTIMAL
         @test isapprox(result["objective"], 206.0; atol = 1e-2)

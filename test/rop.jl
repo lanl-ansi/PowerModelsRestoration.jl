@@ -70,7 +70,7 @@
     @testset "test dc rop" begin
         @testset "5-bus case" begin
             mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=2)
-            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
+            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, highs_solver)
 
             @test result["termination_status"] == PowerModels.OPTIMAL
             @test isapprox(result["objective"], 53.20; atol = 1e-2)
@@ -112,7 +112,7 @@
 
         @testset "5-bus strg case" begin
             mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=3)
-            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
+            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, highs_solver)
 
             @test result["termination_status"] == PowerModels.OPTIMAL
             @test isapprox(result["objective"], 98.8; atol = 1e-2)

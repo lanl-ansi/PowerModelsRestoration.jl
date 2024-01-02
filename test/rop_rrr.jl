@@ -7,11 +7,11 @@
         @testset "5-bus case" begin
             # Random.seed!(1234) # ensure RNG is set in run_rad
             data = PowerModels.parse_file("../test/data/case3_restoration_total_dmg.m")
-            result = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, cbc_solver)
+            result = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, highs_solver)
             clean_status!(result["solution"])
 
             @test result["termination_status"] == PowerModels.OPTIMAL
-            @test isapprox(result["objective"], 90.076; atol = 1e-1)
+            @test isapprox(result["objective"], 80.591; atol = 1e-1)
 
             @testset "gen_status" begin
                 @test isapprox(gen_status(result,"1","1"), 0; atol=1e-2)
@@ -91,7 +91,7 @@
         data = PowerModels.parse_file("../test/data/case3_restoration_total_dmg.m")
 
         # test time_limit=0.0, purely recovery problem
-        result = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, cbc_solver, time_limit=0.0,minimum_solver_time_limit=0.0, minimum_recovery_problem_time_limit=1.0)
+        result = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, highs_solver, time_limit=0.0,minimum_solver_time_limit=0.0, minimum_recovery_problem_time_limit=1.0)
         clean_status!(result["solution"])
 
         util_sol = utilization_repair_order(data)

@@ -33,7 +33,7 @@
 
     @testset "test dc redispatch" begin
         mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=2)
-        result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
+        result_rop = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, highs_solver)
 
         clean_status!(result_rop["solution"])
         update_status!(mn_data, result_rop["solution"])
