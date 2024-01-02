@@ -1,5 +1,8 @@
 # PowerModelsRestoration.jl Change Log
 
+## Staged
+- nothing
+
 ## v0.7.0
 - Add heuristics for Restoration Ordering Problem `run_rop`
   -  Utilization (#62)
