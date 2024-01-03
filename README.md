@@ -23,7 +23,7 @@ A PowerModelsRestoration provides extensions to [PowerModels](https://github.com
 If you find the PowerModelsRestoration package useful in your work, we request that you cite the following [publication](https://doi.org/10.1016/j.epsr.2020.106736):
 ```
 @article{rhodes2021powermodelsrestoration,
-  title={PowerModelsRestoration. jl: An open-source framework for exploring power network restoration algorithms},
+  title={PowerModelsRestoration.jl: An open-source framework for exploring power network restoration algorithms},
   author={Rhodes, Noah and Fobes, David M and Coffrin, Carleton and Roald, Line},
   journal={Electric Power Systems Research},
   volume={190},
