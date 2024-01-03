@@ -1,8 +1,6 @@
 function objective_max_load_delivered(pm::_PM.AbstractPowerModel)
     nws = _PM.nw_ids(pm)
 
-    @assert all(!_PM.ismulticonductor(pm, n) for n in nws)
-
     z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
     time_elapsed = Dict(n => get(_PM.ref(pm, n), :time_elapsed, 1.0) for n in nws)
 
@@ -22,8 +20,6 @@ end
 
 function objective_max_load_delivered(pm::_PM.AbstractACPModel)
     nws = _PM.nw_ids(pm)
-
-    @assert all(!_PM.ismulticonductor(pm, n) for n in nws)
 
     vm_vio = Dict(n => _PM.var(pm, :vm_vio, nw=n) for n in nws)
     z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
@@ -54,8 +50,6 @@ end
 
 function objective_max_load_delivered(pm::_PM.AbstractWRModel)
     nws = _PM.nw_ids(pm)
-
-    @assert all(!_PM.ismulticonductor(pm, n) for n in nws)
 
     w_vio = Dict(n => _PM.var(pm, :w_vio, nw=n) for n in nws)
     z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
@@ -88,8 +82,6 @@ end
 
 function objective_max_loadability(pm::_PM.AbstractPowerModel)
     nws = _PM.nw_ids(pm)
-
-    @assert all(!_PM.ismulticonductor(pm, n) for n in nws)
 
     z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
     z_shunt = Dict(n => _PM.var(pm, n, :z_shunt) for n in nws)
@@ -137,8 +129,6 @@ end
 # can we just add storage to the regular max_loadability objective? #
 function objective_max_loadability_strg(pm::_PM.AbstractPowerModel)
     nws = _PM.nw_ids(pm)
-
-    @assert all(!_PM.ismulticonductor(pm, n) for n in nws)
 
     z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
     z_shunt = Dict(n => _PM.var(pm, n, :z_shunt) for n in nws)

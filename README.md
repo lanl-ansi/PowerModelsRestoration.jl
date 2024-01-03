@@ -1,6 +1,6 @@
 # PowerModelsRestoration.jl
 
-![CI](https://github.com/lanl-ansi/PowerModelsRestoration.jl/workflows/CI/badge.svg) [![codecov](https://codecov.io/gh/lanl-ansi/PowerModelsRestoration.jl/branch/master/graph/badge.svg?token=ADfcIkUOqH)](https://codecov.io/gh/lanl-ansi/PowerModelsRestoration.jl) [![Documentation](https://github.com/lanl-ansi/PowerModelsRestoration.jl/workflows/Documentation/badge.svg)](https://lanl-ansi.github.io/PowerModelsRestoration.jl/stable/)
+[![CI](https://github.com/lanl-ansi/PowerModelsRestoration.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/lanl-ansi/PowerModelsRestoration.jl/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/lanl-ansi/PowerModelsRestoration.jl/branch/master/graph/badge.svg?token=ADfcIkUOqH)](https://codecov.io/gh/lanl-ansi/PowerModelsRestoration.jl) [![Documentation](https://github.com/lanl-ansi/PowerModelsRestoration.jl/workflows/Documentation/badge.svg)](https://lanl-ansi.github.io/PowerModelsRestoration.jl/stable/)
 
 A PowerModelsRestoration provides extensions to [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) for solving the power system restoration tasks.  A core building block in PowerModelsRestoration is the Maximum Load Delivery (MLD) problem, which provides a reliable numerical method for solving challenging N-k damage scenarios, such as those that arise in the analysis of extreme events.
 
@@ -23,7 +23,7 @@ A PowerModelsRestoration provides extensions to [PowerModels](https://github.com
 If you find the PowerModelsRestoration package useful in your work, we request that you cite the following [publication](https://doi.org/10.1016/j.epsr.2020.106736):
 ```
 @article{rhodes2021powermodelsrestoration,
-  title={PowerModelsRestoration. jl: An open-source framework for exploring power network restoration algorithms},
+  title={PowerModelsRestoration.jl: An open-source framework for exploring power network restoration algorithms},
   author={Rhodes, Noah and Fobes, David M and Coffrin, Carleton and Roald, Line},
   journal={Electric Power Systems Research},
   volume={190},

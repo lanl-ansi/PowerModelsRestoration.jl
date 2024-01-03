@@ -58,8 +58,6 @@ end
 function objective_max_loadability(pm::_PM.AbstractDCPModel)
     nws = _PM.nw_ids(pm)
 
-    @assert all(!_PM.ismulticonductor(pm, n) for n in nws)
-
     z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
     z_shunt = Dict(n => _PM.var(pm, n, :z_shunt) for n in nws)
     z_gen = Dict(n => _PM.var(pm, n, :z_gen) for n in nws)
@@ -94,8 +92,6 @@ end
 # can we just add storage to the regular max_loadability objective? #
 function objective_max_loadability_strg(pm::_PM.AbstractDCPModel)
     nws = _PM.nw_ids(pm)
-
-    @assert all(!_PM.ismulticonductor(pm, n) for n in nws)
 
     z_demand = Dict(n => _PM.var(pm, n, :z_demand) for n in nws)
     z_shunt = Dict(n => _PM.var(pm, n, :z_shunt) for n in nws)
