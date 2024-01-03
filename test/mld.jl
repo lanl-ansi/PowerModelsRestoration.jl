@@ -2,7 +2,7 @@
 
 @testset "test ac ml" begin
     @testset "3-bus case" begin
-        result = run_mld(case3_mld, PowerModels.ACPPowerModel, ipopt_solver)
+        result = run_mld(case3_mld, PowerModels.ACPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -13,7 +13,7 @@
         @test all_voltages_on(result)
     end
     @testset "3-bus shunt case" begin
-        result = run_mld(case3_mld_s, PowerModels.ACPPowerModel, ipopt_solver)
+        result = run_mld(case3_mld_s, PowerModels.ACPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -25,7 +25,7 @@
         #TODO add test where branch "2" is turned on
     end
     @testset "3-bus uc case" begin
-        result = run_mld(case3_mld_uc, PowerModels.ACPPowerModel, ipopt_solver)
+        result = run_mld(case3_mld_uc, PowerModels.ACPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -39,7 +39,7 @@
     #=
     # removed for cross platform readability, fails on Windows with Julia v1.6.3
     @testset "3-bus line charge case" begin
-        result = run_mld(case3_mld_lc, PowerModels.ACPPowerModel, ipopt_solver)
+        result = run_mld(case3_mld_lc, PowerModels.ACPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -54,7 +54,7 @@
     end
     =#
     @testset "5-bus pti" begin
-        result = run_mld(case5_pti, PowerModels.ACPPowerModel, ipopt_solver)
+        result = run_mld(case5_pti, PowerModels.ACPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -72,7 +72,7 @@
         data = PowerModels.parse_file("../test/data/case5.raw")
         add_load_weights!(data)
 
-        result = run_mld(data, PowerModels.ACPPowerModel, ipopt_solver)
+        result = run_mld(data, PowerModels.ACPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -91,7 +91,7 @@
         @test loads["2"]["status"] >= loads["4"]["status"]
     end
     @testset "24-bus rts case" begin
-        result = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)
+        result = run_mld(case24, PowerModels.ACPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -103,15 +103,15 @@
     end
 end
 
-case3_mld_ub = run_mld(case3_mld, PowerModels.ACPPowerModel, ipopt_solver)["objective"]
-case3_mld_s_ub = run_mld(case3_mld_s, PowerModels.ACPPowerModel, ipopt_solver)["objective"]
-case3_mld_uc_ub = run_mld(case3_mld_uc, PowerModels.ACPPowerModel, ipopt_solver)["objective"]
-case24_ub = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)["objective"]
+case3_mld_ub = run_mld(case3_mld, PowerModels.ACPPowerModel, nlp_solver)["objective"]
+case3_mld_s_ub = run_mld(case3_mld_s, PowerModels.ACPPowerModel, nlp_solver)["objective"]
+case3_mld_uc_ub = run_mld(case3_mld_uc, PowerModels.ACPPowerModel, nlp_solver)["objective"]
+case24_ub = run_mld(case24, PowerModels.ACPPowerModel, nlp_solver)["objective"]
 
 
 @testset "test dc ml" begin
     @testset "3-bus case" begin
-        result = run_mld(case3_mld, PowerModels.DCPPowerModel, ipopt_solver)
+        result = run_mld(case3_mld, PowerModels.DCPPowerModel, nlp_solver)
 
         #println(result)
         #println(result["objective"])
@@ -122,7 +122,7 @@ case24_ub = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)["objective"
         @test all_gens_on(result)
     end
     @testset "3-bus shunt case" begin
-        result = run_mld(case3_mld_s, PowerModels.DCPPowerModel, ipopt_solver)
+        result = run_mld(case3_mld_s, PowerModels.DCPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -133,7 +133,7 @@ case24_ub = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)["objective"
         #TODO add test where branch "2" is turned on
     end
     @testset "3-bus uc case" begin
-        result = run_mld(case3_mld_uc, PowerModels.DCPPowerModel, ipopt_solver)
+        result = run_mld(case3_mld_uc, PowerModels.DCPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -144,7 +144,7 @@ case24_ub = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)["objective"
         @test isapprox(gen_status(result, "2"), 1.000000; atol = 1e-4)
     end
     @testset "3-bus line charge case" begin
-        result = run_mld(case3_mld_lc, PowerModels.DCPPowerModel, ipopt_solver)
+        result = run_mld(case3_mld_lc, PowerModels.DCPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -154,7 +154,7 @@ case24_ub = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)["objective"
         @test all_gens_on(result)
     end
     @testset "5-bus pti" begin
-        result = run_mld(case5_pti, PowerModels.DCPPowerModel, ipopt_solver)
+        result = run_mld(case5_pti, PowerModels.DCPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -172,7 +172,7 @@ case24_ub = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)["objective"
         data = PowerModels.parse_file("../test/data/case5.raw")
         add_load_weights!(data)
 
-        result = run_mld(data, PowerModels.DCPPowerModel, ipopt_solver)
+        result = run_mld(data, PowerModels.DCPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -191,7 +191,7 @@ case24_ub = run_mld(case24, PowerModels.ACPPowerModel, ipopt_solver)["objective"
         @test loads["2"]["status"] >= loads["4"]["status"]
     end
     @testset "24-bus rts case" begin
-        result = run_mld(case24, PowerModels.DCPPowerModel, ipopt_solver)
+        result = run_mld(case24, PowerModels.DCPPowerModel, nlp_solver)
 
         #println(result)
         #println(result["objective"])
@@ -206,7 +206,7 @@ end
 
 @testset "test soc ml" begin
     @testset "3-bus case" begin
-        result = run_mld(case3_mld, PowerModels.SOCWRPowerModel, ipopt_solver)
+        result = run_mld(case3_mld, PowerModels.SOCWRPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -218,7 +218,7 @@ end
         @test result["objective"]/case3_mld_ub >= 1.0 - opt_gap_tol
     end
     @testset "3-bus shunt case" begin
-        result = run_mld(case3_mld_s, PowerModels.SOCWRPowerModel, ipopt_solver)
+        result = run_mld(case3_mld_s, PowerModels.SOCWRPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -231,7 +231,7 @@ end
         @test result["objective"]/case3_mld_s_ub >= 1.0 - opt_gap_tol
     end
     @testset "3-bus case uc" begin
-        result = run_mld(case3_mld_uc, PowerModels.SOCWRPowerModel, ipopt_solver)
+        result = run_mld(case3_mld_uc, PowerModels.SOCWRPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -244,7 +244,7 @@ end
         @test result["objective"]/case3_mld_uc_ub >= 1.0 - opt_gap_tol
     end
     @testset "3-bus line charge case" begin
-        result = run_mld(case3_mld_lc, PowerModels.SOCWRPowerModel, ipopt_solver)
+        result = run_mld(case3_mld_lc, PowerModels.SOCWRPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -258,7 +258,7 @@ end
         @test isapprox(bus_status(result, "3"), 0.560770; atol = 1e-2)
     end
     @testset "24-bus rts case" begin
-        result = run_mld(case24, PowerModels.SOCWRPowerModel, ipopt_solver)
+        result = run_mld(case24, PowerModels.SOCWRPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -275,7 +275,7 @@ end
 #=
 @testset "test qc ml" begin
     @testset "3-bus case" begin
-        result = run_mld(case3_mld, QCWRPowerModel, ipopt_solver)
+        result = run_mld(case3_mld, QCWRPowerModel, nlp_solver)
 
         println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -287,7 +287,7 @@ end
         @test result["objective"]/case3_mld_ub >= 1.0 - opt_gap_tol
     end
     @testset "3-bus shunt case" begin
-        result = run_mld(case3_mld_s, QCWRPowerModel, ipopt_solver)
+        result = run_mld(case3_mld_s, QCWRPowerModel, nlp_solver)
 
         println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -300,7 +300,7 @@ end
         @test result["objective"]/case3_mld_s_ub >= 1.0 - opt_gap_tol
     end
     @testset "3-bus uc case" begin
-        result = run_mld(case3_mld_uc, QCWRPowerModel, ipopt_solver)
+        result = run_mld(case3_mld_uc, QCWRPowerModel, nlp_solver)
 
         println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -313,7 +313,7 @@ end
         @test result["objective"]/case3_mld_uc_ub >= 1.0 - opt_gap_tol
     end
     @testset "3-bus line charge case" begin
-        result = run_mld(case3_mld_lc, QCWRPowerModel, ipopt_solver)
+        result = run_mld(case3_mld_lc, QCWRPowerModel, nlp_solver)
 
         println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -327,7 +327,7 @@ end
         #@test isapprox(bus_status(result, "3"), 0.9343086026987113; atol = 1e-2)
     end
     @testset "24-bus rts case" begin
-        result = run_mld(case24, QCWRPowerModel, ipopt_solver)
+        result = run_mld(case24, QCWRPowerModel, nlp_solver)
 
         println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -343,7 +343,7 @@ end
 
 @testset "test sdp ml" begin
     @testset "3-bus case" begin
-        result = run_mld(case3_mld, PowerModels.SDPWRMPowerModel, scs_solver)
+        result = run_mld(case3_mld, PowerModels.SDPWRMPowerModel, sdp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.OPTIMAL
@@ -355,7 +355,7 @@ end
         @test result["objective"]/case3_mld_ub >= 1.0 - opt_gap_tol
     end
     @testset "3-bus shunt case" begin
-        result = run_mld(case3_mld_s, PowerModels.SDPWRMPowerModel, scs_solver)
+        result = run_mld(case3_mld_s, PowerModels.SDPWRMPowerModel, sdp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.OPTIMAL
@@ -369,7 +369,7 @@ end
     end
 #    # convergence issue encounterd when updated to SCS v0.6.3
 #    @testset "3-bus uc case" begin
-#        result = run_mld(case3_mld_uc, PowerModels.SDPWRMPowerModel, scs_solver)
+#        result = run_mld(case3_mld_uc, PowerModels.SDPWRMPowerModel, sdp_solver)
 
 #        #println(result["objective"])
 #        @test result["termination_status"] == PowerModels.OPTIMAL
@@ -384,7 +384,7 @@ end
 #        @test result["objective"]/case3_mld_uc_ub >= 1.0 - opt_gap_tol
 #    end
     @testset "3-bus line charge case" begin
-        result = run_mld(case3_mld_lc, PowerModels.SDPWRMPowerModel, scs_solver)
+        result = run_mld(case3_mld_lc, PowerModels.SDPWRMPowerModel, sdp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.OPTIMAL
@@ -399,7 +399,7 @@ end
     end
     # TODO replace this with smaller case, way too slow for unit testing
     #@testset "24-bus rts case" begin
-    #    result = run_mld(case24, PowerModels.SDPWRMPowerModel, scs_solver)
+    #    result = run_mld(case24, PowerModels.SDPWRMPowerModel, sdp_solver)
     #    PowerModels.make_mixed_units(result["solution"])
 
     #    @test result["termination_status"] == PowerModels.OPTIMAL

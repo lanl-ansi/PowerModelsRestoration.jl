@@ -12,18 +12,18 @@ import StableRNGs
 Memento.setlevel!(Memento.getlogger(InfrastructureModels), "error")
 Memento.setlevel!(Memento.getlogger(PowerModels), "error")
 
-import Cbc
+import HiGHS
 import Ipopt
 import Juniper
 import SCS
 
 # default setup for solvers
-cbc_solver = JuMP.optimizer_with_attributes(Cbc.Optimizer, "logLevel"=>0)
-ipopt_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol"=>1e-6, "print_level"=>0)
-#juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver"=>PowerModels.optimizer_with_attributes(Ipopt.Optimizer, "tol"=>1e-4, "print_level"=>0), "mip_solver"=>cbc_solver, "log_levels"=>[])
-juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver"=>PowerModels.optimizer_with_attributes(Ipopt.Optimizer, "tol"=>1e-4, "print_level"=>0), "log_levels"=>[])
-#juniper_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver"=>PowerModels.optimizer_with_attributes(Ipopt.Optimizer, "tol"=>1e-4, "print_level"=>0), "branch_strategy"=>:PseudoCost)
-scs_solver = JuMP.optimizer_with_attributes(SCS.Optimizer, "max_iters"=>100000, "verbose"=>0)
+milp_solver = JuMP.optimizer_with_attributes(HiGHS.Optimizer, "output_flag"=>false)
+nlp_solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol"=>1e-6, "print_level"=>0)
+#minlp_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver"=>PowerModels.optimizer_with_attributes(Ipopt.Optimizer, "tol"=>1e-4, "print_level"=>0), "mip_solver"=>milp_solver, "log_levels"=>[])
+minlp_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver"=>PowerModels.optimizer_with_attributes(Ipopt.Optimizer, "tol"=>1e-4, "print_level"=>0), "log_levels"=>[])
+#minlp_solver = JuMP.optimizer_with_attributes(Juniper.Optimizer, "nl_solver"=>PowerModels.optimizer_with_attributes(Ipopt.Optimizer, "tol"=>1e-4, "print_level"=>0), "branch_strategy"=>:PseudoCost)
+sdp_solver = JuMP.optimizer_with_attributes(SCS.Optimizer, "max_iters"=>100000, "verbose"=>0)
 
 case3_mld = PowerModels.parse_file("../test/data/case3_mld.m")
 case3_mld_s = PowerModels.parse_file("../test/data/case3_mld_s.m")

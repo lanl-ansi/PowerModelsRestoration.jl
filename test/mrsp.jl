@@ -6,7 +6,7 @@
         PowerModelsRestoration.propagate_damage_status!(data)
         result = Dict()
         @testset "5-bus strg case" begin
-            result = PowerModelsRestoration.run_mrsp(data, PowerModels.DCPPowerModel, cbc_solver)
+            result = PowerModelsRestoration.run_mrsp(data, PowerModels.DCPPowerModel, milp_solver)
 
             @test result["termination_status"] == PowerModels.OPTIMAL
             @test isapprox(result["objective"], 5.0; atol = 1e-2)
@@ -40,7 +40,7 @@
             PowerModels.update_data!(data, result["solution"])
 
             mn_data = build_mn_data(data, replicates=2)
-            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
+            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, milp_solver)
 
             @test result["termination_status"] == PowerModels.OPTIMAL
             @test isapprox(result["objective"], 34.0; atol = 1e0)
@@ -93,7 +93,7 @@
     result = Dict()
 
         @testset "5-bus strg case" begin
-            result = PowerModelsRestoration.run_mrsp(data, PowerModels.SOCWRPowerModel, juniper_solver)
+            result = PowerModelsRestoration.run_mrsp(data, PowerModels.SOCWRPowerModel, minlp_solver)
 
             @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
             @test isapprox(result["objective"], 5.0; atol = 1e-2)
@@ -127,7 +127,7 @@
             PowerModels.update_data!(data, result["solution"])
 
             mn_data = build_mn_data(data, replicates=2)
-            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
+            result = PowerModelsRestoration.run_rop(mn_data, PowerModels.SOCWRPowerModel, minlp_solver)
             @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
             @test isapprox(result["objective"], 34.0; atol = 1e-2)
 
@@ -176,7 +176,7 @@
         @testset "5-bus strg case" begin
             data = PowerModels.parse_file("../test/data/case5_restoration_strg.m")
             PowerModelsRestoration.propagate_damage_status!(data)
-            result = PowerModelsRestoration.run_mrsp(data, PowerModels.ACPPowerModel, juniper_solver)
+            result = PowerModelsRestoration.run_mrsp(data, PowerModels.ACPPowerModel, minlp_solver)
 
             @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
             @test isapprox(result["objective"], 5.0; atol = 1e-2)

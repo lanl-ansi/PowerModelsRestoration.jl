@@ -2,7 +2,7 @@
 
 @testset "test ac ml strg" begin
     @testset "5-bus strg case relaxed" begin
-        result = run_mld_strg(case5_mld_strg, PowerModels.ACPPowerModel, juniper_solver)
+        result = run_mld_strg(case5_mld_strg, PowerModels.ACPPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -14,7 +14,7 @@
     end
     # incorrectly infeasible for Juniper v0.6
     # @testset "5-bus strg case uc" begin
-    #     result = run_mld_strg_uc(case5_mld_strg_uc, PowerModels.ACPPowerModel, juniper_solver)
+    #     result = run_mld_strg_uc(case5_mld_strg_uc, PowerModels.ACPPowerModel, minlp_solver)
 
     #     #println(result["objective"])
     #     @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -31,7 +31,7 @@
     #     @test all_voltages_on(result)
     # end
     @testset "5-bus strg only case uc" begin
-        result = run_mld_strg_uc(case5_mld_strg_only, PowerModels.ACPPowerModel, juniper_solver)
+        result = run_mld_strg_uc(case5_mld_strg_only, PowerModels.ACPPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -48,7 +48,7 @@ end
 
 @testset "test soc ml strg" begin
     @testset "5-bus strg case relaxed" begin
-        result = run_mld_strg(case5_mld_strg, PowerModels.SOCWRPowerModel, juniper_solver)
+        result = run_mld_strg(case5_mld_strg, PowerModels.SOCWRPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -59,7 +59,7 @@ end
         @test all_voltages_on(result)
     end
     @testset "5-bus strg case uc" begin
-        result = run_mld_strg_uc(case5_mld_strg_uc, PowerModels.SOCWRPowerModel, juniper_solver)
+        result = run_mld_strg_uc(case5_mld_strg_uc, PowerModels.SOCWRPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -76,7 +76,7 @@ end
         @test all_voltages_on(result)
     end
     @testset "5-bus strg only case uc" begin
-        result = run_mld_strg_uc(case5_mld_strg_only, PowerModels.SOCWRPowerModel, juniper_solver)
+        result = run_mld_strg_uc(case5_mld_strg_only, PowerModels.SOCWRPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -94,7 +94,7 @@ end
 # NLP solver required until alternate constraints are created for storage
 @testset "test dc ml strg" begin
     @testset "5-bus case" begin
-        result = run_mld_strg(case5_mld_strg, PowerModels.DCPPowerModel, juniper_solver)
+        result = run_mld_strg(case5_mld_strg, PowerModels.DCPPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -105,7 +105,7 @@ end
         @test all_voltages_on(result)
     end
     @testset "5-bus strg case uc" begin
-        result = run_mld_strg_uc(case5_mld_strg_uc, PowerModels.DCPPowerModel, juniper_solver)
+        result = run_mld_strg_uc(case5_mld_strg_uc, PowerModels.DCPPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -122,7 +122,7 @@ end
         @test all_voltages_on(result)
     end
     @testset "5-bus strg only case uc" begin
-        result = run_mld_strg_uc(case5_mld_strg_only, PowerModels.DCPPowerModel, juniper_solver)
+        result = run_mld_strg_uc(case5_mld_strg_only, PowerModels.DCPPowerModel, minlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -140,7 +140,7 @@ end
 # PowerModels.SOCWRPowerModel does not support storage yet
 @testset "test soc ml strg" begin
     # @testset "5-bus case" begin
-    #     result = run_mld_strg(case5_mld_strg, PowerModels.SOCWRPowerModel, juniper_solver)
+    #     result = run_mld_strg(case5_mld_strg, PowerModels.SOCWRPowerModel, minlp_solver)
 
     #     #println(result["objective"])
     #     @test result["termination_status"] == PowerModels.LOCALLY_SOLVED

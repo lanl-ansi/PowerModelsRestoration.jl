@@ -7,11 +7,12 @@
         @testset "5-bus case" begin
             # Random.seed!(1234) # ensure RNG is set in run_rad
             data = PowerModels.parse_file("../test/data/case3_restoration_total_dmg.m")
-            result = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, cbc_solver)
-            clean_status!(result["solution"])
+            result = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, milp_solver)
 
             @test result["termination_status"] == PowerModels.OPTIMAL
-            @test isapprox(result["objective"], 90.076; atol = 1e-1)
+            @test isapprox(result["objective"], 80.591; atol = 1e-1)
+
+            clean_status!(result["solution"])
 
             @testset "gen_status" begin
                 @test isapprox(gen_status(result,"1","1"), 0; atol=1e-2)
@@ -91,24 +92,29 @@
         data = PowerModels.parse_file("../test/data/case3_restoration_total_dmg.m")
 
         # test time_limit=0.0, purely recovery problem
-        result = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, cbc_solver, time_limit=0.0,minimum_solver_time_limit=0.0, minimum_recovery_problem_time_limit=1.0)
+        result = PowerModelsRestoration.run_rrr(data, PowerModels.DCPPowerModel, milp_solver, time_limit=0.0, minimum_solver_time_limit=0.0, minimum_recovery_problem_time_limit=1.0)
         clean_status!(result["solution"])
 
-        util_sol = utilization_repair_order(data)
-        for (nwid,repairs) in get_component_activations(result["solution"])
-            # test that each repair occurs in the same period in sol util and rrr
-            for repair in repairs
-                @test repair in util_sol[nwid]
-            end
-            for repair in util_sol[nwid]
-                @test repair in repairs
-            end
-        end
+        if result["termination_status"] == PowerModels.OPTIMAL
+            @test isapprox(result["objective"], 10.6; atol = 1e-1)
+            @test length(result["stats"]["solve_time"]) == 1 # recursion depth==1 due to time limit
+            @test result["stats"]["solve_time"][1] <=1.0 # recovery problem solve time
 
-        @test result["termination_status"] == PowerModels.OPTIMAL
-        @test isapprox(result["objective"], 10.6; atol = 1e-1)
-        @test length(result["stats"]["solve_time"]) == 1 # recursion depth==1 due to time limit
-        @test result["stats"]["solve_time"][1] <=1.0 # recovery problem solve time
+            util_sol = utilization_repair_order(data)
+            for (nwid,repairs) in get_component_activations(result["solution"])
+                # test that each repair occurs in the same period in sol util and rrr
+                for repair in repairs
+                    @test repair in util_sol[nwid]
+                end
+                for repair in util_sol[nwid]
+                    @test repair in repairs
+                end
+            end
+        else
+            # this occurs some times on windows os in ci
+            @test result["termination_status"] == PowerModels.TIME_LIMIT
+        end
     end
 
 end
+

@@ -70,7 +70,7 @@
 
         data = PowerModels.parse_file("../test/data/case5_mld_ft.m")
         PowerModels.simplify_network!(data)
-        result = run_mld(data, PowerModels.ACPPowerModel, ipopt_solver)
+        result = run_mld(data, PowerModels.ACPPowerModel, nlp_solver)
         solution = result["solution"]
 
         active_buses = Set(["2", "4", "5"])

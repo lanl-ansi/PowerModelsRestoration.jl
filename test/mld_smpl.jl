@@ -2,7 +2,7 @@
 
 @testset "test ac ml smpl" begin
     @testset "3-bus case" begin
-        result = run_mld_smpl(case3_mld, PowerModels.ACPPowerModel, ipopt_solver)
+        result = run_mld_smpl(case3_mld, PowerModels.ACPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -11,7 +11,7 @@
         @test isapprox(active_power_served(result), 1.0343968580341767; atol = 1e-1)
     end
     @testset "3-bus shunt case" begin
-        result = run_mld_smpl(case3_mld_s, PowerModels.ACPPowerModel, ipopt_solver)
+        result = run_mld_smpl(case3_mld_s, PowerModels.ACPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -20,7 +20,7 @@
         @test isapprox(active_power_served(result), 0.7951651020410877; atol = 1e-1)
     end
     @testset "3-bus uc case" begin
-        result = run_mld_smpl(case3_mld_uc, PowerModels.ACPPowerModel, ipopt_solver)
+        result = run_mld_smpl(case3_mld_uc, PowerModels.ACPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -29,7 +29,7 @@
         @test isapprox(active_power_served(result), 1.1343738262510479; atol = 1e-1)
     end
     @testset "3-bus line charge case" begin
-        result = run_mld_smpl(case3_mld_lc, PowerModels.ACPPowerModel, ipopt_solver)
+        result = run_mld_smpl(case3_mld_lc, PowerModels.ACPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -38,7 +38,7 @@
         @test isapprox(active_power_served(result), 0.008694603282259982; atol = 1e-1)
     end
     @testset "24-bus rts case" begin
-        result = run_mld_smpl(case24, PowerModels.ACPPowerModel, ipopt_solver)
+        result = run_mld_smpl(case24, PowerModels.ACPPowerModel, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED

@@ -1,6 +1,6 @@
 @testset "test ac ml uc heuristic" begin
     @testset "3-bus case" begin
-        result = PowerModelsRestoration.run_ac_mld_uc(case3_mld, ipopt_solver)
+        result = PowerModelsRestoration.run_ac_mld_uc(case3_mld, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -11,7 +11,7 @@
         @test all_voltages_on(result)
     end
     @testset "3-bus uc case" begin
-        result = PowerModelsRestoration.run_ac_mld_uc(case3_mld_uc, ipopt_solver)
+        result = PowerModelsRestoration.run_ac_mld_uc(case3_mld_uc, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -23,7 +23,7 @@
         @test all_voltages_on(result)
     end
     @testset "3-bus line charge case" begin
-        result = PowerModelsRestoration.run_ac_mld_uc(case3_mld_lc, ipopt_solver)
+        result = PowerModelsRestoration.run_ac_mld_uc(case3_mld_lc, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -40,7 +40,7 @@
         data = PowerModels.parse_file("../test/data/case5.raw")
         add_load_weights!(data)
 
-        result = PowerModelsRestoration.run_ac_mld_uc(data, ipopt_solver)
+        result = PowerModelsRestoration.run_ac_mld_uc(data, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -65,7 +65,7 @@
         @test loads["2"]["status"] >= loads["4"]["status"]
     end
     @testset "24-bus rts case" begin
-        result = PowerModelsRestoration.run_ac_mld_uc(case24, ipopt_solver)
+        result = PowerModelsRestoration.run_ac_mld_uc(case24, nlp_solver)
 
         #println(result["objective"])
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
@@ -101,12 +101,12 @@ end
 @testset "Forward Restoration" begin
 ## Forward restoration is not currently working with MLD when buses are disabled.
     mn_data = build_mn_data("../test/data/case5_restoration_strg.m", replicates=3)
-    rop_result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
+    rop_result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, milp_solver)
 
     @testset "ac forward case" begin
 
         PowerModels.update_data!(mn_data, rop_result["solution"])
-        result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, juniper_solver)
+        result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, minlp_solver)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 8834.38; atol = 1)
@@ -122,7 +122,7 @@ end
     @testset "soc forward case" begin
 
         PowerModels.update_data!(mn_data, rop_result["solution"])
-        result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
+        result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.SOCWRPowerModel, minlp_solver)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         @test isapprox(result["objective"], 8834.38; atol = 1e0)
@@ -136,12 +136,12 @@ end
     end
 
     mn_data = build_mn_data("../test/data/case5_restoration.m", replicates=3)
-    rop_result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, cbc_solver)
+    rop_result = PowerModelsRestoration.run_rop(mn_data, PowerModels.DCPPowerModel, milp_solver)
 
     @testset "ac forward case" begin
 
         PowerModels.update_data!(mn_data, rop_result["solution"])
-        result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, juniper_solver)
+        result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.ACPPowerModel, minlp_solver)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         ## Not stable on mac
@@ -158,7 +158,7 @@ end
     @testset "soc forward case" begin
 
         PowerModels.update_data!(mn_data, rop_result["solution"])
-        result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.SOCWRPowerModel, juniper_solver)
+        result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.SOCWRPowerModel, minlp_solver)
 
         @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
         ## Not stable on mac
@@ -176,7 +176,7 @@ end
     # @testset "qc forward case" begin
 
     #     PowerModels.update_data!(mn_data, rop_result["solution"])
-    #     result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.QCWRPowerModel, juniper_solver)
+    #     result = PowerModelsRestoration.run_restoration_redispatch(mn_data, PowerModels.QCWRPowerModel, minlp_solver)
 
     #     @test result["termination_status"] == PowerModels.LOCALLY_SOLVED
     #     @test isapprox(result["objective"], 6168.399; atol = 1e-2)
