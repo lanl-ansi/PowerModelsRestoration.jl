@@ -3,6 +3,9 @@
 ## Staged
 - nothing
 
+## v0.9.0
+- Update PowerModels v0.21 and JuMP's new nonlinear interface (breaking)
+
 ## v0.8.0
 - Update to PowerModels v0.20 (breaking)
 - Drop support for JuMP v0.22 and v0.23 (breaking)

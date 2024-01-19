@@ -58,7 +58,7 @@ function constraint_power_balance_shed(pm::_PM.AbstractACPModel, n::Int, i::Int,
     z_shunt = get(_PM.var(pm, n), :z_shunt, Dict()); _PM._check_var_keys(z_shunt, keys(bus_gs), "power factor scale", "shunt")
 
 
-    _PM.con(pm, n, :kcl_p)[i] = JuMP.@NLconstraint(pm.model,
+    _PM.con(pm, n, :kcl_p)[i] = JuMP.@constraint(pm.model,
         sum(p[a] for a in bus_arcs)
         + sum(p_dc[a_dc] for a_dc in bus_arcs_dc)
         + sum(psw[a_sw] for a_sw in bus_arcs_sw)
@@ -68,7 +68,7 @@ function constraint_power_balance_shed(pm::_PM.AbstractACPModel, n::Int, i::Int,
         - sum(pd*z_demand[i] for (i,pd) in bus_pd)
         - sum(gs*vm^2*z_shunt[i] for (i,gs) in bus_gs)
     )
-    _PM.con(pm, n, :kcl_q)[i] = JuMP.@NLconstraint(pm.model,
+    _PM.con(pm, n, :kcl_q)[i] = JuMP.@constraint(pm.model,
         sum(q[a] for a in bus_arcs)
         + sum(q_dc[a_dc] for a_dc in bus_arcs_dc)
         + sum(qsw[a_sw] for a_sw in bus_arcs_sw)
