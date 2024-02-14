@@ -25,8 +25,8 @@ If you find the PowerModelsRestoration package useful in your work, we request t
 @inproceedings{rhodes2020powermodelsrestoration,
   author = {Rhodes, Noah and Fobes, David M and Coffrin, Carleton and Roald, Line},
   title = {PowerModelsRestoration.jl: An open-source framework for exploring power network restoration algorithms},
-  booktitle = {2022 Power Systems Computation Conference (PSCC)},
-  year = {2022},
+  booktitle = {2020 Power Systems Computation Conference (PSCC)},
+  year = {2020},
   month = {June},
   doi = {10.1016/j.epsr.2020.106736}
 }
@@ -49,8 +49,8 @@ If you use the RRR problem in your work, we kindly request that you cite the fol
 @inproceedings{rhodes2022recursive,
   author = {Rhodes, Noah and Coffrin, Carleton and Roald, Line},
   title = {Recursive restoration refinement: A fast heuristic for near-optimal restoration prioritization in power systems},
-  booktitle = {2020 Power Systems Computation Conference (PSCC)},
-  year = {2020},
+  booktitle = {2022 Power Systems Computation Conference (PSCC)},
+  year = {2022},
   month = {June},
   doi = {10.1016/j.epsr.2022.108454}
 }
