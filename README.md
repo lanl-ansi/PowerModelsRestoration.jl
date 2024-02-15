@@ -22,14 +22,13 @@ A PowerModelsRestoration provides extensions to [PowerModels](https://github.com
 ## Citing PowerModelsRestoration
 If you find the PowerModelsRestoration package useful in your work, we request that you cite the following [publication](https://doi.org/10.1016/j.epsr.2020.106736):
 ```
-@article{rhodes2021powermodelsrestoration,
-  title={PowerModelsRestoration.jl: An open-source framework for exploring power network restoration algorithms},
-  author={Rhodes, Noah and Fobes, David M and Coffrin, Carleton and Roald, Line},
-  journal={Electric Power Systems Research},
-  volume={190},
-  pages={106736},
-  year={2021},
-  publisher={Elsevier}
+@inproceedings{rhodes2020powermodelsrestoration,
+  author = {Rhodes, Noah and Fobes, David M and Coffrin, Carleton and Roald, Line},
+  title = {PowerModelsRestoration.jl: An open-source framework for exploring power network restoration algorithms},
+  booktitle = {2020 Power Systems Computation Conference (PSCC)},
+  year = {2020},
+  month = {June},
+  doi = {10.1016/j.epsr.2020.106736}
 }
 ```
 
@@ -42,6 +41,18 @@ In addition, if the MLD problem from PowerModelsRestoration useful in your work,
   volume={34}, number={2}, pages={1450-1458},
   month={March}, year={2019},
   doi={10.1109/TPWRS.2018.2876507}, ISSN={0885-8950}
+}
+```
+
+If you use the RRR problem in your work, we kindly request that you cite the folloring [publication](https://doi.org/10.1016/j.epsr.2022.108454)
+```
+@inproceedings{rhodes2022recursive,
+  author = {Rhodes, Noah and Coffrin, Carleton and Roald, Line},
+  title = {Recursive restoration refinement: A fast heuristic for near-optimal restoration prioritization in power systems},
+  booktitle = {2022 Power Systems Computation Conference (PSCC)},
+  year = {2022},
+  month = {June},
+  doi = {10.1016/j.epsr.2022.108454}
 }
 ```
 
