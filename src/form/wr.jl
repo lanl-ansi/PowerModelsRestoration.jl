@@ -126,29 +126,6 @@ function constraint_voltage_magnitude_bounds_soft(pm::_PM.AbstractWRModel, n::In
     JuMP.@constraint(pm.model, w >= vm_min^2 - w_vio)
 end
 
-"`p[arc_from]^2 + q[arc_from]^2 <= w[f_bus]/tm*ccm[i]`"
-function _PM.constraint_power_magnitude_sqr_on_off(pm::_PM.AbstractQCWRModel, n::Int, i, f_bus, arc_from, tm)
-    w    = _PM.var(pm, n, :w, f_bus)
-    p_fr = _PM.var(pm, n, :p, arc_from)
-    q_fr = _PM.var(pm, n, :q, arc_from)
-    ccm  = _PM.var(pm, n, :ccm, i)
-    z    = _PM.var(pm, n, :z_branch, i)
-
-    # TODO see if there is a way to leverage relaxation_complex_product_on_off here
-    w_lb, w_ub = InfrastructureModels.variable_domain(w)
-    ccm_lb, ccm_ub = InfrastructureModels.variable_domain(ccm)
-    if isinteger(z)
-        z_lb = z_ub = z
-    else
-        z_lb, z_ub = InfrastructureModels.variable_domain(z)
-    end
-
-    JuMP.@constraint(pm.model, p_fr^2 + q_fr^2 <= w*ccm*z_ub/tm^2)
-    JuMP.@constraint(pm.model, p_fr^2 + q_fr^2 <= w_ub*ccm*z/tm^2)
-    JuMP.@constraint(pm.model, p_fr^2 + q_fr^2 <= w*ccm_ub*z/tm^2)
-end
-
-
 
 ""
 function constraint_ohms_yt_from_damage(pm::_PM.AbstractWRModel, i::Int; nw::Int=nw_id_default)
