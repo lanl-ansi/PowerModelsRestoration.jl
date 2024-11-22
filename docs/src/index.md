@@ -21,7 +21,7 @@ For the current development version, "checkout" this package with
 ] add PowerModelsRestoration#master
 ```
 
-At least one solver is required for running PowerModelsRestoration.  The open-source solver Ipopt is recommended, as it is fast, scaleable and can be used to solve a wide variety of the problems and network formulations provided in PowerModels.  The Ipopt solver can be installed via the package manager with
+At least one solver is required for running PowerModelsRestoration.  The open-source solver Ipopt is recommended, as it is fast, scalable and can be used to solve a wide variety of the problems and network formulations provided in PowerModels.  The Ipopt solver can be installed via the package manager with
 
 ```julia
 ] add Ipopt
