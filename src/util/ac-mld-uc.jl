@@ -1,4 +1,3 @@
-
 "implements a scalable heuristic solution to the AC-MLD problem"
 function run_ac_mld_uc(
     case::Dict{String,<:Any},
