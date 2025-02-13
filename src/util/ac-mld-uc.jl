@@ -5,7 +5,7 @@ function run_ac_mld_uc(
     modifications::Dict{String,<:Any}=Dict{String,Any}("per_unit" => case["per_unit"]),
     setting::Dict{String,<:Any}=Dict{String,Any}(),
     int_tol::Real=1e-6,
-    largest_component_only::Bool=true,
+    restore_disconnected_subnetworks::Bool=false,
 )
     base_case = case
     case = deepcopy(case)
@@ -14,10 +14,10 @@ function run_ac_mld_uc(
     # Note that this can hide some load shed if a connected component with
     # load but no generation is created.
     _PM.simplify_network!(case)
-    if largest_component_only
-        _PM.select_largest_component!(case)
-    else
+    if restore_disconnected_subnetworks
         _PM.correct_reference_buses!(case)
+    else
+        _PM.select_largest_component!(case)
     end
 
     if length(setting) != 0
@@ -66,10 +66,10 @@ function run_ac_mld_uc(
     if bus_count <= 0
         result = soc_result
     else
-        if largest_component_only
-            _PM.select_largest_component!(case)
-        else
+        if restore_disconnected_subnetworks
             _PM.correct_reference_buses!(case)
+        else
+            _PM.select_largest_component!(case)
         end
 
         # MLD with gen and bus participation fixed, and generation/voltage bounds
