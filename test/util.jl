@@ -75,6 +75,49 @@
         @test all_gens_on(result)
         @test all_voltages_on(result)
     end
+    @testset "5-bus disconnected case" begin
+        data = deepcopy(case5_pti)
+        bus_ids = collect(keys(data["bus"]))
+        orig_ccs = PowerModels.calc_connected_components(data)
+        orig_ref_buses = filter(i -> data["bus"][i]["bus_type"] == 3, bus_ids)
+        @test length(orig_ref_buses) == 1
+        @test length(orig_ccs) == 1
+
+        # Island bus 3, which has two loads and one generator
+        data["branch"]["4"]["br_status"] = 0
+        data["branch"]["6"]["br_status"] = 0
+        data["branch"]["7"]["br_status"] = 0
+
+        # Activate generator on bus 3
+        data["gen"]["3"]["gen_status"] = 1
+        # Increase demand so it can't be met by the generator
+        data["load"]["3"]["pd"] = 5.0 # Increased from 1
+
+        PowerModels.correct_reference_buses!(data)
+        ccs = PowerModels.calc_connected_components(data)
+        ref_buses = filter(i -> data["bus"][i]["bus_type"] == 3, bus_ids)
+        @test length(ccs) == 2
+        @test length(ref_buses) == 2
+
+        # Default only uses the largest connected component
+        orig_result = run_ac_mld_uc(data, nlp_solver)
+        @test isapprox(orig_result["objective"], 4.09; atol = 1e-1)
+        orig_sol = orig_result["solution"]
+        orig_pd_served = sum(l -> l["pd"]*l["status"], values(orig_sol["load"]))
+        @test isapprox(orig_pd_served, 2.70; atol = 1e-1)
+
+        result = run_ac_mld_uc(data, nlp_solver; optimize_disconnected_subnetworks = true)
+        @test isapprox(result["objective"], 9.29; atol = 1e-1)
+        sol = result["solution"]
+        pd_served = sum(l -> l["pd"]*l["status"], values(sol["load"]))
+        @test isapprox(pd_served, 6.60; atol = 1e-1)
+
+        # Make sure the discrepancy in load served is due to the generator
+        # on the islanded bus.
+        pg3 = result["solution"]["gen"]["3"]["pg"]
+        diff = active_power_served(result) - active_power_served(orig_result)
+        @test isapprox(pg3, diff; atol = 1e-2)
+    end
 end
 
 

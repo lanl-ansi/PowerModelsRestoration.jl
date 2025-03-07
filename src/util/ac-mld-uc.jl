@@ -1,21 +1,36 @@
-
-"implements a scalable huristic solution to the AC-MLD problem"
-function run_ac_mld_uc(case::Dict{String,<:Any}, solver; modifications::Dict{String,<:Any}=Dict{String,Any}("per_unit" => case["per_unit"]), setting::Dict{String,<:Any}=Dict{String,Any}(), int_tol::Real=1e-6)
+"implements a scalable heuristic solution to the AC-MLD problem"
+function run_ac_mld_uc(
+    case::Dict{String,<:Any},
+    solver;
+    modifications::Dict{String,<:Any}=Dict{String,Any}("per_unit" => case["per_unit"]),
+    setting::Dict{String,<:Any}=Dict{String,Any}(),
+    int_tol::Real=1e-6,
+    optimize_disconnected_subnetworks::Bool=false,
+)
     base_case = case
     case = deepcopy(case)
     _PM.update_data!(case, modifications)
 
+    # Note that this can hide some load shed if a connected component with
+    # load but no generation is created.
     _PM.simplify_network!(case)
-    _PM.select_largest_component!(case)
-    #_PM.correct_refrence_buses!(case)
+    if optimize_disconnected_subnetworks
+        _PM.correct_reference_buses!(case)
+    else
+        _PM.select_largest_component!(case)
+    end
 
     if length(setting) != 0
         Memento.info(_PM._LOGGER, "settings: $(setting)")
     end
 
-
+    # Run MLD with SOC relaxation. This gives us an upper bound on load delivery for any
+    # feasible solution to our original problem. I.e., the contingency will always be
+    # at least this bad.
     soc_result = run_mld(case, _PM.SOCWRPowerModel, solver; setting=setting)
 
+    # Check termination_status instead of primal_status here as, without optimality,
+    # the relaxation solution loses its meaning.
     @assert (soc_result["termination_status"] == _PM.LOCALLY_SOLVED || soc_result["termination_status"] == _PM.OPTIMAL)
     soc_sol = soc_result["solution"]
 
@@ -24,6 +39,12 @@ function run_ac_mld_uc(case::Dict{String,<:Any}, solver; modifications::Dict{Str
     Memento.info(_PM._LOGGER, "soc active gen:    $(soc_active_output)")
     Memento.info(_PM._LOGGER, "soc active demand: $(soc_active_delivered)")
 
+    # Round down bus and generator statuses from SOC solution and propagate to
+    # case data. I.e., if the optimistic solution doesn't have a bus/gen "all the
+    # way on", we deactivate that device.
+    # This is a heuristic to help us get feasible solutions later. (We also
+    # relax bounds to *ensure* we get a feasible solution, but this helps us
+    # not violate bounds.)
     for (i,bus) in soc_sol["bus"]
         if case["bus"][i]["bus_type"] != 4 && bus["status"] <= 1-int_tol
             case["bus"][i]["bus_type"] = 4
@@ -45,8 +66,14 @@ function run_ac_mld_uc(case::Dict{String,<:Any}, solver; modifications::Dict{Str
     if bus_count <= 0
         result = soc_result
     else
-        _PM.select_largest_component!(case)
+        if optimize_disconnected_subnetworks
+            _PM.correct_reference_buses!(case)
+        else
+            _PM.select_largest_component!(case)
+        end
 
+        # MLD with gen and bus participation fixed, and generation/voltage bounds
+        # relaxed (and penalized)
         ac_result = run_mld_smpl(case, _PM.ACPPowerModel, solver; setting=setting)
         ac_result["solve_time"] = ac_result["solve_time"] + soc_result["solve_time"]
 
@@ -56,7 +83,9 @@ function run_ac_mld_uc(case::Dict{String,<:Any}, solver; modifications::Dict{Str
         result = ac_result
     end
 
-
+    # Propagate statuses of deactivated components back to solution. These
+    # components were deactivated by rounding the SOC solution by subsequent
+    # simplification steps.
     sol = result["solution"]
     for (i,bus) in base_case["bus"]
         if bus["bus_type"] != 4 && case["bus"][i]["bus_type"] == 4
