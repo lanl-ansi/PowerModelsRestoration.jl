@@ -5,7 +5,7 @@ function run_ac_mld_uc(
     modifications::Dict{String,<:Any}=Dict{String,Any}("per_unit" => case["per_unit"]),
     setting::Dict{String,<:Any}=Dict{String,Any}(),
     int_tol::Real=1e-6,
-    restore_disconnected_subnetworks::Bool=false,
+    include_disconnected_subnetworks::Bool=false,
 )
     base_case = case
     case = deepcopy(case)
