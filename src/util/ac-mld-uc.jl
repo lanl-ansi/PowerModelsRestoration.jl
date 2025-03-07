@@ -5,7 +5,7 @@ function run_ac_mld_uc(
     modifications::Dict{String,<:Any}=Dict{String,Any}("per_unit" => case["per_unit"]),
     setting::Dict{String,<:Any}=Dict{String,Any}(),
     int_tol::Real=1e-6,
-    include_disconnected_subnetworks::Bool=false,
+    optimize_disconnected_subnetworks::Bool=false,
 )
     base_case = case
     case = deepcopy(case)
@@ -14,7 +14,7 @@ function run_ac_mld_uc(
     # Note that this can hide some load shed if a connected component with
     # load but no generation is created.
     _PM.simplify_network!(case)
-    if restore_disconnected_subnetworks
+    if optimize_disconnected_subnetworks
         _PM.correct_reference_buses!(case)
     else
         _PM.select_largest_component!(case)
@@ -66,7 +66,7 @@ function run_ac_mld_uc(
     if bus_count <= 0
         result = soc_result
     else
-        if restore_disconnected_subnetworks
+        if optimize_disconnected_subnetworks
             _PM.correct_reference_buses!(case)
         else
             _PM.select_largest_component!(case)

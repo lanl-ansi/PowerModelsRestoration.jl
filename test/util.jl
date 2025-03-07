@@ -106,7 +106,7 @@
         orig_pd_served = sum(l -> l["pd"]*l["status"], values(orig_sol["load"]))
         @test isapprox(orig_pd_served, 2.70; atol = 1e-1)
 
-        result = run_ac_mld_uc(data, nlp_solver; include_disconnected_subnetworks = true)
+        result = run_ac_mld_uc(data, nlp_solver; optimize_disconnected_subnetworks = true)
         @test isapprox(result["objective"], 9.29; atol = 1e-1)
         sol = result["solution"]
         pd_served = sum(l -> l["pd"]*l["status"], values(sol["load"]))
